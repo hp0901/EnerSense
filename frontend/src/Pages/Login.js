@@ -10,6 +10,7 @@ const EnerSenseLogin = () => {
 
         {/* Left Side */}
         <div className="w-full md:w-5/12 p-8 md:p-12 flex flex-col justify-between bg-[#0f172a]">
+          
           {/* Logo */}
           <div className="flex items-center gap-3 mb-10">
             <img src={logo} alt="EnerSense Logo" className="w-10 h-10" />
@@ -31,24 +32,37 @@ const EnerSenseLogin = () => {
               <input
                 type="email"
                 placeholder="Email"
-                className="w-full px-4 py-3 rounded-xl"
+                className="w-full px-4 py-3 rounded-xl focus:outline-none"
                 required
               />
+
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full px-4 py-3 rounded-xl"
+                className="w-full px-4 py-3 rounded-xl focus:outline-none"
                 required
               />
-              <button className="w-full bg-green-500 text-white py-3 rounded-xl font-bold">
+
+              {/* Forgot Password */}
+              <div className="text-right">
+                <a
+                  href="/otp"
+                  className="text-sm text-blue-400 hover:underline"
+                >
+                  Forgot password?
+                </a>
+              </div>
+
+              <button className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-bold transition">
                 Login
               </button>
             </form>
           </div>
 
+          {/* Signup */}
           <p className="text-center text-sm text-slate-400 mt-6">
             Don’t have an account?{" "}
-            <a href="/signup" className="text-green-500 font-semibold">
+            <a href="/signup" className="text-green-500 font-semibold hover:underline">
               Sign Up
             </a>
           </p>
