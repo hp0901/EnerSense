@@ -97,135 +97,131 @@ const Signup = () => {
   };
 
   return (
-    <div
-  className="
-    min-h-[100vh] flex items-center  justify-left px-0 pt-20
-    bg-no-repeat
-    bg-contain bg-top
-    sm:bg-cover sm:bg-center
-  "
-  style={{ backgroundImage: `url(${signupBg})` }}
->
+  <div className="relative min-h-dvh w-full overflow-hidden flex items-center justify-center px-4">
+    
+    {/* BACKGROUND IMAGE */}
+    <img
+      src={signupBg}
+      alt="Background"
+      className="absolute inset-0 w-full h-full object-cover"
+    />
+    <div className="absolute inset-0 bg-black/50" />
 
-      <div className="w-full max-w-lg bg-transparent rounded-2xl shadow-xl p-8">
-        <h2 className="text-2xl  font-semibold w-80 text-center text-green-400">
-          Create Account
-        </h2>
-        <p className="text-sm text-left pl-12 text-slate-300 mt-1">
-          Sign up to continue to EnerSense
+    {/* FORM CARD */}
+    <div className="relative z-10 w-full max-w-md sm:max-w-lg bg-black/40 backdrop-blur-xl rounded-2xl shadow-xl p-6 sm:p-8">
+      
+      <h2 className="text-xl sm:text-2xl font-semibold text-center text-green-400">
+        Create Account
+      </h2>
+
+      <p className="text-xs sm:text-sm text-center text-slate-300 mt-1">
+        Sign up to continue to EnerSense
+      </p>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+
+        <input
+          type="text"
+          name="firstName"
+          placeholder="First Name"
+          className="w-full p-2 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="text"
+          name="lastName"
+          placeholder="Last Name"
+          className="w-full p-2 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="tel"
+          name="phone"
+          placeholder="Phone Number"
+          className="w-full p-2 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+          onChange={handleChange}
+          required
+        />
+
+        <select
+          name="state"
+          className="w-full p-2 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select State</option>
+          {statesOfIndia.map((state) => (
+            <option key={state} value={state}>
+              {state}
+            </option>
+          ))}
+        </select>
+
+        <select
+          name="board"
+          className="w-full p-2 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+          onChange={handleChange}
+          required
+          disabled={!formData.state}
+        >
+          <option value="">Select Electricity Board</option>
+          {(electricityBoards[formData.state] || []).map((board) => (
+            <option key={board} value={board}>
+              {board}
+            </option>
+          ))}
+        </select>
+
+        {/* GENDER */}
+        <div className="flex flex-wrap gap-4 text-white text-sm">
+          Gender:
+          {["Male", "Female", "Other"].map((g) => (
+            <label key={g} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="gender"
+                value={g}
+                onChange={handleChange}
+                required
+              />
+              {g}
+            </label>
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          className="w-full mt-4 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
+        >
+          Sign Up
+        </button>
+      </form>
+
+      {success && (
+        <p className="text-green-400 text-center mt-4">
+          ✅ Signup successful! Redirecting to OTP…
         </p>
+      )}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {/* First Name */}
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            className="w-80 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-            onChange={handleChange}
-            required
-          />
+      <p className="text-sm text-center text-slate-200 mt-4 flex items-center justify-center gap-2">
+        Already have an account?
+        <span
+          onClick={() => navigate("/login")}
+          className="flex items-center gap-1 text-green-500 font-semibold cursor-pointer hover:underline"
+        >
+          <FiLogIn className="text-lg" />
+          Sign in
+        </span>
+      </p>
 
-          {/* Last Name */}
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            className="w-80 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-            onChange={handleChange}
-            required
-          />
-
-          {/* Phone */}
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone Number"
-            className="w-80 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-            onChange={handleChange}
-            required
-          />
-
-          {/* State */}
-          <select
-            name="state"
-            className="w-80 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select State</option>
-            {statesOfIndia.map((state) => (
-              <option key={state} value={state}>
-                {state}
-              </option>
-            ))}
-          </select>
-
-          {/* Electricity Board */}
-          <select
-            name="board"
-            className="w-80 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-            onChange={handleChange}
-            required
-            disabled={!formData.state}
-          >
-            <option value="">Select Electricity Board</option>
-            {(electricityBoards[formData.state] || ["State Electricity Board"]).map(
-              (board) => (
-                <option key={board} value={board}>
-                  {board}
-                </option>
-              )
-            )}
-          </select>
-
-          {/* Gender */}
-          <div className="flex gap-6 mt-2 pl-2 w-80 text-white ">  Gender:
-            {["Male", "Female", "Other"].map((g) => (
-              <label key={g} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="gender"
-                  value={g}
-                  onChange={handleChange}
-                  required
-                />
-                {g}
-              </label>
-            ))}
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-80 mt-4 py-2 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
-          >
-            Sign Up
-          </button>
-        </form>
-
-        {/* Success Message */}
-        {success && (
-          <p className="text-green-600 text-center mb-4">
-            ✅ Signup successful! Redirecting to OTP…
-          </p>
-        )}
-        {/* Login Link */}
-        {/* Already have an account */}
-          <p className="text-sm w-80 text-center text-slate-200 mb-4 flex items-center justify-center gap-2">
-            Already have an account?
-            <span
-              onClick={() => navigate("/login")}
-              className="flex items-center gap-1 text-green-600 font-semibold cursor-pointer hover:underline"
-            >
-              <FiLogIn className="text-lg text-green-600" />
-              Sign in
-            </span>
-          </p>
-
-      </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default Signup;
