@@ -1,37 +1,55 @@
 import React, { useEffect, useState } from "react";
 import OtpInput from "react-otp-input";
+import { useNavigate } from "react-router-dom";
 import "../index.css";
+import { useLocation } from "react-router-dom";
+import { signup } from "../services/operations/authapi.js";
+
 const OtpVerify = () => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
-  const [Success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  // ⏳ Resend timer
-  useEffect(() => {
-    if (timeLeft === 0) return;
-    const timer = setTimeout(() => setTimeLeft(t => t - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [timeLeft]);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleVerify = () => {
-    if (otp !== "12345678") {
+  // ⬇️ data from previous page
+const signupData = JSON.parse(localStorage.getItem("signupData"));
+
+  const handleVerify = async () => {
+    try {
+      await signup({
+        ...signupData,
+        otp, // 🔴 REAL OTP sent to backend
+      });
+
+      if (!signupData) {
+      alert("Signup data missing. Please signup again.");
+      navigate("/signup");
+      return;
+    }
+
+      setError(false);
+      setSuccess(true);
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+
+    } catch (err) {
       setError(true);
       setOtp("");
       setTimeout(() => setError(false), 400);
-      return;
     }
-    // alert("OTP Verified ✅");
-    setError(false);
-    setSuccess(true);
   };
 
   const handleResend = () => {
-    setTimeLeft(30);
     setOtp("");
+    setTimeLeft(30);
     setError(false);
-    alert("OTP Resent 📩");
   };
+
 
  return (
   <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-3 sm:px-4">
@@ -89,7 +107,7 @@ const OtpVerify = () => {
         </p>
       )}
 
-      {Success && (
+      {success && (
         <p className="text-xs sm:text-sm text-green-600 text-center mt-4">
           ✅ Verification Successful! 🎉
         </p>

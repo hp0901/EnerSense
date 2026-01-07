@@ -1,0 +1,28 @@
+{
+  "name": "enersence",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"yellow,blue\" \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hp0901/EnerSense.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hp0901/EnerSense/issues"
+  },
+  "homepage": "https://github.com/hp0901/EnerSense#readme",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0"
+  }
+}
