@@ -1,19 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiLogIn } from "react-icons/fi";
+import { FiLogIn, FiEye, FiEyeOff } from "react-icons/fi";
 import signupBg from "../assets/EnerSence_Signup.png";
 import { sendOtp } from "../services/operations/authapi";
 import { useDispatch } from "react-redux";
 import { toast } from "react-hot-toast";
 
+// ===============================
+// STATES & BOARDS
+// ===============================
 const statesOfIndia = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
-  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
-  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
-  "Uttar Pradesh", "Uttarakhand", "West Bengal",
-  "Delhi", "Jammu and Kashmir", "Ladakh", "Puducherry"
+  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa",
+  "Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala",
+  "Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland",
+  "Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
+  "Uttar Pradesh","Uttarakhand","West Bengal","Delhi","Jammu and Kashmir",
+  "Ladakh","Puducherry"
 ];
 
 const electricityBoards = {
@@ -61,7 +63,6 @@ const electricityBoards = {
 // ===============================
 // SIGNUP COMPONENT
 // ===============================
-
 const Signup = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -74,11 +75,32 @@ const Signup = () => {
     phone: "",
     state: "",
     board: "",
-    gender: "",
+    gender: ""
   });
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState("");
+
+  // ===============================
+  // VALIDATION HELPERS
+  // ===============================
+  const validateEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const validatePhone = (phone) =>
+    /^[0-9]{10}$/.test(phone);
+
+  const getPasswordStrength = (password) => {
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*]/.test(password);
+
+    if (password.length < 6) return "weak";
+    if (hasNumber && hasSpecial && password.length >= 8) return "strong";
+    return "medium";
+  };
 
   // ===============================
   // HANDLE CHANGE
@@ -89,46 +111,47 @@ const Signup = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-      ...(name === "state" ? { board: "" } : {}),
+      ...(name === "state" ? { board: "" } : {})
     }));
+
+    if (name === "email") {
+      setEmailError(validateEmail(value) ? "" : "Invalid email format");
+    }
+
+    if (name === "phone") {
+      setPhoneError(validatePhone(value) ? "" : "Enter valid 10-digit number");
+    }
+
+    if (name === "password") {
+      setPasswordStrength(getPasswordStrength(value));
+    }
   };
+
+  // ===============================
+  // FORM VALIDITY
+  // ===============================
+  const isFormValid =
+    Object.values(formData).every((v) => v !== "") &&
+    !emailError &&
+    !phoneError &&
+    passwordStrength !== "weak";
 
   // ===============================
   // HANDLE SUBMIT
   // ===============================
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (Object.values(formData).some((v) => v === "")) {
-      toast.error("❌ Please fill all fields");
-      return;
-    }
+    if (!isFormValid) return;
 
     const toastId = toast.loading("📩 Sending OTP...");
-
     try {
       setLoading(true);
-
-      // 🔹 SEND OTP
-      console.log("Comes here at signup form")
       await sendOtp(formData.email, navigate, dispatch);
-
-      // 🔹 STORE DATA TEMPORARILY
       localStorage.setItem("signupData", JSON.stringify(formData));
-      toast.success("✅ OTP sent to your email!", {
-        id: toastId,
-      });
-      setSuccess(true);
-
-      // 🔹 REDIRECT TO OTP PAGE
-      setTimeout(() => {
-        navigate("/otp");
-      }, 1500);
-
-    } catch (error) {
-      toast.error("❌ Failed to send OTP. Try again.", {
-        id: toastId,
-      });
+      toast.success("✅ OTP sent!", { id: toastId });
+      setTimeout(() => navigate("/otp"), 1500);
+    } catch {
+      toast.error("❌ Failed to send OTP", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -137,105 +160,201 @@ const Signup = () => {
   // ===============================
   // UI
   // ===============================
-  return (
-    <div className="relative min-h-dvh w-full flex items-center justify-center px-4">
-      
-      {/* BACKGROUND */}
-      <img
-        src={signupBg}
-        alt="Signup Background"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      <div className="absolute inset-0 bg-black/60" />
+return (
+  <div className="relative min-h-dvh w-full flex items-center justify-center px-4">
+    {/* BACKGROUND */}
+    <img
+      src={signupBg}
+      className="absolute inset-0 w-full h-full object-cover"
+      alt="Signup background"
+    />
+    <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80" />
 
-      {/* CARD */}
-      <div className="relative z-10 w-full max-w-lg bg-black/40 backdrop-blur-xl rounded-2xl p-6 sm:p-8 text-white">
-        
-        <h2 className="text-2xl font-semibold text-center text-green-400">
-          Create Account
-        </h2>
-        <p className="text-sm text-center text-slate-300 mt-1">
-          Sign up to continue to EnerSense
-        </p>
+    {/* CARD */}
+    <div className="relative z-10 w-full max-w-lg rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white">
+      <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent">
+        Create Account
+      </h2>
+      <p className="text-center text-sm text-slate-300 mt-1">
+        Sign up to continue to <span className="text-green-400">EnerSense</span>
+      </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
 
-          <input type="text" name="firstName" placeholder="First Name"
-            className="w-full p-2 rounded-lg text-black"
-            onChange={handleChange} required />
-
-          <input type="text" name="lastName" placeholder="Last Name"
-            className="w-full p-2 rounded-lg text-black"
-            onChange={handleChange} required />
-
-          <input type="email" name="email" placeholder="Email"
-            className="w-full p-2 rounded-lg text-black"
-            onChange={handleChange} required />
-
-          <input type="password" name="password" placeholder="Password"
-            className="w-full p-2 rounded-lg text-black"
-            onChange={handleChange} required />
-
-          <input type="tel" name="phone" placeholder="Phone Number"
-            className="w-full p-2 rounded-lg text-black"
-            onChange={handleChange} required />
-
-          <select name="state"
-            className="w-full p-2 rounded-lg text-black"
-            onChange={handleChange} required>
-            <option value="">Select State</option>
-            {statesOfIndia.map((state) => (
-              <option key={state} value={state}>{state}</option>
-            ))}
-          </select>
-
-          <select name="board"
-            className="w-full p-2 rounded-lg text-black"
+        {/* NAME */}
+        <div>
+          <input
+            name="firstName"
+            placeholder="First Name"
+            className="input"
             onChange={handleChange}
-            disabled={!formData.state}
-            required>
-            <option value="">Select Electricity Board</option>
-            {(electricityBoards[formData.state] || []).map((b) => (
-              <option key={b} value={b}>{b}</option>
-            ))}
-          </select>
+          />
+          </div>
+          <div >
+          <input
+            name="lastName"
+            placeholder="Last Name"
+            className="input"
+            onChange={handleChange}
+          />
+        </div>
 
-          <div className="flex gap-4 text-sm">
-            Gender:
+        {/* EMAIL */}
+        <div>
+          <input
+            name="email"
+            placeholder="Email address"
+            className="input"
+            onChange={handleChange}
+          />
+          {emailError && (
+            <p className="mt-1 text-xs text-red-400">{emailError}</p>
+          )}
+        </div>
+
+        {/* PASSWORD */}
+        <div>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              className="input pr-10"
+              onChange={handleChange}
+            />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-600 hover:text-black transition"
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </span>
+          </div>
+
+          {formData.password && (
+            <p
+              className={`mt-1 text-xs font-medium ${
+                passwordStrength === "weak"
+                  ? "text-red-400"
+                  : passwordStrength === "medium"
+                  ? "text-yellow-400"
+                  : "text-green-400"
+              }`}
+            >
+              {passwordStrength === "weak" && "Weak password (min 6 chars)"}
+              {passwordStrength === "medium" &&
+                "Medium strength (add number & symbol)"}
+              {passwordStrength === "strong" && "Strong password"}
+            </p>
+          )}
+        </div>
+
+        {/* PHONE */}
+        <div>
+          <input
+            name="phone"
+            placeholder="Phone number"
+            className="input"
+            onChange={handleChange}
+          />
+          {phoneError && (
+            <p className="mt-1 text-xs text-red-400">{phoneError}</p>
+          )}
+        </div>
+
+        {/* STATE */}
+        <select
+          name="state"
+          className="input"
+          onChange={handleChange}
+        >
+          <option value="">Select State</option>
+          {statesOfIndia.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+
+        {/* BOARD */}
+        <select
+          name="board"
+          className="input disabled:opacity-50"
+          onChange={handleChange}
+          disabled={!formData.state}
+        >
+          <option value="">Select Electricity Board</option>
+          {(electricityBoards[formData.state] || []).map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </select>
+
+        {/* GENDER */}
+        <div className="flex flex-col gap-2">
+          <span className="text-sm text-slate-300">Gender</span>
+          <div className="flex gap-6">
             {["Male", "Female", "Other"].map((g) => (
-              <label key={g} className="flex items-center gap-2">
-                <input type="radio" name="gender" value={g}
-                  onChange={handleChange} required />
+              <label
+                key={g}
+                className="flex items-center gap-2 cursor-pointer text-sm"
+              >
+                <input
+                  type="radio"
+                  name="gender"
+                  value={g}
+                  onChange={handleChange}
+                  className="accent-green-400 scale-110"
+                />
                 {g}
               </label>
             ))}
           </div>
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition">
-            {loading ? "Sending OTP..." : "Sign Up"}
-          </button>
-        </form>
+        {/* BUTTON */}
+        <button
+          disabled={!isFormValid || loading}
+          className={`w-full mt-4 py-3 rounded-xl font-semibold tracking-wide transition-all duration-200 ${
+            isFormValid
+              ? "bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 shadow-lg"
+              : "bg-gray-500 cursor-not-allowed"
+          }`}
+        >
+          {loading ? "Sending OTP..." : "Sign Up"}
+        </button>
+      </form>
 
-        {success && (
-          <p className="text-green-400 text-center mt-4">
-            ✅ OTP sent! Redirecting…
-          </p>
-        )}
-
-        <p className="text-sm text-center mt-4 flex justify-center gap-2">
-          Already have an account?
-          <span
-            onClick={() => navigate("/login")}
-            className="text-green-400 cursor-pointer flex items-center gap-1">
-            <FiLogIn /> Sign in
-          </span>
-        </p>
-      </div>
+      {/* FOOTER */}
+      <p className="text-sm text-center mt-6 text-slate-300">
+        Already have an account?{" "}
+        <span
+          onClick={() => navigate("/login")}
+          className="text-green-400 cursor-pointer inline-flex items-center gap-1 hover:underline"
+        >
+          <FiLogIn /> Sign in
+        </span>
+      </p>
     </div>
-  );
+
+    {/* TAILWIND INPUT UTILITY */}
+    <style jsx>{`
+      .input {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.9);
+        color: black;
+        outline: none;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+      .input:focus {
+        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.6);
+      }
+    `}</style>
+  </div>
+);
+
 };
 
 export default Signup;

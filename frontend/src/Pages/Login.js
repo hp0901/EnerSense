@@ -7,8 +7,14 @@ import { login } from "../services/operations/authapi";
 import toast from "react-hot-toast";
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode"; // Optional: npm install jwt-decode to read user info
+import { FiEye, FiEyeOff } from "react-icons/fi";
+
+
 
 const EnerSenseLogin = () => {
+
+  const [showPassword, setShowPassword] = useState(false);
+
 
   const handleGoogleSuccess = (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
@@ -141,17 +147,28 @@ const EnerSenseLogin = () => {
                 required
               />
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-3 sm:py-4 rounded-xl bg-slate-800/70
-                border border-slate-700 text-white placeholder:text-slate-400
-                focus:outline-none focus:ring-2 focus:ring-green-500/50"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 sm:py-4 rounded-xl bg-slate-800/70
+                  border border-slate-700 text-white placeholder:text-slate-400
+                  focus:outline-none focus:ring-2 focus:ring-green-500/50 pr-12"
+                  required
+                />
+
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2
+                  cursor-pointer text-slate-400 hover:text-white transition"
+                >
+                  {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                </span>
+              </div>
+
 
               <div className="flex justify-end">
                 <span

@@ -2,25 +2,31 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./db.js";
-import userProfile  from "./routes/user.js";
-// Load env variables
+import userProfile from "./routes/user.js";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middleware 
-app.use(cors({
-  origin: "http://localhost:3000", 
-  credentials: true, 
-}));
-app.use(express.json()); 
- 
-// Connect Database 
+// Middleware
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://enersense.netlify.app",
+      "https://enersense.duckdns.org"
+    ],
+    credentials: true
+  })
+);
+
+app.use(express.json());
+
+// Database
 connectDB();
-  
-// Routes
+
+// Health check
 app.get("/", (req, res) => {
   res.send("⚡ EnerSense Backend is Live");
 });
@@ -32,15 +38,10 @@ app.get("/api/status", (req, res) => {
   });
 });
 
-//user Profile routes
-console.log("first stage of backend index.js")
+// Routes
 app.use("/api/v1/auth", userProfile);
-// app.use("/api/v1/auth/signup", userProfile);
-// app.use("/api/v1/auth/sendotp", userProfile);
-// app.use("/api/v1/auth/reset-password-token", userProfile);
-// app.use("/api/v1/auth/reset-password", userProfile);
 
-// Start Server
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
