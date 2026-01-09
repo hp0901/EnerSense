@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import OtpInput from "react-otp-input";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
-import { useLocation } from "react-router-dom";
-import { signup } from "../services/operations/authapi.js";
+import { signup, verifyForgotOtp } from '../services/operations/authapi'
 
 const OtpVerify = () => {
   const [otp, setOtp] = useState("");
@@ -12,31 +11,68 @@ const OtpVerify = () => {
   const [success, setSuccess] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
 
-  // ⬇️ data from previous page
-const signupData = JSON.parse(localStorage.getItem("signupData"));
+  // 🔥 Detect OTP flow
+  const otpFlow = localStorage.getItem("otpFlow"); // signup | forgot
+  const signupData = JSON.parse(localStorage.getItem("signupData"));
+  const forgotEmail = localStorage.getItem("forgotEmail");
 
+  // ===============================
+  // ⏱️ TIMER
+  // ===============================
+  useEffect(() => {
+    if (timeLeft === 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  // ===============================
+  // VERIFY OTP (SMART)
+  // ===============================
   const handleVerify = async () => {
     try {
-      await signup({
-        ...signupData,
-        otp, // 🔴 REAL OTP sent to backend
-      });
+      if (otpFlow === "signup") {
+        if (!signupData) {
+          alert("Signup data missing. Please signup again.");
+          navigate("/signup");
+          return;
+        }
 
-      if (!signupData) {
-      alert("Signup data missing. Please signup again.");
-      navigate("/signup");
-      return;
-    }
+        await signup({
+          ...signupData,
+          otp,
+        });
+
+        localStorage.removeItem("signupData");
+      }
+
+      if (otpFlow === "forgot") {
+        if (!forgotEmail) {
+          alert("Email missing. Please retry.");
+          navigate("/forget-password");
+          return;
+        }
+
+        await verifyForgotOtp({
+          email: forgotEmail,
+          otp,
+        });
+      }
 
       setError(false);
       setSuccess(true);
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      // cleanup
+      localStorage.removeItem("otpFlow");
 
+      setTimeout(() => {
+        if (otpFlow === "signup") navigate("/login");
+        if (otpFlow === "forgot") navigate("/reset-password");
+      }, 1500);
     } catch (err) {
       setError(true);
       setOtp("");
@@ -44,110 +80,110 @@ const signupData = JSON.parse(localStorage.getItem("signupData"));
     }
   };
 
+  // ===============================
+  // RESEND OTP
+  // ===============================
   const handleResend = () => {
     setOtp("");
-    setTimeLeft(30);
     setError(false);
+    setSuccess(false);
+    setTimeLeft(30);
+
+    // OPTIONAL:
+    // otpFlow === "signup" ? resendSignupOtp() : resendForgotOtp()
   };
 
-
- return (
-  <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-3 sm:px-4">
-    
-    <div
-      className={`w-full max-w-sm sm:max-w-md md:max-w-lg bg-white rounded-2xl shadow-xl 
-      p-5 sm:p-6 md:p-8 transition-all ${
-        error ? "animate-shake" : ""
-      }`}
-    >
-      <h2 className="text-xl sm:text-2xl font-semibold text-center text-slate-800">
-        Verify OTP
-      </h2>
-
-      <p className="text-xs sm:text-sm text-center text-slate-500 mt-2">
-        Enter the 6-digit code sent to your email
-      </p>
-
-      {/* OTP INPUTS */}
-      <div className="mt-6 sm:mt-8 flex justify-center">
-        <OtpInput
-          value={otp}
-          onChange={setOtp}
-          numInputs={6}
-          shouldAutoFocus
-          containerStyle={{
-            display: "flex",
-            gap: "8px",
-          }}
-          renderInput={(props) => (
-            <input
-              {...props}
-              style={{
-                width: "clamp(36px, 9vw, 48px)",
-                height: "clamp(36px, 9vw, 48px)",
-                borderRadius: "9999px",
-                backgroundColor: "#676c76ff",
-                color: "#ffffff",
-                fontSize: "clamp(16px, 4vw, 22px)",
-                textAlign: "center",
-                border: error
-                  ? "2px solid #ef4444"
-                  : "2px solid #366fbeff",
-                outline: "none",
-              }}
-              className="focus:ring-2 focus:ring-indigo-500 transition-all"
-            />
-          )}
-        />
-      </div>
-
-      {error && (
-        <p className="text-xs sm:text-sm text-red-600 text-center mt-4">
-          ❌ Invalid OTP. Please try again.
-        </p>
-      )}
-
-      {success && (
-        <p className="text-xs sm:text-sm text-green-600 text-center mt-4">
-          ✅ Verification Successful! 🎉
-        </p>
-      )}
-
-      {/* VERIFY BUTTON */}
-      <button
-        onClick={handleVerify}
-        disabled={otp.length !== 6}
-        className={`mt-6 sm:mt-8 w-full py-2.5 sm:py-3 rounded-xl 
-        text-sm sm:text-base text-white font-medium transition-all
-        ${
-          otp.length === 6
-            ? "bg-indigo-600 hover:bg-indigo-700"
-            : "bg-indigo-300 cursor-not-allowed"
+  return (
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-3 sm:px-4">
+      <div
+        className={`w-full max-w-sm sm:max-w-md md:max-w-lg bg-white rounded-2xl shadow-xl 
+        p-5 sm:p-6 md:p-8 transition-all ${
+          error ? "animate-shake" : ""
         }`}
       >
-        Verify OTP
-      </button>
+        <h2 className="text-xl sm:text-2xl font-semibold text-center text-slate-800">
+          Verify OTP
+        </h2>
 
-      {/* RESEND */}
-      <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-slate-500">
-        {timeLeft > 0 ? (
-          <span>
-            Resend OTP in <b>{timeLeft}s</b>
-          </span>
-        ) : (
-          <button
-            onClick={handleResend}
-            className="text-indigo-600 font-medium hover:underline"
-          >
-            Resend OTP
-          </button>
+        <p className="text-xs sm:text-sm text-center text-slate-500 mt-2">
+          Enter the 6-digit code sent to your email
+        </p>
+
+        {/* OTP INPUT */}
+        <div className="mt-6 sm:mt-8 flex justify-center">
+          <OtpInput
+            value={otp}
+            onChange={setOtp}
+            numInputs={6}
+            shouldAutoFocus
+            containerStyle={{ display: "flex", gap: "8px" }}
+            renderInput={(props) => (
+              <input
+                {...props}
+                style={{
+                  width: "clamp(36px, 9vw, 48px)",
+                  height: "clamp(36px, 9vw, 48px)",
+                  borderRadius: "9999px",
+                  backgroundColor: "#676c76ff",
+                  color: "#ffffff",
+                  fontSize: "clamp(16px, 4vw, 22px)",
+                  textAlign: "center",
+                  border: error
+                    ? "2px solid #ef4444"
+                    : "2px solid #366fbeff",
+                  outline: "none",
+                }}
+                className="focus:ring-2 focus:ring-indigo-500 transition-all"
+              />
+            )}
+          />
+        </div>
+
+        {error && (
+          <p className="text-xs sm:text-sm text-red-600 text-center mt-4">
+            ❌ Invalid OTP. Please try again.
+          </p>
         )}
+
+        {success && (
+          <p className="text-xs sm:text-sm text-green-600 text-center mt-4">
+            ✅ Verification Successful! 🎉
+          </p>
+        )}
+
+        {/* VERIFY BUTTON */}
+        <button
+          onClick={handleVerify}
+          disabled={otp.length !== 6}
+          className={`mt-6 sm:mt-8 w-full py-2.5 sm:py-3 rounded-xl 
+          text-sm sm:text-base text-white font-medium transition-all
+          ${
+            otp.length === 6
+              ? "bg-indigo-600 hover:bg-indigo-700"
+              : "bg-indigo-300 cursor-not-allowed"
+          }`}
+        >
+          Verify OTP
+        </button>
+
+        {/* RESEND */}
+        <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-slate-500">
+          {timeLeft > 0 ? (
+            <span>
+              Resend OTP in <b>{timeLeft}s</b>
+            </span>
+          ) : (
+            <button
+              onClick={handleResend}
+              className="text-indigo-600 font-medium hover:underline"
+            >
+              Resend OTP
+            </button>
+          )}
+        </div>
       </div>
-
     </div>
-  </div>
-);
-
+  );
 };
 
 export default OtpVerify;

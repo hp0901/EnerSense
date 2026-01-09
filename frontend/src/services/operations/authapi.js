@@ -9,6 +9,7 @@ const userProfile = {
   LOGIN_API: BASE_URL + "/auth/login",
   RESETPASSTOKEN_API: BASE_URL + "/auth/reset-password-token",
   RESETPASSWORD_API: BASE_URL + "/auth/reset-password",
+  VERIFY_FORGOT_OTP_API: BASE_URL + "/auth/verify-forgot-otp",
 };
 
 // Send OTP
@@ -108,4 +109,14 @@ export const resetPassword = async (data) => {
 // Logout
 export const logout = () => {
   localStorage.removeItem("token");
+};
+// VERIFY FORGOT PASSWORD OTP
+// ===============================
+export const verifyForgotOtp = async ({ email, otp }) => {
+  const response = await apiConnector("POST", userProfile.VERIFY_FORGOT_OTP_API, {
+    email,
+    otp,
+  });
+
+  return response.data;
 };

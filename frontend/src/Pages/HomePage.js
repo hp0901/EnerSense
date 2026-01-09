@@ -10,7 +10,7 @@ import {
   FiLogIn,
   FiUserPlus,
 } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContex"
 import Footer from "./Footer";
 
 
@@ -49,6 +49,7 @@ const FutureItem = ({ text }) => (
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { isAuth } = useAuth();
 
   return (
     <div className="bg-[#0f172a] text-white w-full h-full  overflow-x-hidden">
@@ -64,19 +65,30 @@ const HomePage = () => {
           </p>
 
           <div className="mt-10 flex justify-center gap-4 flex-wrap">
-            <button
-              onClick={() => navigate("/login")}
-              className="flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 rounded-xl font-semibold"
-            >
-              <FiLogIn /> Login
-            </button>
+            {!isAuth ? (
+              <>
+                <button
+                  onClick={() => navigate("/login")}
+                  className="flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 rounded-xl font-semibold"
+                >
+                  <FiLogIn /> Login
+                </button>
 
-            <button
-              onClick={() => navigate("/signup")}
-              className="flex items-center gap-2 px-6 py-3 border border-green-400 rounded-xl hover:bg-green-400/10"
-            >
-              <FiUserPlus /> Sign Up
-            </button>
+                <button
+                  onClick={() => navigate("/signup")}
+                  className="flex items-center gap-2 px-6 py-3 border border-green-400 rounded-xl hover:bg-green-400/10"
+                >
+                  <FiUserPlus /> Sign Up
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-semibold"
+              >
+                Go to Dashboard
+              </button>
+            )}
           </div>
         </div>
       </section>

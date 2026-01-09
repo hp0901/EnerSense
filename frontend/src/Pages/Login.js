@@ -3,44 +3,26 @@ import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import loginimage from "../assets/loginpage.png";
 import logo from "../assets/EnerSence_logo.png";
-import { login } from "../services/operations/authapi";
+import { login as loginApi } from "../services/operations/authapi";
 import toast from "react-hot-toast";
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from "jwt-decode"; // Optional: npm install jwt-decode to read user info
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-
-
+import { useAuth } from "../context/AuthContex" // ✅ IMPORTANT
 
 const EnerSenseLogin = () => {
-
-  const [showPassword, setShowPassword] = useState(false);
-
-
-  const handleGoogleSuccess = (credentialResponse) => {
-    const decoded = jwtDecode(credentialResponse.credential);
-    console.log("User Info:", decoded);
-    
-    toast.success(`Welcome ${decoded.name}!`);
-    localStorage.setItem("token", credentialResponse.credential);
-    navigate("/dashboard");
-  };
-
-  const handleGoogleError = () => {
-    toast.error("Google Sign-In Failed");
-  };
-
-
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ AuthContext login
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const [loading, setLoading] = useState(false);
-
   // ===============================
-  // HANDLE INPUT CHANGE
+  // INPUT CHANGE
   // ===============================
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -50,13 +32,13 @@ const EnerSenseLogin = () => {
   };
 
   // ===============================
-  // HANDLE NORMAL LOGIN
+  // NORMAL LOGIN
   // ===============================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      toast.error("❌ Please fill all fields");
+      toast.error("Please fill all fields");
       return;
     }
 
@@ -65,14 +47,19 @@ const EnerSenseLogin = () => {
     try {
       setLoading(true);
 
-      await login(formData.email, formData.password, navigate);
+      const res = await loginApi(formData.email, formData.password);
+
+      // ✅ Save token
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+
+      login(); // 🔥 THIS FIXES UI UPDATE
 
       toast.success("✅ Login successful! Welcome back 🚀", {
         id: toastId,
       });
 
       navigate("/dashboard");
-
     } catch (error) {
       toast.error("❌ Invalid email or password", {
         id: toastId,
@@ -84,20 +71,40 @@ const EnerSenseLogin = () => {
   };
 
   // ===============================
-  // HANDLE GOOGLE LOGIN (FRONTEND MOCK)
+  // GOOGLE LOGIN
   // ===============================
-  const handleGoogleLogin = () => {
-    toast.success("🔐 Signed in with Google successfully!", {
-      icon: "🌐",
-    });
+  const handleGoogleSuccess = (credentialResponse) => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
 
-    localStorage.setItem("authType", "google");
-    navigate("/dashboard");
+      toast.success(`Welcome ${decoded.name}!`);
+
+      // ✅ Store token
+      localStorage.setItem("token", credentialResponse.credential);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          name: decoded.name,
+          email: decoded.email,
+          picture: decoded.picture,
+        })
+      );
+
+      login(); // 🔥 REQUIRED
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      toast.error("Google login failed");
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error("Google Sign-In Failed");
   };
 
   return (
     <div className="relative h-dvh w-full flex items-center justify-center bg-[#0f172a] overflow-hidden">
-
       {/* MOBILE BACKGROUND */}
       <img
         src={loginimage}
@@ -110,7 +117,7 @@ const EnerSenseLogin = () => {
       <div className="relative z-10 flex w-full max-w-6xl bg-[#0f172a]/90 md:bg-[#0f172a]
         backdrop-blur-xl rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5 mx-3 sm:mx-6">
 
-        {/* LEFT: FORM */}
+        {/* LEFT */}
         <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col justify-center px-6 py-8 sm:px-10 sm:py-12 lg:px-16">
 
           {/* LOGO */}
@@ -134,7 +141,6 @@ const EnerSenseLogin = () => {
             </p>
 
             <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
-
               <input
                 type="email"
                 name="email"
@@ -169,10 +175,9 @@ const EnerSenseLogin = () => {
                 </span>
               </div>
 
-
               <div className="flex justify-end">
                 <span
-                  onClick={() => navigate("/forgot-password")}
+                  onClick={() => navigate("/forget-password")}
                   className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 cursor-pointer"
                 >
                   Forgot password?
@@ -203,9 +208,7 @@ const EnerSenseLogin = () => {
                 useOneTap
                 theme="outline"
                 size="large"
-                />
-
-
+              />
             </form>
 
             <p className="mt-6 text-sm text-slate-300">
@@ -229,14 +232,7 @@ const EnerSenseLogin = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]
             via-[#0f172a]/30 to-transparent" />
-
-          <div className="absolute bottom-10 left-10 right-10 text-white">
-            <p className="text-xl lg:text-2xl font-medium italic opacity-90">
-              “Powering the future with precision.”
-            </p>
-          </div>
         </div>
-
       </div>
     </div>
   );

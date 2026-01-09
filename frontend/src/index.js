@@ -9,6 +9,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import rootReducer from './reducer/index.js';
 import { Toaster } from "react-hot-toast";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AuthProvider } from './context/AuthContex.js';
 
 const store =  configureStore({
   reducer: rootReducer,
@@ -22,7 +23,9 @@ root.render(
     <Provider store={store}>
     <BrowserRouter>
     <GoogleOAuthProvider clientId={YOUR_GOOGLE_CLIENT_ID}>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </GoogleOAuthProvider>
       <Toaster position="top-center" reverseOrder={false} />
     </BrowserRouter>
