@@ -3,27 +3,28 @@ import logo from "../assets/EnerSence_logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { AiOutlineClose } from "react-icons/ai";
-import { isLoggedIn, logout } from "../utils/auth";
 import { useAuth } from "../context/AuthContex.js";
+
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
-  const { isAuth , logout } = useAuth();
-  const loggedIn = isAuth;
 
-  // 🔐 Dynamic nav links
-  const navLinks = loggedIn
-    ? [
-        { name: "Home", path: "/" },
-        { name: "Dashboard", path: "/dashboard" },
-        { name: "Settings", path: "/settings" },
-      ]
-    : [
-        { name: "Home", path: "/" },
-        { name: "Signup", path: "/signup" },
-        { name: "Login", path: "/login" },
-      ];
+  const { isAuth, logout } = useAuth();
+
+  // 🔗 ALL LINKS (single source of truth)
+  const navLinks = [
+    { name: "Home", path: "/", auth: "all" },
+    { name: "Dashboard", path: "/dashboard", auth: "private" },
+    { name: "Settings", path: "/settings", auth: "private" },
+    { name: "About", path: "/about", auth: "all" },
+    { name: "Contact", path: "/contact", auth: "all" },
+    { name: "Energy Awareness", path: "/energy-awareness", auth: "all" },
+    { name: "Signup", path: "/signup", auth: "guest" },
+    { name: "Login", path: "/login", auth: "guest" },
+    // ⚠️ Terms & Conditions handled separately (example)
+    // { name: "Terms", path: "/terms", auth: "all", special: true },
+  ];
 
   const handleLogout = () => {
     logout();
@@ -31,10 +32,10 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  // 🔒 Close menu when clicking outside
+  // 🔒 Close menu on outside click
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpen(false);
       }
     };
@@ -43,6 +44,14 @@ const Navbar = () => {
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // 🔍 Filter links based on auth
+  const filteredLinks = navLinks.filter((link) => {
+    if (link.auth === "all") return true;
+    if (link.auth === "private") return isAuth;
+    if (link.auth === "guest") return !isAuth;
+    return false;
+  });
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white shadow-md px-6 py-3 flex items-center justify-between">
@@ -64,13 +73,13 @@ const Navbar = () => {
         {open ? <AiOutlineClose size={18} /> : <BsThreeDotsVertical size={18} />}
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown */}
       {open && (
         <div
           ref={menuRef}
           className="absolute right-6 top-14 bg-white border shadow-lg rounded-md w-44"
         >
-          {navLinks.map((link, index) => (
+          {filteredLinks.map((link, index) => (
             <Link
               key={index}
               to={link.path}
@@ -81,8 +90,8 @@ const Navbar = () => {
             </Link>
           ))}
 
-          {/* 🔴 Logout button (only if logged in) */}
-          {loggedIn && (
+          {/* 🔴 Logout (still separate, action-based) */}
+          {isAuth && (
             <button
               onClick={handleLogout}
               className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 transition"

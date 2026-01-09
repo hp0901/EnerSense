@@ -9,6 +9,9 @@ import Dashboard from "./Pages/Dashboard";
 import SettingPage from "./Pages/SettingPage";
 import ForgetPassword from "./Pages/ForgetPassword";
 import Otp from "./Pages/Otp";
+import EnergyAwareness from "./Pages/EnergyAwareness";
+import Contact from './Pages/Contact';
+import About from './Pages/about'
 import Error from "./Pages/Error";
 
 const App = () => {
@@ -22,6 +25,9 @@ const App = () => {
         <Route path="/otp" element={<Otp />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/settings" element={<SettingPage />} />
+        <Route path="/energy-awareness" element={<EnergyAwareness />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="*" element={<Error />} />
       </Routes>
