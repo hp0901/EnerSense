@@ -40,6 +40,7 @@ app.get("/api/status", (req, res) => {
 
 // Routes
 app.use("/api/v1/auth", userProfile);
+app.use("/api/chatbot", chatbotRoutes);
 
 // Start server
 app.listen(PORT, () => {

@@ -12,12 +12,14 @@ import Otp from "./Pages/Otp";
 import EnergyAwareness from "./Pages/EnergyAwareness";
 import Contact from './Pages/Contact';
 import About from './Pages/about'
+import Chatbot from "./Pages/Chatbot";
 import Error from "./Pages/Error";
 
 const App = () => {
   return (
     <>
       <Navbar />
+      <Chatbot />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
