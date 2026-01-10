@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FiZap,
   FiActivity,
@@ -7,9 +7,33 @@ import {
   FiAlertTriangle,
 } from "react-icons/fi";
 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
+/* ================= ENERGY DATA ================= */
+
+const dailyEnergyData = [
+  { time: "6 AM", energy: 1.2 },
+  { time: "9 AM", energy: 2.4 },
+  { time: "12 PM", energy: 3.8 },
+  { time: "3 PM", energy: 3.2 },
+  { time: "6 PM", energy: 5.1 },
+  { time: "9 PM", energy: 4.6 },
+];
+
+/* ================= DASHBOARD ================= */
+
 const Dashboard = () => {
   return (
-    <div className="min-h-screen  h-full overflow-x-hidden  bg-[#0f172a] text-white px-6 py-8">
+    <div className="min-h-screen bg-[#0f172a] text-white px-6 py-8 overflow-x-hidden">
 
       <h1 className="text-3xl font-bold text-green-400 mb-8">
         Dashboard
@@ -37,15 +61,97 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* ================= GRAPH PLACEHOLDER ================= */}
+      {/* ================= ENERGY USAGE GRAPH ================= */}
       <section className="bg-[#020617] p-6 rounded-xl mb-10">
-        <h2 className="text-xl font-semibold text-green-400 mb-4">
+        <h2 className="text-xl font-semibold text-green-400 mb-4 text-center">
           Energy Usage Analytics
         </h2>
 
-        <div className="h-56 flex items-center justify-center border border-white/10 rounded-lg text-slate-400">
-          📊 Energy graph will be displayed here
+        <div className="h-72 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={dailyEnergyData}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 70,
+                bottom: 55,
+              }}
+            >
+              <CartesianGrid
+                stroke="#1e293b"
+                strokeDasharray="4 6"
+                vertical={false}
+              />
+
+              <XAxis
+                dataKey="time"
+                stroke="#94a3b8"
+                tick={{ fill: "#cbd5f5", fontSize: 12 }}
+                label={{
+                  value: "Time of Day",
+                  position: "bottom",
+                  offset: 40,
+                  fill: "#cbd5f5",
+                  fontSize: 13,
+                }}
+              />
+
+              <YAxis
+                width={60}
+                stroke="#94a3b8"
+                tick={{ fill: "#cbd5f5", fontSize: 12 }}
+                tickMargin={8}
+                label={{
+                  value: "Energy Consumption (kWh)",
+                  angle: -90,
+                  position: "left",
+                  offset: 40,
+                  style: {
+                    fontSize: 13,
+                    fill: "#cbd5f5",
+                    fontWeight: 500,
+                  },
+                }}
+              />
+
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#020617",
+                  border: "1px solid #334155",
+                  borderRadius: "6px",
+                  color: "#e5e7eb",
+                  fontSize: "12px",
+                }}
+              />
+
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{
+                  paddingTop: "18px",
+                  fontSize: "13px",
+                  color: "#22c55e",
+                }}
+              />
+
+              <Line
+                type="monotone"
+                dataKey="energy"
+                name="Energy Used (kWh)"
+                stroke="#22c55e"
+                strokeWidth={3}
+                dot={{ r: 4, fill: "#020617", strokeWidth: 2 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
+
+        <p className="mt-3 text-sm text-slate-400 text-center">
+          Electricity consumption throughout the day.  
+          X-axis represents time and Y-axis shows energy usage in kilowatt-hours (kWh).
+        </p>
       </section>
 
       {/* ================= ALERTS ================= */}
@@ -54,9 +160,9 @@ const Dashboard = () => {
           Alerts & Notifications
         </h2>
 
-        <div className="flex items-center mb-10 gap-3 text-yellow-400">
+        <div className="flex items-center gap-3 text-yellow-400">
           <FiAlertTriangle />
-          <span >High energy usage detected during peak hours</span>
+          <span>High energy usage detected during peak hours</span>
         </div>
       </section>
 
