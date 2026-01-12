@@ -13,7 +13,7 @@ const productLinks = [
   { label: "Energy Analytics", path: "/analytics" },
   { label: "Reports", path: "/reports" },
   { label: "Alerts & Notifications", path: "/alerts" },
-  { label: "IoT Devices", path: "/devices" },
+  { label: "IoT Devices", path: "/iot-devices" },
 ];
 
 const companyLinks = [
@@ -24,18 +24,18 @@ const companyLinks = [
 ];
 
 const resourceLinks = [
-  { label: "Documentation", path: "/docs" },
-  { label: "API Reference", path: "/api-docs" },
-  { label: "User Guide", path: "/user-guide" },
-  { label: "FAQs", path: "/faq" },
-  { label: "Support Center", path: "/support" },
+  { label: "Documentation", path: "/resources-center" },
+  { label: "API Reference", path: "/resources-center" },
+  { label: "User Guide", path: "/resources-center" },
+  { label: "FAQs", path: "/resources-center" },
+  { label: "Support Center", path: "/resources-center" },
 ];
 
 const legalLinks = [
-  { label: "Privacy Policy", path: "/privacy" },
-  { label: "Terms of Service", path: "/terms" },
-  { label: "Security", path: "/security" },
-  { label: "Compliance", path: "/compliance" },
+  { label: "Privacy Policy", path: "/legal" },
+  { label: "Terms of Service", path: "/legal" },
+  { label: "Security", path: "/legal" },
+  { label: "Compliance", path: "/legal" },
 ];
 
 /* ================= FOOTER COMPONENT ================= */

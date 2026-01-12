@@ -1,19 +1,9 @@
-// routes/chatbot.js
 import express from "express";
+import { chatbotMessage } from "../controller/chatbot.controller.js";
+import { optionalAuth } from "../middlewares/auth.js";
+
 const router = express.Router();
 
-router.post("/message", (req, res) => {
-  const { message } = req.body;
-
-  let reply = "Sorry, I didn’t understand that.";
-
-  if (message.toLowerCase().includes("hello")) {
-    reply = "Hi 👋 How can I help you?";
-  } else if (message.includes("energy")) {
-    reply = "EnerSense helps you monitor and optimize energy usage ⚡";
-  }
-
-  res.json({ reply });
-});
+router.post("/message", optionalAuth, chatbotMessage);
 
 export default router;

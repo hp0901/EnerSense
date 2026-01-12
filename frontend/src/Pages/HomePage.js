@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FiActivity,
   FiCpu,
@@ -11,7 +11,7 @@ import {
   FiUserPlus,
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContex"
-import Footer from "./Footer";
+import Footer from "../Footer/Footer";
 
 
 
@@ -171,6 +171,13 @@ const HomePage = () => {
             <FutureItem text="Carbon footprint analysis" />
             <FutureItem text="Smart grid compatibility" />
           </div>
+          <Link to ="/faqs">
+          <div className="mt-10 text-center">
+            <button className="px-6 py-3 bg-green-500 hover:bg-green-600 rounded-xl font-semibold">
+              View FAQs
+            </button>
+          </div>
+          </Link>
         </div>
       </section>
 

@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./db.js";
 import userProfile from "./routes/user.js";
+import chatbotRoutes from "./routes/chatbot.js";
 
 dotenv.config();
 

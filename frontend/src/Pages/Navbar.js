@@ -22,6 +22,8 @@ const Navbar = () => {
     { name: "Energy Awareness", path: "/energy-awareness", auth: "all" },
     { name: "Signup", path: "/signup", auth: "guest" },
     { name: "Login", path: "/login", auth: "guest" },
+     { name: "FAQs", path: "/faqs", auth: "all" },
+    { name: "Device Control", path: "/device-control", auth: "private" },
     // ⚠️ Terms & Conditions handled separately (example)
     // { name: "Terms", path: "/terms", auth: "all", special: true },
   ];
