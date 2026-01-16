@@ -5,6 +5,7 @@ import connectDB from "./db.js";
 import userProfile from "./routes/user.js";
 import chatbotRoutes from "./routes/chatbot.js";
 
+
 dotenv.config();
 
 const app = express();
@@ -41,7 +42,10 @@ app.get("/api/status", (req, res) => {
 
 // Routes
 app.use("/api/v1/auth", userProfile);
+<<<<<<< HEAD
 app.use("/api/chatbot", chatbotRoutes);
+=======
+>>>>>>> c400d66 (chore: backend config updates for deployment)
 
 // Start server
 app.listen(PORT, () => {
