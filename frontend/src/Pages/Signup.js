@@ -149,7 +149,14 @@ const Signup = () => {
       await sendOtp(formData.email, navigate, dispatch);
       localStorage.setItem("signupData", JSON.stringify(formData));
       toast.success("✅ OTP sent!", { id: toastId });
-      setTimeout(() => navigate("/otp"), 1500);
+      setTimeout(() => {
+        navigate("/otp", {
+          state: {
+            flow: "signup",
+            email: formData.email
+          }
+        });
+      }, 1500);
     } catch {
       toast.error("❌ Failed to send OTP", { id: toastId });
     } finally {

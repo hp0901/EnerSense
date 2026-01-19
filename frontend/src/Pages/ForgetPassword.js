@@ -6,11 +6,18 @@ const ForgetPassword = () => {
   const navigate = useNavigate()
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    // later you will call API here to send OTP
+    // later you will call API here to send OTP 
     // for now, just navigate to OTP page
-    navigate('/otp')
+    navigate("/otp", {
+    state: {
+      flow: "forgot",
+      email: email,
+    },
+  });
+
+
   }
 
   return (

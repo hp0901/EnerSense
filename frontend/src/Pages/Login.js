@@ -212,7 +212,7 @@ const EnerSenseLogin = () => {
             </form>
 
             <p className="mt-6 text-sm text-slate-300">
-              Don’t have an account?{" "}
+              Don't have an account?{" "}
               <span
                 onClick={() => navigate("/signup")}
                 className="text-green-500 font-semibold hover:underline cursor-pointer"

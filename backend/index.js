@@ -42,10 +42,9 @@ app.get("/api/status", (req, res) => {
 
 // Routes
 app.use("/api/v1/auth", userProfile);
-<<<<<<< HEAD
+
 app.use("/api/chatbot", chatbotRoutes);
-=======
->>>>>>> c400d66 (chore: backend config updates for deployment)
+
 
 // Start server
 app.listen(PORT, () => {

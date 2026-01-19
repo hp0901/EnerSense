@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import OtpInput from "react-otp-input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../index.css";
-import { signup, verifyForgotOtp } from '../services/operations/authapi'
+
+// 🔐 backend signup API (real OTP check)
+import { signup } from "../services/operations/authapi";
+
+// 🧪 hardcoded OTP for forgot-password testing
+const HARD_CODED_OTP = "123456";
 
 const OtpVerify = () => {
   const [otp, setOtp] = useState("");
@@ -11,11 +16,22 @@ const OtpVerify = () => {
   const [success, setSuccess] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // 🔥 Detect OTP flow
-  const otpFlow = localStorage.getItem("otpFlow"); // signup | forgot
+  // ✅ get flow info from router
+  const { flow, email } = location.state || {};
+  console.log("FLOW:", flow, "EMAIL:", email);
+
   const signupData = JSON.parse(localStorage.getItem("signupData"));
-  const forgotEmail = localStorage.getItem("forgotEmail");
+
+  // ===============================
+  // 🚨 SAFETY GUARD
+  // ===============================
+  useEffect(() => {
+    if (!flow) {
+      navigate("/login");
+    }
+  }, [flow, navigate]);
 
   // ===============================
   // ⏱️ TIMER
@@ -31,49 +47,63 @@ const OtpVerify = () => {
   }, [timeLeft]);
 
   // ===============================
-  // VERIFY OTP (SMART)
+  // VERIFY OTP (MIXED MODE)
   // ===============================
   const handleVerify = async () => {
+    const enteredOtp = String(otp).trim();
+    console.log("ENTERED OTP:", enteredOtp);
+
     try {
-      if (otpFlow === "signup") {
+      // ===============================
+      // 🔐 SIGNUP → REAL BACKEND OTP
+      // ===============================
+      if (flow === "signup") {
         if (!signupData) {
-          alert("Signup data missing. Please signup again.");
           navigate("/signup");
           return;
         }
 
+        // backend verifies OTP sent via email
         await signup({
           ...signupData,
-          otp,
+          otp: enteredOtp,
         });
 
         localStorage.removeItem("signupData");
+
+        setError(false);
+        setSuccess(true);
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 1200);
       }
 
-      if (otpFlow === "forgot") {
-        if (!forgotEmail) {
-          alert("Email missing. Please retry.");
-          navigate("/forget-password");
+      // ===============================
+      // 🧪 FORGOT → HARDCODED OTP
+      // ===============================
+      else if (flow === "forgot") {
+        if (enteredOtp !== HARD_CODED_OTP) {
+          setError(true);
+          setOtp("");
+          setTimeout(() => setError(false), 400);
           return;
         }
 
-        await verifyForgotOtp({
-          email: forgotEmail,
-          otp,
-        });
+        setError(false);
+        setSuccess(true);
+
+        setTimeout(() => {
+          navigate("/reset-password", { state: { email } });
+        }, 1200);
       }
 
-      setError(false);
-      setSuccess(true);
+      else {
+        navigate("/login");
+      }
 
-      // cleanup
-      localStorage.removeItem("otpFlow");
-
-      setTimeout(() => {
-        if (otpFlow === "signup") navigate("/login");
-        if (otpFlow === "forgot") navigate("/reset-password");
-      }, 1500);
     } catch (err) {
+      console.error("OTP VERIFY ERROR:", err);
       setError(true);
       setOtp("");
       setTimeout(() => setError(false), 400);
@@ -88,18 +118,14 @@ const OtpVerify = () => {
     setError(false);
     setSuccess(false);
     setTimeLeft(30);
-
-    // OPTIONAL:
-    // otpFlow === "signup" ? resendSignupOtp() : resendForgotOtp()
+    // later: call resend OTP API
   };
 
   return (
     <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-3 sm:px-4">
       <div
         className={`w-full max-w-sm sm:max-w-md md:max-w-lg bg-white rounded-2xl shadow-xl 
-        p-5 sm:p-6 md:p-8 transition-all ${
-          error ? "animate-shake" : ""
-        }`}
+        p-5 sm:p-6 md:p-8 transition-all ${error ? "animate-shake" : ""}`}
       >
         <h2 className="text-xl sm:text-2xl font-semibold text-center text-slate-800">
           Verify OTP
@@ -170,7 +196,7 @@ const OtpVerify = () => {
         <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-slate-500">
           {timeLeft > 0 ? (
             <span>
-              Resend OTP in <b>{timeLeft}s</b>
+              Resend OTP in <b>{timeLeft} Second</b>
             </span>
           ) : (
             <button

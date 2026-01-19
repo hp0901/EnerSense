@@ -17,6 +17,7 @@ import About from './Pages/about'
 import IoTDevices from "./Footer/IoTDevices";
 import Legal from "./Footer/Legal"
 import ResourcesCenter from "./Footer/ResourcesCenter";
+import ResetPassword from "./Pages/ResetPassword";
 import DeviceControl from "./Pages/DeviceControl";
 import EnerSenseFAQ from "./Pages/EnerSenseFAQ";
 import Chatbot from "./Pages/Chatbot";
@@ -31,6 +32,7 @@ const App = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/otp" element={<Otp />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/faqs" element={<EnerSenseFAQ />} />
