@@ -1,27 +1,16 @@
 import { apiConnector } from "../apiConnector";
 import { toast } from "react-hot-toast";
-
-const BASE_URL =  "https://enersense.duckdns.org/api/v1";
-
-const userProfile = {
-  SENDOTP_API: BASE_URL + "/auth/sendotp",
-  SIGNUP_API: BASE_URL + "/auth/signup",
-  LOGIN_API: BASE_URL + "/auth/login",
-  RESETPASSTOKEN_API: BASE_URL + "/auth/reset-password-token",
-  RESETPASSWORD_API: BASE_URL + "/auth/reset-password",
-  VERIFY_FORGOT_OTP_API: BASE_URL + "/auth/verify-forgot-otp",
-};
+import { userProfile } from "../api";
 
 // Send OTP
-export const sendOtp = async (email, navigate, dispatch) => {
+export const sendOtp = async (email, firstName, navigate, dispatch) => {
   console.log("Comes under authapi")
   const toastId = toast.loading("Loading...")
   // dispatch(setLoading(true))
   try {
     console.log("going to backend side")
-    console.log("EMAIL TYPE:", typeof email, email);
-    const res = await apiConnector("POST", userProfile.SENDOTP_API, { email });
-    console.log(res)
+    const res = await apiConnector("POST", userProfile.SENDOTP_API, { email, firstName });
+    console.log(firstName)
     toast.success("OTP Sent Successfully")
     navigate("/login")
     return res.data;

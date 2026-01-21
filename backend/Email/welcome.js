@@ -22,7 +22,7 @@ export const sendWelcomeEmail = async (email, firstName) => {
 
         <!-- LOGO -->
         <img 
-          src="https://drive.google.com/file/d/1caDpiwe3TUwkdLRGOVPyt5YYYtKZ5Lkz/view?usp=sharing"
+          src="https://res.cloudinary.com/harshpatel0901/image/upload/v1768970755/EnerSence_logo_oarobg.png"
           alt="EnerSense Logo"
           style="
             width:180px;

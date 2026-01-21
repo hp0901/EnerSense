@@ -167,7 +167,10 @@ export const login = async (req, res) => {
 // ===============================
 export const sendotp = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, firstName } = req.body;
+    console.log("SEND OTP BODY:", req.body);
+console.log("FIRST NAME:", firstName);
+
 
     if (!email) {
       return res.status(400).json({
@@ -190,13 +193,10 @@ export const sendotp = async (req, res) => {
       specialChars: false,
     });
 
-    const otpPayload = { email, otp };
-		const otpBody = await OTP.create(otpPayload);
-		console.log("OTP Body", otpBody);
+    await OTP.create({ email, otp });
 
-    // TODO: send OTP via email service
-    await sendOtpEmail(email, otp);
-    console.log("OTP:", otp);
+    // ✅ FIXED CALL
+    await sendOtpEmail(email, firstName, otp);
 
     return res.status(200).json({
       success: true,
@@ -204,12 +204,12 @@ export const sendotp = async (req, res) => {
     });
 
   } catch (error) {
-  console.error("SEND OTP ERROR FULL:", error);
-  return res.status(500).json({
-    success: false,
-    message: "OTP sending failed",
-  });
-}
+    return res.status(500).json({
+      success: false,
+      message: "OTP sending failed",
+    });
+  }
 };
+
 
 

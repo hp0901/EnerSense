@@ -146,7 +146,7 @@ const Signup = () => {
     const toastId = toast.loading("📩 Sending OTP...");
     try {
       setLoading(true);
-      await sendOtp(formData.email, navigate, dispatch);
+      await sendOtp(formData.email, formData.firstName, navigate, dispatch);
       localStorage.setItem("signupData", JSON.stringify(formData));
       toast.success("✅ OTP sent!", { id: toastId });
       setTimeout(() => {
