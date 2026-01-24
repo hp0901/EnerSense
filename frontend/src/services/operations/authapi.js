@@ -57,10 +57,6 @@ export const login = async (email, password) => {
       password,
     });
 
-    if (res?.data?.token) {
-      localStorage.setItem("token", JSON.stringify(res.data.token));
-    }
-
     return res.data;
   } catch (err) {
     throw err?.response?.data?.message || "Login failed";
