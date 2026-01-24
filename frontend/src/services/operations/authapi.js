@@ -52,10 +52,14 @@ export const signup = async (payload) => {
 // Login
 export const login = async (email, password) => {
   try {
-    const res = await apiConnector("POST", userProfile.LOGIN_API, {
-      email,
-      password,
-    });
+    const res = await apiConnector(
+      "POST",
+      userProfile.LOGIN_API,
+      { email, password },
+      {
+        "Content-Type": "application/json",
+      }
+    );
 
     return res.data;
   } catch (err) {
