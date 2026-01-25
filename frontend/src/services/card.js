@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  // baseURL: "https://enersense.duckdns.org/api/v1",
-  baseURL: "http://localhost:4000/api/v1",
+  baseURL: "https://enersense.duckdns.org/api/v1",
+  // baseURL: "http://localhost:4000/api/v1",
 });
 
 export const fetchUserCard = () => {
