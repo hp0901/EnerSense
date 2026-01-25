@@ -1,18 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
 import loginimage from "../assets/loginpage.png";
 import logo from "../assets/EnerSence_logo.png";
-import { login as loginApi } from "../services/operations/authapi";
+import { login as loginApi, googleLoginApi } from "../services/operations/authapi";
 import toast from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { useAuth } from "../context/AuthContex" // ✅ IMPORTANT
+import { useAuth } from "../context/AuthContex";
 
 const EnerSenseLogin = () => {
   const navigate = useNavigate();
-  const { login } = useAuth(); // ✅ AuthContext login
+  const { login } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +31,7 @@ const EnerSenseLogin = () => {
   };
 
   // ===============================
-  // NORMAL LOGIN
+  // MANUAL LOGIN
   // ===============================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,11 +48,11 @@ const EnerSenseLogin = () => {
 
       const res = await loginApi(formData.email, formData.password);
 
-      // ✅ Save token
+      // ✅ STORE BACKEND JWT
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
 
-      login(); // 🔥 THIS FIXES UI UPDATE
+      login(); // AuthContext update
 
       toast.success("✅ Login successful! Welcome back 🚀", {
         id: toastId,
@@ -61,41 +60,45 @@ const EnerSenseLogin = () => {
 
       navigate("/dashboard");
     } catch (error) {
+      console.error("LOGIN ERROR:", error);
       toast.error("❌ Invalid email or password", {
         id: toastId,
       });
-      console.error("LOGIN ERROR:", error);
     } finally {
       setLoading(false);
     }
   };
 
   // ===============================
-  // GOOGLE LOGIN
+  // GOOGLE LOGIN (FIXED)
   // ===============================
-  const handleGoogleSuccess = (credentialResponse) => {
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const toastId = toast.loading("🔐 Signing in with Google...");
+
     try {
-      const decoded = jwtDecode(credentialResponse.credential);
+      setLoading(true);
 
-      toast.success(`Welcome ${decoded.name}!`);
+      // ✅ SEND GOOGLE TOKEN TO BACKEND
+      const res = await googleLoginApi(credentialResponse.credential);
 
-      // ✅ Store token
-      localStorage.setItem("token", credentialResponse.credential);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          name: decoded.name,
-          email: decoded.email,
-          picture: decoded.picture,
-        })
-      );
+      // ✅ STORE BACKEND JWT (NOT GOOGLE TOKEN)
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
 
-      login(); // 🔥 REQUIRED
+      login(); // update auth state
+
+      toast.success(`Welcome ${res.user.firstName || "User"} 🚀`, {
+        id: toastId,
+      });
 
       navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      toast.error("Google login failed");
+    } catch (error) {
+      console.error("GOOGLE LOGIN ERROR:", error);
+      toast.error("❌ Google login failed", {
+        id: toastId,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -172,15 +175,6 @@ const EnerSenseLogin = () => {
                   cursor-pointer text-slate-400 hover:text-white transition"
                 >
                   {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-                </span>
-              </div>
-
-              <div className="flex justify-end">
-                <span
-                  onClick={() => navigate("/forget-password")}
-                  className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 cursor-pointer"
-                >
-                  Forgot password?
                 </span>
               </div>
 

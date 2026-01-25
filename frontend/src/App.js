@@ -20,6 +20,7 @@ import ResourcesCenter from "./Footer/ResourcesCenter";
 import ResetPassword from "./Pages/ResetPassword";
 import DeviceControl from "./Pages/DeviceControl";
 import EnerSenseFAQ from "./Pages/EnerSenseFAQ";
+import VerifyCard from "./components/VerifyCard";
 import Chatbot from "./Pages/Chatbot";
 import Error from "./Pages/Error";
 
@@ -33,6 +34,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify/:uid" element={<VerifyCard />} />
         <Route path="/otp" element={<Otp />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/faqs" element={<EnerSenseFAQ />} />

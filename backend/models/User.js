@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
@@ -28,8 +29,15 @@ const userSchema = new mongoose.Schema(
     },
 
     phone: {
-      type: String,
-      required: true,
+      countryCode: {
+        type: String,
+        default: "+91",
+      },
+      number: {
+        type: String,
+        required: true,
+        unique: true,
+      },
     },
 
     state: {
@@ -63,14 +71,36 @@ const userSchema = new mongoose.Schema(
 
     isVerified: {
       type: Boolean,
-      default: true, // true after OTP signup
+      default: true,
     },
 
     image: {
       type: String,
     },
+
+    cardType: {
+      type: String,
+      enum: ["Silver", "Gold", "Platinum"],
+      default: "Silver",
+    },
+
+    // ✅ Digital Identity UID
+    userUID: {
+      type: String,
+      unique: true,
+      index: true,
+    },
   },
   { timestamps: true }
 );
+
+/// 🔥 AUTO-GENERATE UID BEFORE SAVE
+userSchema.pre("save", function (next) {
+  if (!this.userUID) {
+    this.userUID =
+      "ENS-" + crypto.randomBytes(4).toString("hex").toUpperCase();
+  }
+  next();
+});
 
 export default mongoose.model("User", userSchema);

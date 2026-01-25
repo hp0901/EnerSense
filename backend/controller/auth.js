@@ -6,6 +6,8 @@ import OTP from "../models/Otp.js"
 import dotenv from "dotenv";
 import { sendOtpEmail } from "../Email/sendOtpEmail.js";
 import { sendWelcomeEmail } from "../Email/welcome.js";
+import Board from "../models/Board.js";
+import { generateUserUID, generateBoardUID } from "../utils/uid.js";
 
 
 dotenv.config();
@@ -80,8 +82,24 @@ export const signup = async (req, res) => {
       state,
       board,
       gender,
+      userUID: generateUserUID(), // ✅ NEW
       image: `https://api.dicebear.com/6.x/initials/svg?seed=${firstName} ${lastName}`,
     });
+
+    // 🔥 6️⃣ AUTO-CREATE BOARD IF NOT EXISTS
+      const existingBoard = await Board.findOne({ user: user._id });
+
+      if (!existingBoard) {
+        await Board.create({
+          boardUID: generateBoardUID(state),
+          user: user._id,
+          boardName: board,
+          state,
+          location: "Home",
+          status: "active",
+        });
+      }
+
 
     // 6️⃣ Delete OTP after use
     await OTP.deleteMany({ email });

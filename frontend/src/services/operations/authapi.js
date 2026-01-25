@@ -109,3 +109,22 @@ export const verifyForgotOtp = async ({ email, otp }) => {
 
   return response.data;
 };
+
+// GOOGLE LOGIN
+// ===============================
+export const googleLoginApi = async (credential) => {
+  try {
+    const res = await apiConnector(
+      "POST",
+      userProfile.GOOGLE_LOGIN_API,
+      { credential },
+      {
+        "Content-Type": "application/json",
+      }
+    );
+
+    return res.data;
+  } catch (err) {
+    throw err?.response?.data?.message || "Google login failed";
+  }
+};

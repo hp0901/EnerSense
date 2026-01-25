@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./db.js";
 import userProfile from "./routes/user.js";
 import chatbotRoutes from "./routes/chatbot.js";
-
+import getUserCard from "./routes/card.js";
 
 dotenv.config();
 
@@ -42,7 +42,7 @@ app.get("/api/status", (req, res) => {
 
 // Routes
 app.use("/api/v1/auth", userProfile);
-
+app.use("/api/v1/user-card", getUserCard );
 app.use("/api/chatbot", chatbotRoutes);
 
 
