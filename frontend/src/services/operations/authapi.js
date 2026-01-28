@@ -2,30 +2,32 @@ import { apiConnector } from "../apiConnector";
 import { toast } from "react-hot-toast";
 import { userProfile } from "../api";
 
-// Send OTP
-export const sendOtp = async (email, firstName, navigate, dispatch) => {
-  console.log("Comes under authapi")
-  const toastId = toast.loading("Loading...")
-  // dispatch(setLoading(true))
+// ===============================
+// SEND OTP
+// ===============================
+export const sendOtp = async (email, firstName, navigate) => {
+  const toastId = toast.loading("Loading...");
   try {
-    console.log("going to backend side")
-    const res = await apiConnector("POST", userProfile.SENDOTP_API, { email, firstName });
-    console.log(firstName)
-    toast.success("OTP Sent Successfully")
-    navigate("/login")
+    const res = await apiConnector(
+      "POST",
+      userProfile.SENDOTP_API,
+      { email, firstName }
+    );
+
+    toast.success("OTP Sent Successfully");
+    navigate("/login");
     return res.data;
   } catch (err) {
-    console.log("Error in otp")
-    console.log("SENDOTP API ERROR............", err)
-    toast.error("Could Not Send OTP")
+    toast.error("Could Not Send OTP");
     throw err?.response?.data?.message || "OTP sending failed";
   } finally {
-    // dispatch(setLoading(false))
-    toast.dismiss(toastId)
+    toast.dismiss(toastId);
   }
-}
+};
 
-// Signup
+// ===============================
+// SIGNUP
+// ===============================
 export const signup = async (payload) => {
   try {
     const res = await apiConnector(
@@ -48,8 +50,9 @@ export const signup = async (payload) => {
   }
 };
 
-
-// Login
+// ===============================
+// LOGIN (🔥 FIXED)
+// ===============================
 export const login = async (email, password) => {
   try {
     const res = await apiConnector(
@@ -61,13 +64,20 @@ export const login = async (email, password) => {
       }
     );
 
+    // ✅ SAVE TOKEN
+    if (res.data?.token) {
+      localStorage.setItem("token", res.data.token);
+    }
+
     return res.data;
   } catch (err) {
     throw err?.response?.data?.message || "Login failed";
   }
 };
 
-// Reset password token
+// ===============================
+// RESET PASSWORD TOKEN
+// ===============================
 export const resetPasswordToken = async (email) => {
   try {
     const res = await apiConnector(
@@ -81,7 +91,9 @@ export const resetPasswordToken = async (email) => {
   }
 };
 
-// Reset password
+// ===============================
+// RESET PASSWORD
+// ===============================
 export const resetPassword = async (data) => {
   try {
     const res = await apiConnector(
@@ -95,22 +107,28 @@ export const resetPassword = async (data) => {
   }
 };
 
-// Logout
+// ===============================
+// LOGOUT
+// ===============================
 export const logout = () => {
   localStorage.removeItem("token");
 };
+
+// ===============================
 // VERIFY FORGOT PASSWORD OTP
 // ===============================
 export const verifyForgotOtp = async ({ email, otp }) => {
-  const response = await apiConnector("POST", userProfile.VERIFY_FORGOT_OTP_API, {
-    email,
-    otp,
-  });
+  const response = await apiConnector(
+    "POST",
+    userProfile.VERIFY_FORGOT_OTP_API,
+    { email, otp }
+  );
 
   return response.data;
 };
 
-// GOOGLE LOGIN
+// ===============================
+// GOOGLE LOGIN (🔥 FIXED)
 // ===============================
 export const googleLoginApi = async (credential) => {
   try {
@@ -122,6 +140,11 @@ export const googleLoginApi = async (credential) => {
         "Content-Type": "application/json",
       }
     );
+
+    // ✅ SAVE TOKEN
+    if (res.data?.token) {
+      localStorage.setItem("token", res.data.token);
+    }
 
     return res.data;
   } catch (err) {

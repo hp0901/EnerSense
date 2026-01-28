@@ -5,7 +5,7 @@ import connectDB from "./db.js";
 import userProfile from "./routes/user.js";
 import chatbotRoutes from "./routes/chatbot.js";
 import getUserCard from "./routes/card.js";
-
+import notificationSettingsRoutes from "./routes/notificationSettings.js";
 dotenv.config();
 
 const app = express();
@@ -44,6 +44,8 @@ app.get("/api/status", (req, res) => {
 app.use("/api/v1/auth", userProfile);
 app.use("/api/v1/user-card", getUserCard );
 app.use("/api/chatbot", chatbotRoutes);
+
+app.use("/api/v1/settings", notificationSettingsRoutes);
 
 
 // Start server
