@@ -10,16 +10,14 @@ const otpSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      expires: 300, // ⏱ OTP expires after 5 minutes (300 seconds)
-    },
   },
   { timestamps: true }
 );
 
-// Prevent model overwrite error in dev (nodemon)
+// ✅ TTL index on createdAt
+otpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 300 });
+
+// Prevent model overwrite error in dev
 const OTP = mongoose.models.OTP || mongoose.model("OTP", otpSchema);
 
 export default OTP;

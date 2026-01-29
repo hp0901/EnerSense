@@ -1,19 +1,11 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    lastName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    firstName: { type: String, required: true, trim: true },
+    lastName: { type: String, required: true, trim: true },
 
     email: {
       type: String,
@@ -26,29 +18,18 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      // select: false, // 🔐 hides password by default
     },
 
     phone: {
-      countryCode: {
-        type: String,
-        default: "+91",
-      },
-      number: {
-        type: String,
-        required: true,
-        unique: true,
-      },
-    },
-
-    state: {
       type: String,
       required: true,
+      unique: true,
     },
 
-    board: {
-      type: String,
-      required: true,
-    },
+
+    state: { type: String, required: true },
+    board: { type: String, required: true },
 
     gender: {
       type: String,
@@ -62,21 +43,11 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    devices: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Device",
-      },
-    ],
+    devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }],
 
-    isVerified: {
-      type: Boolean,
-      default: true,
-    },
+    isVerified: { type: Boolean, default: true },
 
-    image: {
-      type: String,
-    },
+    image: String,
 
     cardType: {
       type: String,
@@ -84,7 +55,6 @@ const userSchema = new mongoose.Schema(
       default: "Silver",
     },
 
-    // ✅ Digital Identity UID
     userUID: {
       type: String,
       unique: true,
@@ -94,13 +64,12 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/// 🔥 AUTO-GENERATE UID BEFORE SAVE
-userSchema.pre("save", function (next) {
+/// 🔥 AUTO-GENERATE UID (SYNC)
+userSchema.pre("save", function () {
   if (!this.userUID) {
     this.userUID =
       "ENS-" + crypto.randomBytes(4).toString("hex").toUpperCase();
   }
-  next();
 });
 
 export default mongoose.model("User", userSchema);

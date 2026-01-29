@@ -15,7 +15,7 @@ export const sendOtp = async (email, firstName, navigate) => {
     );
 
     toast.success("OTP Sent Successfully");
-    navigate("/login");
+    // navigate("/login");
     return res.data;
   } catch (err) {
     toast.error("Could Not Send OTP");

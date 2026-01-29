@@ -30,8 +30,6 @@ export const signup = async (req, res) => {
       otp,
     } = req.body;
 
-    console.log("Signup request body:", req.body);
-
     // 1️⃣ Validate fields
     if (
       !firstName ||
@@ -69,42 +67,40 @@ export const signup = async (req, res) => {
       });
     }
 
-    // 4️⃣ Hash password
+    // ❌ REMOVE manual hashing
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 5️⃣ Create user
+    // 4️⃣ Create user (password stays plain here)
     const user = await User.create({
       firstName,
       lastName,
       email,
-      password: hashedPassword,
-      phone,
+      password: hashedPassword, // ✅ will be hashed in pre-save
+      phone: phone,
       state,
       board,
       gender,
-      userUID: generateUserUID(), // ✅ NEW
+      userUID: generateUserUID(),
       image: `https://api.dicebear.com/6.x/initials/svg?seed=${firstName} ${lastName}`,
     });
 
-    // 🔥 6️⃣ AUTO-CREATE BOARD IF NOT EXISTS
-      const existingBoard = await Board.findOne({ user: user._id });
+    // 5️⃣ Auto-create board
+    const existingBoard = await Board.findOne({ user: user._id });
+    if (!existingBoard) {
+      await Board.create({
+        boardUID: generateBoardUID(state),
+        user: user._id,
+        boardName: board,
+        state,
+        location: "Home",
+        status: "active",
+      });
+    }
 
-      if (!existingBoard) {
-        await Board.create({
-          boardUID: generateBoardUID(state),
-          user: user._id,
-          boardName: board,
-          state,
-          location: "Home",
-          status: "active",
-        });
-      }
-
-
-    // 6️⃣ Delete OTP after use
+    // 6️⃣ Delete OTP
     await OTP.deleteMany({ email });
 
-    // 7️⃣ Send welcome email
+    // 7️⃣ Welcome email
     await sendWelcomeEmail(email, firstName);
 
     return res.status(201).json({
@@ -122,6 +118,7 @@ export const signup = async (req, res) => {
     });
   }
 };
+
 
 
 // ===============================
