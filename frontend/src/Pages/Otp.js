@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import OtpInput from "react-otp-input";
+import { verifyForgotPasswordOtp } from "../services/operations/authapi";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../index.css";
 
@@ -7,7 +8,6 @@ import "../index.css";
 import { signup } from "../services/operations/authapi";
 
 // 🧪 hardcoded OTP for forgot-password testing
-const HARD_CODED_OTP = "123456";
 
 const OtpVerify = () => {
   const [otp, setOtp] = useState("");
@@ -79,25 +79,20 @@ const OtpVerify = () => {
         }, 1200);
       }
 
-      // ===============================
-      // 🧪 FORGOT → HARDCODED OTP
-      // ===============================
-      else if (flow === "forgot") {
-        if (enteredOtp !== HARD_CODED_OTP) {
-          setError(true);
-          setOtp("");
-          setTimeout(() => setError(false), 400);
-          return;
+      
+        // 🔐 FORGOT → BACKEND OTP VERIFY
+        // ===============================
+        else if (flow === "forgot") {
+          await verifyForgotPasswordOtp(email, enteredOtp);
+
+          setError(false);
+          setSuccess(true);
+
+          setTimeout(() => {
+            navigate("/reset-password", { state: { email } });
+          }, 1200);
         }
-
-        setError(false);
-        setSuccess(true);
-
-        setTimeout(() => {
-          navigate("/reset-password", { state: { email } });
-        }, 1200);
-      }
-
+        
       else {
         navigate("/login");
       }

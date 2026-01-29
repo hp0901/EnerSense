@@ -156,27 +156,38 @@ const EnerSenseLogin = () => {
                 required
               />
 
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 sm:py-4 rounded-xl bg-slate-800/70
-                  border border-slate-700 text-white placeholder:text-slate-400
-                  focus:outline-none focus:ring-2 focus:ring-green-500/50 pr-12"
-                  required
-                />
+              <div className="space-y-2">
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 sm:py-4 rounded-xl bg-slate-800/70
+                    border border-slate-700 text-white placeholder:text-slate-400
+                    focus:outline-none focus:ring-2 focus:ring-green-500/50 pr-12"
+                    required
+                  />
 
-                <span
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2
-                  cursor-pointer text-slate-400 hover:text-white transition"
-                >
-                  {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-                </span>
-              </div>
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2
+                    cursor-pointer text-slate-400 hover:text-white transition"
+                  >
+                    {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                  </span>
+                </div>
+
+                  {/* 👇 ADD GAP HERE */}
+                  <p
+                    onClick={() => navigate("/forget-password")}
+                    className="mt-2 text-right text-sm text-green-400 hover:underline cursor-pointer"
+                  >
+                    Forgot password?
+                  </p>
+                </div>
+
 
               <button
                 type="submit"

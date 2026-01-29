@@ -1,6 +1,7 @@
 import { apiConnector } from "../apiConnector";
 import { toast } from "react-hot-toast";
 import { userProfile } from "../api";
+import { authEndpoints } from "../api";
 
 // ===============================
 // SEND OTP
@@ -149,5 +150,58 @@ export const googleLoginApi = async (credential) => {
     return res.data;
   } catch (err) {
     throw err?.response?.data?.message || "Google login failed";
+  }
+};
+
+export const verifyForgotPasswordOtp = async (email, otp) => {
+  try {
+    const res = await apiConnector(
+      "POST",
+      authEndpoints.VERIFY_FORGOT_PASSWORD_OTP,
+      { email, otp }
+    );
+
+    if (!res.data.success) {
+      throw new Error(res.data.message);
+    }
+
+    return true;
+  } catch (error) {
+    console.log("VERIFY FORGOT OTP ERROR", error);
+    throw (
+      error?.response?.data?.message ||
+      error?.message ||
+      "OTP verification failed"
+    );
+  }
+};
+
+// ===============================
+// SEND FORGOT PASSWORD OTP
+// ===============================
+export const sendForgotPasswordOtp = async (email) => {
+  const toastId = toast.loading("Sending OTP...");
+  try {
+    const res = await apiConnector(
+      "POST",
+      authEndpoints.SEND_FORGOT_PASSWORD_OTP,
+      { email }
+    );
+
+    if (!res.data.success) {
+      throw new Error(res.data.message);
+    }
+
+    toast.success("OTP sent to your email");
+    return true;
+  } catch (error) {
+    toast.error(
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to send OTP"
+    );
+    throw error;
+  } finally {
+    toast.dismiss(toastId);
   }
 };

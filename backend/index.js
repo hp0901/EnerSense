@@ -43,7 +43,7 @@ app.get("/api/status", (req, res) => {
 // Routes
 app.use("/api/v1/auth", userProfile);
 app.use("/api/v1/user-card", getUserCard );
-app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/v1/chatbot", chatbotRoutes);
 
 app.use("/api/v1/settings", notificationSettingsRoutes);
 

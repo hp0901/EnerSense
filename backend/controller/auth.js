@@ -8,7 +8,7 @@ import { sendOtpEmail } from "../Email/sendOtpEmail.js";
 import { sendWelcomeEmail } from "../Email/welcome.js";
 import Board from "../models/Board.js";
 import { generateUserUID, generateBoardUID } from "../utils/uid.js";
-
+import {forgotOtpTemplate} from "../Email/forgotOtpTemplate.js";
 
 dotenv.config();
 
@@ -184,7 +184,7 @@ export const sendotp = async (req, res) => {
   try {
     const { email, firstName } = req.body;
     console.log("SEND OTP BODY:", req.body);
-console.log("FIRST NAME:", firstName);
+    console.log("FIRST NAME:", firstName);
 
 
     if (!email) {
@@ -226,5 +226,147 @@ console.log("FIRST NAME:", firstName);
   }
 };
 
+// ===============================
+// FORGOT PASSWORD - SEND OTP
+// ===============================
+export const sendForgotPasswordOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    // ✅ User MUST exist for forgot password
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // 🔐 Generate 6-digit OTP
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    // 🧹 Remove old OTPs
+    await OTP.deleteMany({ email });
+
+    // 💾 Save new OTP (TTL auto-expires)
+    await OTP.create({ email, otp });
+
+    // 📧 Send OTP email (reuse your existing email util)
+    await forgotOtpTemplate({ email, firstName: user.firstName, otp });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent for password reset",
+    });
+
+  } catch (error) {
+    console.error("FORGOT PASSWORD OTP ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to send OTP",
+    });
+  }
+};
+
+// ===============================
+// FORGOT PASSWORD - VERIFY OTP
+// ===============================
+export const verifyForgotPasswordOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      });
+    }
+
+    // 🔍 Get latest OTP for email
+    const recentOtp = await OTP.findOne({ email }).sort({ createdAt: -1 });
+
+    if (!recentOtp) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP not found or expired",
+      });
+    }
+
+    if (recentOtp.otp !== otp.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    // 🧹 OTP used → delete
+    await OTP.deleteMany({ email });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified",
+    });
+
+  } catch (error) {
+    console.error("VERIFY FORGOT OTP ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "OTP verification failed",
+    });
+  }
+};
+
+// ===============================
+// RESET PASSWORD
+// ===============================
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // 🔐 Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to reset password",
+    });
+  }
+};
 
 

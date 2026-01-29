@@ -1,8 +1,8 @@
 //User Profile API Service
 
-// const BASE_URL = 'http://localhost:4000/api/v1';
+const BASE_URL = 'http://localhost:4000/api/v1';
 
-const BASE_URL = "https://enersense.duckdns.org/api/v1";
+// const BASE_URL = "https://enersense.duckdns.org/api/v1";
 
 export const userProfile = {
   // auth (already there)
@@ -21,6 +21,12 @@ export const userProfile = {
 
 // Chatbot API Service
 export const chatbotEndpoints = {
-  SEND_MESSAGE_API: "https://enersense.duckdns.org/api/chatbot/message",
+  SEND_MESSAGE_API: BASE_URL + "/chatbot/message",
 };
-// Add other API services as needed
+// Forget Password APIs
+
+export const authEndpoints = {
+  // ...existing
+  SEND_FORGOT_PASSWORD_OTP: BASE_URL + "/auth/forgot-password/send-otp",
+  VERIFY_FORGOT_PASSWORD_OTP: BASE_URL +"/auth/forgot-password/verify-otp",
+};

@@ -1,24 +1,33 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
+import { sendForgotPasswordOtp } from "../services/operations/authapi"
 
 const ForgetPassword = () => {
   const [email, setEmail] = useState('')
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // later you will call API here to send OTP 
-    // for now, just navigate to OTP page
+  try {
+    await sendForgotPasswordOtp(email);
+
+    toast.success("OTP sent to your email");
+
     navigate("/otp", {
-    state: {
-      flow: "forgot",
-      email: email,
-    },
-  });
-
-
+      state: {
+        flow: "forgot",
+        email,
+      },
+    });
+  } catch (error) {
+    toast.error(
+      typeof error === "string" ? error : "Failed to send OTP"
+    );
   }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
@@ -29,7 +38,7 @@ const ForgetPassword = () => {
           Forgot Password?
         </h2>
         <p className="text-sm text-slate-500 mb-6">
-          Enter your registered email and we’ll send you an OTP
+          Enter your registered email and we'll send you an OTP
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
