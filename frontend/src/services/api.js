@@ -18,3 +18,9 @@ export const userProfile = {
   GET_NOTIFICATION_SETTINGS_API: BASE_URL + "/settings/notifications",
   UPDATE_NOTIFICATION_SETTINGS_API: BASE_URL + "/settings/notifications",
 };
+
+// Chatbot API Service
+export const chatbotEndpoints = {
+  SEND_MESSAGE_API: "https://enersense.duckdns.org/api/chatbot/message",
+};
+// Add other API services as needed

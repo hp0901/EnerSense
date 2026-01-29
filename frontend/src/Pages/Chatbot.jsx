@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Zap, X } from "lucide-react";
+import { sendChatbotMessage } from "../services/operations/chatbotApi";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,41 +9,47 @@ export default function Chatbot() {
   const [userMsg, setUserMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 👋 Show welcome hint for few seconds on login
+  // 👋 Show welcome hint for few seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowHint(false);
-    }, 3500); // 3.5 seconds
+    }, 3500);
 
     return () => clearTimeout(timer);
   }, []);
 
-  const sendMessage = async () => {
-    if (!userMsg.trim()) return;
+  const handleSendMessage = async () => {
+    if (!userMsg.trim() || loading) return;
 
+    const currentMsg = userMsg;
+
+    // Clear input immediately
+    setUserMsg("");
     setLoading(true);
 
+    // Add user message first
+    setMessages((prev) => [
+      ...prev,
+      { sender: "user", text: currentMsg },
+    ]);
+
     try {
-      const res = await fetch(
-        "http://localhost:4000/api/chatbot/message",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMsg }),
-        }
-      );
+      const reply = await sendChatbotMessage(currentMsg);
 
-      const data = await res.json();
-
+      // Add bot reply
       setMessages((prev) => [
         ...prev,
-        { sender: "user", text: userMsg },
-        { sender: "bot", text: data.reply },
+        { sender: "bot", text: reply },
       ]);
-
-      setUserMsg("");
-    } catch (err) {
-      console.error("Chatbot error:", err);
+    } catch (error) {
+      // Error fallback message
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: "⚠️ Sorry, I couldn’t respond right now.",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -50,15 +57,15 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* 💬 Welcome Hint Bubble */}
+      {/* 💬 Welcome Hint */}
       {!isOpen && showHint && (
-        <div className="fixed bottom-20 right-6 z-50 bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg text-sm animate-fade-in">
+        <div className="fixed bottom-20 right-6 z-50 bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg text-sm">
           Hey 👋 Need help with electricity usage?
-          <div className="absolute -bottom-2 right-6 w-3 h-3 bg-white rotate-45"></div>
+          <div className="absolute -bottom-2 right-6 w-3 h-3 bg-white rotate-45" />
         </div>
       )}
 
-      {/* ⚡ Floating Electricity Button */}
+      {/* ⚡ Floating Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -117,12 +124,12 @@ export default function Chatbot() {
               type="text"
               value={userMsg}
               onChange={(e) => setUserMsg(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder="Ask about electricity usage..."
               className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button
-              onClick={sendMessage}
+              onClick={handleSendMessage}
               disabled={loading}
               className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 disabled:opacity-50"
             >
