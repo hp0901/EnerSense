@@ -13,7 +13,7 @@ const ForgetPassword = () => {
   try {
     await sendForgotPasswordOtp(email);
 
-    toast.success("OTP sent to your email");
+    // toast.success("OTP sent to your email");
 
     navigate("/otp", {
       state: {

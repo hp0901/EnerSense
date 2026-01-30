@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./db.js";
 import userProfile from "./routes/user.js";
 import chatbotRoutes from "./routes/chatbot.js";
+import updatedprofile from "./routes/profile.js";
 import getUserCard from "./routes/card.js";
 import notificationSettingsRoutes from "./routes/notificationSettings.js";
 dotenv.config();
@@ -39,12 +40,12 @@ app.get("/api/status", (req, res) => {
     message: "📡 EnerSense API is working perfectly"
   });
 });
-
+  
 // Routes
 app.use("/api/v1/auth", userProfile);
 app.use("/api/v1/user-card", getUserCard );
 app.use("/api/v1/chatbot", chatbotRoutes);
-
+app.use("/api/v1/profile",updatedprofile)
 app.use("/api/v1/settings", notificationSettingsRoutes);
 
 

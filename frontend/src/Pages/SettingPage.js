@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiUser,
   FiBell,
@@ -6,14 +7,25 @@ import {
   FiShield,
   FiLogOut,
 } from "react-icons/fi";
-
 import { toast } from "react-hot-toast";
+
 import {
   getNotificationSettings,
   updateNotificationSettings,
 } from "../services/operations/notificationAPI";
+import { updateProfile } from "../services/operations/profileapi";
+import { logout } from "../services/operations/authapi";
 
 const SettingPage = () => {
+  const navigate = useNavigate();
+
+  /* ================= PROFILE STATE ================= */
+  const [profile, setProfile] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+  });
+
   /* ================= NOTIFICATION STATE ================= */
   const [notifications, setNotifications] = useState({
     emailAlerts: false,
@@ -24,9 +36,9 @@ const SettingPage = () => {
   const [loading, setLoading] = useState(false);
 
   const NOTIFICATION_META = {
-  emailAlerts: { number: 1, label: "Email Alerts" },
-  smsAlerts: { number: 2, label: "SMS Alerts" },
-  weeklyReports: { number: 3, label: "Weekly Reports" },
+    emailAlerts: { number: 1, label: "Email Alerts" },
+    smsAlerts: { number: 2, label: "SMS Alerts" },
+    weeklyReports: { number: 3, label: "Weekly Reports" },
   };
 
   /* ================= FETCH SETTINGS ================= */
@@ -42,73 +54,122 @@ const SettingPage = () => {
     fetchSettings();
   }, []);
 
-  /* ================= TOGGLE HANDLER ================= */
+  /* ================= PROFILE SAVE ================= */
+  const handleProfileSave = async () => {
+    if (!profile.firstName.trim() || !profile.lastName.trim()) {
+      toast.error("First name and last name are required");
+      return;
+    }
 
+    if (!profile.phone.trim()) {
+      toast.error("Phone number is required");
+      return;
+    }
 
-const handleToggle = async (key) => {
-  const previousState = { ...notifications };
+    try {
+      setLoading(true);
 
-  const updatedState = {
-    ...notifications,
-    [key]: !notifications[key],
+      await updateProfile({
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        phone: profile.phone,
+      });
+
+      toast.success("✅ Profile updated successfully");
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "❌ Failed to update profile"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const { number, label } = NOTIFICATION_META[key];
+  /* ================= NOTIFICATION TOGGLE ================= */
+  const handleToggle = async (key) => {
+    const previousState = { ...notifications };
+    const updatedState = { ...notifications, [key]: !notifications[key] };
+    const { number, label } = NOTIFICATION_META[key];
 
-  // Optimistic UI
-  setNotifications(updatedState);
-  setLoading(true);
+    setNotifications(updatedState);
+    setLoading(true);
+    toast.loading(`${number}. Updating ${label}...`, { id: key });
 
-  // 🔔 Show numbered toast
-  toast.loading(`${number}. Updating ${label}...`, { id: key });
+    try {
+      await updateNotificationSettings(updatedState);
+      toast.success(
+        `${label} ${updatedState[key] ? "Enabled" : "Disabled"}`,
+        { id: key }
+      );
+    } catch (err) {
+      setNotifications(previousState);
+      toast.error(`${number}. Failed to update ${label}`, { id: key });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  try {
-    await updateNotificationSettings(updatedState);
-
-    toast.success(
-      ` ${label} ${updatedState[key] ? "Enabled" : "Disabled"}`,
-      { id: key }
-    );
-  } catch (err) {
-    setNotifications(previousState);
-    toast.error(`${number}. Failed to update ${label}`, { id: key });
-  } finally {
-    setLoading(false);
-  }
+  /* ================= LOGOUT ================= */
+   const handleLogout = () => {
+  logout();
+  toast.success("Logout Successfully.");
+  navigate("/login", { replace: true });
 };
 
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white px-6 py-10 overflow-x-hidden">
-
-      <h1 className="text-3xl font-bold text-green-400 mb-10">
-        Settings
-      </h1>
+    <div className="min-h-screen bg-[#0f172a] text-white px-6 py-10">
+      <h1 className="text-3xl font-bold text-green-400 mb-10">Settings</h1>
 
       <div className="max-w-4xl mx-auto space-y-8">
 
-        {/* ================= PROFILE ================= */}
+        {/* PROFILE */}
         <Section icon={<FiUser />} title="Profile Settings">
-          <Input label="Full Name" placeholder="EnerSense" />
-          <Input label="Email" placeholder="enersense@email.com" disabled />
-          <Input label="Phone Number" placeholder="+91 XXXXXXXXXX" />
-          <button className="btn-primary">Save Profile</button>
+          <Input
+            label="First Name"
+            value={profile.firstName}
+            onChange={(e) =>
+              setProfile({ ...profile, firstName: e.target.value })
+            }
+          />
+
+          <Input
+            label="Last Name"
+            value={profile.lastName}
+            onChange={(e) =>
+              setProfile({ ...profile, lastName: e.target.value })
+            }
+          />
+
+          <Input label="Email" value="enersense@email.com" disabled />
+
+          <Input
+            label="Phone Number"
+            value={profile.phone}
+            onChange={(e) =>
+              setProfile({ ...profile, phone: e.target.value })
+            }
+          />
+
+          <button
+            onClick={handleProfileSave}
+            disabled={loading}
+            className="bg-green-600 rounded-md p-2"
+          >
+            {loading ? "Saving..." : "Save Profile"}
+          </button>
         </Section>
 
-        {/* ================= ENERGY ================= */}
+        {/* ENERGY */}
         <Section icon={<FiCpu />} title="Energy Preferences">
           <Select
             label="Tariff Type"
             options={["Domestic", "Commercial", "Industrial"]}
           />
-          <Toggle
-            label="Peak Hour Alerts"
-            value={true}
-            disabled
-          />
+          <Toggle label="Peak Hour Alerts" value={true} disabled />
         </Section>
 
-        {/* ================= NOTIFICATIONS ================= */}
+        {/* NOTIFICATIONS */}
         <Section icon={<FiBell />} title="Notifications">
           <Toggle
             label="Email Alerts"
@@ -130,20 +191,31 @@ const handleToggle = async (key) => {
           />
         </Section>
 
-        {/* ================= SECURITY ================= */}
+        {/* SECURITY */}
         <Section icon={<FiShield />} title="Security & Privacy">
-          <button className="btn-secondary">Change Password</button>
-          <button className="btn-secondary">Enable 2FA</button>
+          <button
+            className="btn-secondary"
+            onClick={() => navigate("/change-password")}
+          >
+            Change Password
+          </button>
+          <button
+            className="btn-secondary"
+            onClick={() => navigate("/security/2fa")}
+          >
+            Enable 2FA
+          </button>
         </Section>
 
-        {/* ================= LOGOUT ================= */}
+        {/* LOGOUT */}
         <div className="pt-6 border-t border-white/10">
-          <button className="flex items-center gap-2 text-red-400 hover:text-red-500">
-            <FiLogOut />
-            Logout
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-red-400 hover:text-red-500"
+          >
+            <FiLogOut /> Logout
           </button>
         </div>
-
       </div>
     </div>
   );
@@ -162,36 +234,19 @@ const Section = ({ icon, title, children }) => (
 
 const Input = ({ label, ...props }) => (
   <div>
-    <label className="block text-sm text-slate-400 mb-1">
-      {label}
-    </label>
+    <label className="block text-sm text-slate-400 mb-1">{label}</label>
     <input
       {...props}
-      className="
-        w-full p-3 rounded-lg
-        bg-[#0f172a]
-        border border-white/10
-        focus:outline-none
-        focus:ring-2 focus:ring-green-500
-      "
+      className="w-full p-3 rounded-lg bg-[#0f172a] border border-white/10
+      focus:outline-none focus:ring-2 focus:ring-green-500"
     />
   </div>
 );
 
 const Select = ({ label, options }) => (
   <div>
-    <label className="block text-sm text-slate-400 mb-1">
-      {label}
-    </label>
-    <select
-      className="
-        w-full p-3 rounded-lg
-        bg-[#0f172a]
-        border border-white/10
-        focus:outline-none
-        focus:ring-2 focus:ring-green-500
-      "
-    >
+    <label className="block text-sm text-slate-400 mb-1">{label}</label>
+    <select className="w-full p-3 rounded-lg bg-[#0f172a] border border-white/10">
       {options.map((opt) => (
         <option key={opt}>{opt}</option>
       ))}
@@ -199,33 +254,22 @@ const Select = ({ label, options }) => (
   </div>
 );
 
-/* ================= CONTROLLED TOGGLE ================= */
-
-const Toggle = ({ label, value, onChange, loading, disabled }) => {
-  return (
-    <div className="flex items-center justify-between select-none">
-      <span className="text-slate-300">{label}</span>
-
-      <button
-        disabled={loading || disabled}
-        onClick={onChange}
-        className={`
-          relative w-11 h-6 rounded-full transition-all duration-300
-          ${value ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]" : "bg-slate-600"}
-          ${(loading || disabled) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-        `}
-      >
-        <span
-          className={`
-            absolute top-0.5 left-0.5
-            w-5 h-5 rounded-full bg-white
-            transition-transform duration-300
-            ${value ? "translate-x-5" : ""}
-          `}
-        />
-      </button>
-    </div>
-  );
-};
+const Toggle = ({ label, value, onChange, loading, disabled }) => (
+  <div className="flex items-center justify-between">
+    <span className="text-slate-300">{label}</span>
+    <button
+      disabled={loading || disabled}
+      onClick={onChange}
+      className={`relative w-11 h-6 rounded-full ${
+        value ? "bg-green-500" : "bg-slate-600"
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full
+        ${value ? "translate-x-5" : ""}`}
+      />
+    </button>
+  </div>
+);
 
 export default SettingPage;

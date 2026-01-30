@@ -13,7 +13,7 @@ export const mailSender = async (email, title, body) => {
     });
 
     const info = await transporter.sendMail({
-      from: `"EnerSense" <no-reply@enersense.com>`,
+      from: `"EnerSense" <${process.env.MAIL_USER}>`,
       to: email,
       subject: title, 
       html: body,

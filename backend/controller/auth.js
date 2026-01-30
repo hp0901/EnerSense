@@ -9,6 +9,8 @@ import { sendWelcomeEmail } from "../Email/welcome.js";
 import Board from "../models/Board.js";
 import { generateUserUID, generateBoardUID } from "../utils/uid.js";
 import {forgotOtpTemplate} from "../Email/forgotOtpTemplate.js";
+import { passwordResetSuccessTemplate } from "../Email/passwordResetSuccessTemplate.js";
+import { isStrongPassword } from "../utils/passwordValidator.js";
 
 dotenv.config();
 
@@ -233,6 +235,8 @@ export const sendForgotPasswordOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
+    console.log(email);
+
     if (!email) {
       return res.status(400).json({
         success: false,
@@ -263,7 +267,7 @@ export const sendForgotPasswordOtp = async (req, res) => {
     await OTP.create({ email, otp });
 
     // 📧 Send OTP email (reuse your existing email util)
-    await forgotOtpTemplate({ email, firstName: user.firstName, otp });
+    await forgotOtpTemplate( email,  user.firstName, otp );
 
     return res.status(200).json({
       success: true,
@@ -341,11 +345,29 @@ export const resetPassword = async (req, res) => {
       });
     }
 
+    // 🔐 PASSWORD STRENGTH CHECK
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
+      });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    // 🚫 CHECK: new password must not be same as old
+    const isSamePassword = await bcrypt.compare(password, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password cannot be the same as the old password",
       });
     }
 
@@ -355,6 +377,13 @@ export const resetPassword = async (req, res) => {
     // ✅ Update password
     user.password = hashedPassword;
     await user.save();
+
+    // 📧 Send confirmation email (non-blocking)
+    try {
+      await passwordResetSuccessTemplate(user.email, user.firstName);
+    } catch (mailError) {
+      console.error("PASSWORD RESET EMAIL ERROR:", mailError.message);
+    }
 
     return res.status(200).json({
       success: true,
@@ -368,5 +397,7 @@ export const resetPassword = async (req, res) => {
     });
   }
 };
+
+
 
 

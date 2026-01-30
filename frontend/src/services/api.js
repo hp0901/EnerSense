@@ -27,6 +27,12 @@ export const chatbotEndpoints = {
 
 export const authEndpoints = {
   // ...existing
+  RESET_PASSWORD_API: BASE_URL + "/auth/reset-password",
   SEND_FORGOT_PASSWORD_OTP: BASE_URL + "/auth/forgot-password/send-otp",
   VERIFY_FORGOT_PASSWORD_OTP: BASE_URL +"/auth/forgot-password/verify-otp",
 };
+
+// Profile Update Api
+export const profileEndpoints = {
+   UPDATE_PROFILE: BASE_URL + "/profile/update",
+}

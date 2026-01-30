@@ -1,5 +1,10 @@
-export const forgotOtpTemplate = ({ firstName = "User", otp }) => {
-  return `
+import { mailSender } from "../utils/mailSender.js"
+
+export const forgotOtpTemplate = async (email, firstName = "User", otp ) => {
+  return await mailSender( 
+  email,
+  "Forgot Password otp",
+    `    
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,7 +38,7 @@ export const forgotOtpTemplate = ({ firstName = "User", otp }) => {
       margin-bottom: 30px;
     }
 
-    h1 {
+    h1 { 
       color: #16a34a;
       font-size: 34px;
       margin-bottom: 18px;
@@ -61,6 +66,7 @@ export const forgotOtpTemplate = ({ firstName = "User", otp }) => {
     .note {
       font-size: 15px;
       color: #666;
+      line-height: 1.6;
     }
 
     .divider {
@@ -72,9 +78,11 @@ export const forgotOtpTemplate = ({ firstName = "User", otp }) => {
     .footer {
       font-size: 15px;
       color: #666;
+      line-height: 1.6;
     }
   </style>
 </head>
+
 <body>
   <div class="wrapper">
     <div class="container">
@@ -85,31 +93,42 @@ export const forgotOtpTemplate = ({ firstName = "User", otp }) => {
         class="logo"
       />
 
-      <h1>Password Reset OTP ⚡</h1>
+      <h1>Password Reset Verification ⚡</h1>
 
       <p class="text">
         Hello <b>${firstName}</b>,<br /><br />
-        We received a request to reset your
-        <b style="color:#16a34a;">EnerSense</b> account password.
-        Use the OTP below to continue.
+        We received a request to reset the password for your
+        <b style="color:#16a34a;">EnerSense</b> account.
+        To proceed, please verify your identity using the OTP below.
       </p>
 
       <div class="otp-box">${otp}</div>
 
       <p class="note">
         ⏱ This OTP is valid for <b>5 minutes</b>.<br />
-        Please do not share this code with anyone.
+        If the OTP expires, please request a new one from the password reset page.
+      </p>
+
+      <p class="note" style="margin-top:15px;">
+        🔒 For security reasons, never share this OTP with anyone.
+        EnerSense support will never ask for your verification code.
+      </p>
+
+      <p class="note" style="margin-top:15px;">
+        ❓ If you did not request a password reset, you can safely ignore this email.
+        Your account will remain secure.
       </p>
 
       <div class="divider"></div>
 
       <p class="footer">
-        ⚡ <b>Team EnerSense</b>
+        ⚡ <b>Team EnerSense</b><br />
+        Smart Energy. Smarter Living.
       </p>
 
     </div>
   </div>
 </body>
 </html>
-`;
+`);
 };

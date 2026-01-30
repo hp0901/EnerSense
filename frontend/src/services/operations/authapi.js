@@ -104,16 +104,19 @@ export const resetPassword = async (data) => {
     );
     return res.data;
   } catch (err) {
-    throw err?.response?.data?.message || "Password reset failed";
+    throw err; // 👈 keep full error
   }
 };
+
 
 // ===============================
 // LOGOUT
 // ===============================
 export const logout = () => {
   localStorage.removeItem("token");
+  localStorage.removeItem("user"); // optional
 };
+ 
 
 // ===============================
 // VERIFY FORGOT PASSWORD OTP
@@ -205,3 +208,4 @@ export const sendForgotPasswordOtp = async (email) => {
     toast.dismiss(toastId);
   }
 };
+

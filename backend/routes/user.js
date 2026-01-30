@@ -15,7 +15,7 @@ router.post("/sendotp", sendotp);
 router.post("/forgot-password/send-otp", sendForgotPasswordOtp);
 router.post("/forgot-password/verify-otp", verifyForgotPasswordOtp);
 router.post("/google-login", googleLogin);
-router.post("/forgot-password/reset", resetPassword);
+router.post("/reset-password", resetPassword);
 
 
 export default router;
