@@ -1,28 +1,20 @@
-import nodemailer from  "nodemailer";
+import nodemailer from "nodemailer";
 
 export const mailSender = async (email, title, body) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST,
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-      },
-    });
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.GMAIL_USER,       
+      pass: process.env.GMAIL_APP_PASS,  
+    },
+  });
 
-    const info = await transporter.sendMail({
-      from: `"EnerSense" <${process.env.MAIL_USER}>`,
-      to: email,
-      subject: title, 
-      html: body,
-    }); 
+  const info = await transporter.sendMail({
+    from: `"EnerSense" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: title,
+    html: body,
+  });
 
-    console.log("Email sent:", info.messageId);
-    return info;
-  } catch (error) {
-    console.error("MailSender Error:", error.message);
-    throw error;
-  }
+  return info;
 };
