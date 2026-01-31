@@ -15,7 +15,7 @@ const store =  configureStore({
   reducer: rootReducer,
 });
 
-const YOUR_GOOGLE_CLIENT_ID = "314346617176-pn7ttmvhis5pa6g5ejcng51b5pgtj1gb.apps.googleusercontent.com"
+const YOUR_GOOGLE_CLIENT_ID = "820407272976-1chit6qgn0troolbo23jk6uvkvvk5leg.apps.googleusercontent.com"
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(

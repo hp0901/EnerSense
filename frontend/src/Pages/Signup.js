@@ -20,15 +20,46 @@ const statesOfIndia = [
 ];
 
 const electricityBoards = {
+  Andhra_Pradesh: ["APSPDCL", "APEPDCL"],
+  Arunachal_Pradesh: ["DOPAP"],
+  Assam: ["APDCL"],
+  Bihar: ["NBPDCL", "SBPDCL"],
+  Chhattisgarh: ["CSPDCL"],
+  Goa: ["GED"],
   Gujarat: ["PGVCL", "DGVCL", "UGVCL", "MGVCL"],
-  Maharashtra: ["MSEDCL"],
-  Rajasthan: ["JVVNL", "AVVNL", "JDVVNL"],
+  Haryana: ["DHBVN", "UHBVN"],
+  Himachal_Pradesh: ["HPSEBL"],
+  Jharkhand: ["JBVNL"],
   Karnataka: ["BESCOM", "MESCOM", "HESCOM", "GESCOM", "CESCOM"],
+  Kerala: ["KSEB"],
+  Madhya_Pradesh: ["MPPKVVCL", "MPMKVVCL", "MPPKVVCL"],
+  Maharashtra: ["MSEDCL"],
+  Manipur: ["MSPDCL"],
+  Meghalaya: ["MePDCL"],
+  Mizoram: ["PED_Mizoram"],
+  Nagaland: ["DOPN"],
+  Odisha: ["TPCODL", "TPNODL", "TPSODL", "TPWODL"],
+  Punjab: ["PSPCL"],
+  Rajasthan: ["JVVNL", "AVVNL", "JDVVNL"],
+  Sikkim: ["Sikkim_Power"],
   Tamil_Nadu: ["TANGEDCO"],
   Telangana: ["TSSPDCL", "TSNPDCL"],
+  Tripura: ["TSECL"],
   Uttar_Pradesh: ["PVVNL", "MVVNL", "DVVNL", "PUVVNL", "KESCO"],
+  Uttarakhand: ["UPCL"],
   West_Bengal: ["WBSEDCL", "CESC"],
+
+  // Union Territories
+  Delhi: ["BRPL", "BYPL", "TPDDL", "NDMC"],
+  Jammu_and_Kashmir: ["JKPDD"],
+  Ladakh: ["Ladakh_PDD"],
+  Puducherry: ["PED_Puducherry"],
+  Andaman_and_Nicobar: ["Electricity_Department_AN"],
+  Chandigarh: ["Electricity_Department_Chandigarh"],
+  Dadra_and_Nagar_Haveli_and_Daman_and_Diu: ["DNH_Power"],
+  Lakshadweep: ["Electricity_Department_Lakshadweep"]
 };
+
 
 /* ===============================
    SIGNUP COMPONENT
@@ -127,7 +158,7 @@ const Signup = () => {
         className="absolute inset-0 w-full h-full object-cover"
         alt="Signup background"
       />
-      <div className="absolute inset-0 bg-black/70" />
+      <div className="absolute inset-0" />
 
       {/* CARD */}
       <div className="relative z-10 w-full max-w-lg rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white">

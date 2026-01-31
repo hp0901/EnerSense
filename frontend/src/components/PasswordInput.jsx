@@ -60,7 +60,8 @@ const PasswordInput = ({ value, onChange }) => {
           onClick={() => setShow(!show)}
           className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
         >
-          {show ? <FiEyeOff /> : <FiEye />}
+          {/* Added text-slate-400 to change the icon color */}
+          {show ? <FiEyeOff className="text-slate-400" /> : <FiEye className="text-slate-400" />}
         </span>
       </div>
 
