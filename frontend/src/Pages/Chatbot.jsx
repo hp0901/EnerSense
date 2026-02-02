@@ -2,15 +2,29 @@ import { useState, useEffect } from "react";
 import { Zap, X } from "lucide-react";
 import { sendChatbotMessage } from "../services/operations/chatbotApi";
 
+/* ---------------- STATIC HINT MESSAGES ---------------- */
+const HINT_MESSAGES = [
+  "Hey 👋 Need help with electricity usage?",
+  "⚡ Check your real-time power consumption",
+  "🔌 Ask me about your devices or boards",
+  "📊 Want today’s energy summary?"
+];
+
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [showHint, setShowHint] = useState(true);
+  const [hintMessage, setHintMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [userMsg, setUserMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 👋 Show welcome hint for few seconds
+  /* ---------------- RANDOM HINT (ONCE) ---------------- */
   useEffect(() => {
+    const randomHint =
+      HINT_MESSAGES[Math.floor(Math.random() * HINT_MESSAGES.length)];
+
+    setHintMessage(randomHint);
+
     const timer = setTimeout(() => {
       setShowHint(false);
     }, 3500);
@@ -18,16 +32,16 @@ export default function Chatbot() {
     return () => clearTimeout(timer);
   }, []);
 
+  /* ---------------- SEND MESSAGE ---------------- */
   const handleSendMessage = async () => {
     if (!userMsg.trim() || loading) return;
 
     const currentMsg = userMsg;
 
-    // Clear input immediately
     setUserMsg("");
     setLoading(true);
 
-    // Add user message first
+    // add user message
     setMessages((prev) => [
       ...prev,
       { sender: "user", text: currentMsg },
@@ -36,18 +50,17 @@ export default function Chatbot() {
     try {
       const reply = await sendChatbotMessage(currentMsg);
 
-      // Add bot reply
+      // add bot reply
       setMessages((prev) => [
         ...prev,
         { sender: "bot", text: reply },
       ]);
     } catch (error) {
-      // Error fallback message
       setMessages((prev) => [
         ...prev,
         {
           sender: "bot",
-          text: "⚠️ Sorry, I couldn’t respond right now.",
+          text: "⚠️ Sorry, I couldn't respond right now.",
         },
       ]);
     } finally {
@@ -60,7 +73,7 @@ export default function Chatbot() {
       {/* 💬 Welcome Hint */}
       {!isOpen && showHint && (
         <div className="fixed bottom-20 right-6 z-50 bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg text-sm">
-          Hey 👋 Need help with electricity usage?
+          {hintMessage}
           <div className="absolute -bottom-2 right-6 w-3 h-3 bg-white rotate-45" />
         </div>
       )}

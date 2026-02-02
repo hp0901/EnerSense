@@ -4,6 +4,6 @@ import { auth } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.post("/message",  chatbotMessage);
+router.post("/message", auth, chatbotMessage);
 
 export default router;
