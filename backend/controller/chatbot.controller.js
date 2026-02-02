@@ -1,10 +1,7 @@
-import { getChatbotReply } from "../utils/chatbot.logic.js";
-import User from "../models/User.js"; // your user model
-
 export const chatbotMessage = async (req, res) => {
   try {
     const { message } = req.body;
-    const user = req.user; // comes from middleware
+    const user = req.user || null;
 
     if (!message) {
       return res.status(400).json({
@@ -16,13 +13,14 @@ export const chatbotMessage = async (req, res) => {
     const lowerMsg = message.toLowerCase();
 
     // 🔐 User-specific questions
-    if (
+    const asksPersonal =
       lowerMsg.includes("my name") ||
       lowerMsg.includes("my usage") ||
       lowerMsg.includes("my power") ||
-      lowerMsg.includes("my details")
-    ) {
-      if (!user) {
+      lowerMsg.includes("my details");
+
+    if (asksPersonal) {
+      if (!user || !user.id) {
         return res.status(200).json({
           success: true,
           reply:
@@ -30,8 +28,14 @@ export const chatbotMessage = async (req, res) => {
         });
       }
 
-      // Fetch user details
       const dbUser = await User.findById(user.id).select("name email");
+
+      if (!dbUser) {
+        return res.status(200).json({
+          success: true,
+          reply: "I couldn’t find your account details right now 😕",
+        });
+      }
 
       return res.status(200).json({
         success: true,
@@ -41,15 +45,17 @@ You can view detailed usage insights on your dashboard 📊`,
       });
     }
 
-    // 🤖 Normal chatbot reply
-    const reply = getChatbotReply(message);
+    // 🤖 Normal chatbot reply (SAFE)
+    const reply = getChatbotReply(message) || "I'm here to help ⚡";
 
     return res.status(200).json({
       success: true,
       reply,
     });
+
   } catch (error) {
-    console.error("Chatbot Error:", error);
+    console.error("Chatbot Error:", error.message);
+
     return res.status(500).json({
       success: false,
       reply:
