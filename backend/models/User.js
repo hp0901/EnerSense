@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      // select: false, // 🔐 hides password by default
     },
 
     phone: {
@@ -26,7 +25,6 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
 
     state: { type: String, required: true },
     board: { type: String, required: true },
@@ -55,16 +53,45 @@ const userSchema = new mongoose.Schema(
       default: "Silver",
     },
 
+    // 🔐 PREMIUM SUBSCRIPTION FIELDS
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+
+    premiumPlan: {
+      type: String,
+      enum: ["1-month", "6-month", "1-year"],
+      default: null,
+    },
+
+    premiumStartedAt: {
+      type: Date,
+      default: null,
+    },
+
+    premiumExpiresAt: {
+      type: Date,
+      default: null,
+    },
+
+    premiumExpiryReminderSent: {
+    type: Boolean,
+    default: false,
+    },
+
+    // 🔑 Unique EnerSense ID
     userUID: {
       type: String,
       unique: true,
       index: true,
     },
+
   },
   { timestamps: true }
 );
 
-/// 🔥 AUTO-GENERATE UID (SYNC)
+/// 🔥 AUTO-GENERATE UID
 userSchema.pre("save", function () {
   if (!this.userUID) {
     this.userUID =

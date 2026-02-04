@@ -12,23 +12,31 @@ import ForgetPassword from "./Pages/ForgetPassword";
 import Otp from "./Pages/Otp";
 import CompanyCenter from "./Footer/CompanyCenter";
 import EnergyAwareness from "./Pages/EnergyAwareness";
-import Contact from './Pages/Contact';
-import About from './Pages/about'
+import Contact from "./Pages/Contact";
+import About from "./Pages/about";
 import IoTDevices from "./Footer/IoTDevices";
-import Legal from "./Footer/Legal"
+import Legal from "./Footer/Legal";
 import ResourcesCenter from "./Footer/ResourcesCenter";
 import ResetPassword from "./Pages/ResetPassword";
 import DeviceControl from "./Pages/DeviceControl";
 import EnerSenseFAQ from "./Pages/EnerSenseFAQ";
 import VerifyCard from "./components/VerifyCard";
+import CheckoutPage from "./components/CheckoutPage.jsx"; 
 import Chatbot from "./Pages/Chatbot";
+import MyPlanPage from "./Pages/MyPlanPage.jsx";
+import MyPayments from "./Pages/MyPayments.jsx";
 import Error from "./Pages/Error";
+
+// ✅ NEW IMPORT
+import PricingPage from "./components/PricingPage.jsx";
+import PremiumContact from "./Pages/Premium-Contact.jsx";
 
 const App = () => {
   return (
     <>
       <Navbar />
       <Chatbot />
+
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
@@ -37,7 +45,11 @@ const App = () => {
         <Route path="/verify/:uid" element={<VerifyCard />} />
         <Route path="/otp" element={<Otp />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/premium" element={<MyPlanPage />}   />
+        <Route path="/Premium-Contact" element={<PremiumContact />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/faqs" element={<EnerSenseFAQ />} />
+        <Route path="/my-payments" element={<MyPayments />} />
         <Route path="/settings" element={<SettingPage />} />
         <Route path="/energy-awareness" element={<EnergyAwareness />} />
         <Route path="/iot-devices" element={<IoTDevices />} />
@@ -49,6 +61,10 @@ const App = () => {
         <Route path="/energy-meter-dashboard" element={<EnergyMeterDashboard />} />
         <Route path="/about" element={<About />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
+
+        {/* ✅ PRICING PAGE ROUTE */}
+        <Route path="/pricing" element={<PricingPage />} />
+
         <Route path="*" element={<Error />} />
       </Routes>
     </>

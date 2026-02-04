@@ -11,13 +11,40 @@ import PasswordInput from "../components/PasswordInput";
    STATES & BOARDS
 ================================ */
 const statesOfIndia = [
-  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa",
-  "Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala",
-  "Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland",
-  "Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
-  "Uttar Pradesh","Uttarakhand","West Bengal","Delhi","Jammu and Kashmir",
-  "Ladakh","Puducherry"
+  "Andhra_Pradesh",
+  "Arunachal_Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal_Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya_Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil_Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar_Pradesh",
+  "Uttarakhand",
+  "West_Bengal",
+  "Delhi",
+  "Jammu_and_Kashmir",
+  "Ladakh",
+  "Puducherry"
 ];
+
 
 const electricityBoards = {
   Andhra_Pradesh: ["APSPDCL", "APEPDCL"],
@@ -48,8 +75,6 @@ const electricityBoards = {
   Uttar_Pradesh: ["PVVNL", "MVVNL", "DVVNL", "PUVVNL", "KESCO"],
   Uttarakhand: ["UPCL"],
   West_Bengal: ["WBSEDCL", "CESC"],
-
-  // Union Territories
   Delhi: ["BRPL", "BYPL", "TPDDL", "NDMC"],
   Jammu_and_Kashmir: ["JKPDD"],
   Ladakh: ["Ladakh_PDD"],

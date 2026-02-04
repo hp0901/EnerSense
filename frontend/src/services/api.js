@@ -1,8 +1,8 @@
 //User Profile API Service
 
-// const BASE_URL = 'http://localhost:4000/api/v1';
+const BASE_URL = 'http://localhost:4000/api/v1';
 
-const BASE_URL = "https://enersense.duckdns.org/api/v1";
+// const BASE_URL = "https://enersense.duckdns.org/api/v1";
 
 export const userProfile = {
   // auth (already there)
@@ -35,4 +35,18 @@ export const authEndpoints = {
 // Profile Update Api
 export const profileEndpoints = {
    UPDATE_PROFILE: BASE_URL + "/profile/update",
+   GET_PROFILE: BASE_URL + "/profile/me",
 }
+
+// Premium APIs
+export const premiumEndpoints = {
+  ACTIVATE_PREMIUM: BASE_URL + "/premium/activate",
+  CAPTURE_PREMIUM: BASE_URL + "/premium/capture",
+  VERIFY_PREMIUM: BASE_URL + "/premium/verify",
+};
+
+// Payment APIs
+export const paymentEndpoints = {
+  GET_MY_PAYMENTS: "/payments/my-payments",
+};
+

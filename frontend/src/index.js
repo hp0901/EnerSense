@@ -10,8 +10,9 @@ import rootReducer from './reducer/index.js';
 import { Toaster } from "react-hot-toast";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './context/AuthContex.js';
+import { UserProvider } from './context/UserContext.js';
 
-const store =  configureStore({
+const store = configureStore({
   reducer: rootReducer,
 });
 
@@ -21,19 +22,20 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-    <BrowserRouter>
-    <GoogleOAuthProvider clientId={YOUR_GOOGLE_CLIENT_ID}>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </GoogleOAuthProvider>
-      <Toaster position="top-center" reverseOrder={false} />
-    </BrowserRouter>
+      <BrowserRouter>
+        <GoogleOAuthProvider clientId={YOUR_GOOGLE_CLIENT_ID}>
+          <AuthProvider>
+            {/* 👇 ADD THIS */}
+            <UserProvider>
+              <App />
+            </UserProvider>
+          </AuthProvider>
+        </GoogleOAuthProvider>
+
+        <Toaster position="top-center" reverseOrder={false} />
+      </BrowserRouter>
     </Provider>
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
