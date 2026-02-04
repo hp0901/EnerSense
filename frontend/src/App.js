@@ -23,6 +23,7 @@ import EnerSenseFAQ from "./Pages/EnerSenseFAQ";
 import VerifyCard from "./components/VerifyCard";
 import CheckoutPage from "./components/CheckoutPage.jsx"; 
 import Chatbot from "./Pages/Chatbot";
+import PremiumBenefitsPage from "./Pages/PremiumBenefitsPage.jsx";
 import MyPlanPage from "./Pages/MyPlanPage.jsx";
 import MyPayments from "./Pages/MyPayments.jsx";
 import Error from "./Pages/Error";
@@ -49,6 +50,7 @@ const App = () => {
         <Route path="/Premium-Contact" element={<PremiumContact />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/faqs" element={<EnerSenseFAQ />} />
+        <Route path="/premium-benefits" element={<PremiumBenefitsPage />} />
         <Route path="/my-payments" element={<MyPayments />} />
         <Route path="/settings" element={<SettingPage />} />
         <Route path="/energy-awareness" element={<EnergyAwareness />} />

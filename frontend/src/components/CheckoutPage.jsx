@@ -86,7 +86,7 @@ export default function CheckoutPage() {
             await fetchUser();
 
             // 6️⃣ Redirect
-            navigate("/payment-success");
+            navigate("/premium-benefits");
           } catch (error) {
             console.error(error);
             toast.error("Payment verification failed");

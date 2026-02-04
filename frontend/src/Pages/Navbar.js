@@ -37,7 +37,7 @@ const Navbar = () => {
     { name: "Dashboard", path: "/dashboard", auth: "private" },
     { name: "Energy Meter", path: "/energy-meter-dashboard", auth: "private" },
     { name: "Device Control", path: "/device-control", auth: "private" },
-
+    { name: "Premium Benefits", path: "/premium-benefits", auth: "private" },
     // 💎 Monetization
 isPremium
   ? { name: "My Plan", path: "/premium", auth: "private" }
@@ -175,9 +175,9 @@ isPremium
                 <span>{link.name}</span>
 
                 {/* 💎 Upgrade Badge */}
-                {link.name === "Pricing" && !isPremium && (
+                {(link.name === "Pricing" || link.name === "Premium Benefits") && !isPremium && (
                   <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">
-                    Upgrade
+                    Pro
                   </span>
                 )}
               </Link>
