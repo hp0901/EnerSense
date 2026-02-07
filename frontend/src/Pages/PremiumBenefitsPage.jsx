@@ -52,39 +52,45 @@ const benefits = [
     description:
       "Get real-time notifications for power usage spikes, device activity, and abnormal energy behavior without limits.",
     icon: <Zap className="text-yellow-500" />,
+    link: "/alerts",
   },
   {
     title: "Fault detection",
     description:
       "Automatically detects electrical faults, overloads, and unusual power patterns to help prevent failures.",
     icon: <Zap className="text-red-500" />,
+    link: "/fault-detection",
   },
   {
     title: "CO₂ & Green score",
     description:
-      "Track your carbon footprint and see how eco-friendly your energy usage is with an easy-to-understand green score.",
+      "Track your carbon footprint and see how eco-friendly your energy usage is.",
     icon: <Leaf className="text-green-600" />,
     chart: "co2",
+    link: "/green-score",
   },
   {
     title: "Bill prediction",
     description:
-      "Estimate your upcoming electricity bill based on current consumption and historical usage trends.",
+      "Estimate your upcoming electricity bill based on current consumption.",
     icon: <LineIcon className="text-indigo-600" />,
     chart: "bill",
+    link: "/bill-prediction",
   },
   {
     title: "Monthly reports",
     description:
-      "Receive detailed monthly energy reports with insights, trends, and suggestions to optimize consumption.",
+      "Receive detailed monthly energy reports with insights and optimization suggestions.",
     icon: <BarChart3 className="text-blue-600" />,
     chart: "usage",
+    link: "/reports",
   },
   {
     title: "Priority support",
     description:
-      "Get faster responses and dedicated assistance from the EnerSense support team whenever you need help.",
+      "Get faster responses and dedicated assistance from EnerSense support.",
     icon: <Headphones className="text-purple-600" />,
+    link: "/support",
   },
 ];
 
@@ -125,55 +131,77 @@ export default function PremiumBenefitsPage() {
       <div className="space-y-6">
         {benefits.map((item, index) => (
           <div
-            key={index}
-            className={`p-6 rounded-2xl border ${
-              isPremium
-                ? "bg-green-50 border-green-200"
-                : "bg-gray-50 border-gray-200"
-            }`}
-          >
-            {/* TITLE + ICON */}
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-1">{item.icon}</div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 max-w-xl">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
+  key={index}
+  className={`p-6 rounded-2xl border transition-all duration-200
+  ${
+    isPremium
+      ? "bg-green-50 border-green-200"
+      : "bg-white border-gray-200 hover:shadow-md"
+  }`}
+>
+  <div className="flex justify-between items-start gap-4">
+    <div className="flex items-start gap-3">
+      <div className="mt-1">{item.icon}</div>
 
-              <span className="text-xl">
-                {isPremium ? "✔" : "🔒"}
-              </span>
-            </div>
+      <div>
+        <h3 className="font-semibold text-lg text-gray-900">
+          {item.title}
+        </h3>
 
-            {/* GRAPH PREVIEW */}
-            {item.chart && (
-              <div
-                className={`mt-6 h-40 ${
-                  !isPremium ? "opacity-70 blur-[1px]" : ""
-                }`}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={getChartData(item.chart)}>
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#4f46e5"
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </div>
+        <p className="text-sm text-gray-600 mt-1 max-w-xl">
+          {item.description}
+        </p>
+      </div>
+    </div>
+
+    <span className="text-xl">
+      {isPremium ? "✔" : "🔒"}
+    </span>
+  </div>
+
+  {/* GRAPH PREVIEW */}
+  {item.chart && (
+    <div
+      className={`mt-6 h-40 ${
+        !isPremium ? "opacity-70 blur-[1px]" : ""
+      }`}
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={getChartData(item.chart)}>
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#4f46e5"
+            strokeWidth={2}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  )}
+
+  {/* ACTION BUTTON */}
+  <div className="mt-5 flex gap-3">
+    <button
+      onClick={() => navigate(item.link)}
+      className="px-4 py-2 text-sm rounded-lg border border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+    >
+      View Feature
+    </button>
+
+    {!isPremium && (
+      <button
+        onClick={() => navigate("/pricing")}
+        className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+      >
+        Upgrade
+      </button>
+    )}
+  </div>
+</div>
+
         ))}
       </div>
 
