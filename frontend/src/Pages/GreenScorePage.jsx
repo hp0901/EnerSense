@@ -1,6 +1,7 @@
 import { Leaf } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -10,20 +11,35 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-/* ---------------- MOCK BACKEND DATA ---------------- */
+/* ---------------- RANDOM DATA GENERATOR ---------------- */
 
-const co2Data = [
-  { month: "Jan", co2: 42 },
-  { month: "Feb", co2: 38 },
-  { month: "Mar", co2: 34 },
-  { month: "Apr", co2: 30 },
+const months = [
+  "Jan", "Feb", "Mar", "Apr", "May",
+  "Jun", "Jul", "Aug", "Sep", "Oct"
 ];
 
-const greenScoreData = {
-  score: 82,
-  status: "Good",
-  message:
-    "Your energy usage is more efficient than 68% of similar households.",
+const generateRandomCO2Data = () => {
+  let base = 50;
+
+  return months.map((month) => {
+    base = base - Math.random() * 3 + Math.random() * 2;
+    return {
+      month,
+      co2: Math.max(20, Math.round(base)),
+    };
+  });
+};
+
+const generateGreenScore = () => {
+  const score = Math.floor(Math.random() * 20) + 70; // 70–90
+  return {
+    score,
+    status: score >= 80 ? "Good" : "Average",
+    message:
+      score >= 80
+        ? "Your energy usage is more efficient than most households."
+        : "You can improve efficiency by reducing peak-time consumption.",
+  };
 };
 
 /* ---------------- COMPONENT ---------------- */
@@ -33,6 +49,10 @@ export default function GreenScorePage() {
   const navigate = useNavigate();
 
   const isPremium = user?.isPremium;
+
+  // Generate data once per page load
+  const co2Data = useMemo(() => generateRandomCO2Data(), []);
+  const greenScoreData = useMemo(() => generateGreenScore(), []);
 
   const getScoreColor = () => {
     if (greenScoreData.score >= 80) return "text-green-600";
@@ -84,7 +104,7 @@ export default function GreenScorePage() {
         {/* CO2 CHART */}
         <div className="bg-white border rounded-2xl p-6 shadow-md mb-12">
           <h2 className="font-semibold text-lg mb-6">
-            CO₂ Emission Trend
+            CO₂ Emission Trend (Demo Data)
           </h2>
 
           <div className="h-64">
@@ -124,11 +144,6 @@ export default function GreenScorePage() {
             <h3 className="text-lg font-semibold mb-2">
               Unlock Sustainability Insights
             </h3>
-
-            <p className="text-gray-600 mb-4">
-              Upgrade to premium to track your carbon footprint and improve
-              your green score with advanced analytics.
-            </p>
 
             <button
               onClick={() => navigate("/pricing")}

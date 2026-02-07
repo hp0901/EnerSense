@@ -7,7 +7,6 @@ import {
   Zap,
   BarChart3,
   LineChart as LineIcon,
-  FileText,
   Headphones,
 } from "lucide-react";
 
