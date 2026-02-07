@@ -14,8 +14,8 @@ import {
 /* ---------------- RANDOM DATA GENERATOR ---------------- */
 
 const months = [
-  "Jan", "Feb", "Mar", "Apr", "May",
-  "Jun", "Jul", "Aug", "Sep", "Oct"
+  "Jan","Feb","Mar","Apr","May",
+  "Jun","Jul","Aug","Sep","Oct"
 ];
 
 const generateRandomCO2Data = () => {
@@ -53,14 +53,16 @@ export default function GreenScorePage() {
   const co2Data = useMemo(() => generateRandomCO2Data(), []);
   const greenScoreData = useMemo(() => generateGreenScore(), []);
 
-  /* ---------- CO2 REDUCTION CALC ---------- */
+  /* CO2 REDUCTION CALC */
   const reductionPercent = useMemo(() => {
-    const first = co2Data[0].co2;
-    const last = co2Data[co2Data.length - 1].co2;
-    return Math.max(0, Math.round(((first - last) / first) * 100));
+    const first = co2Data[0]?.co2 || 0;
+    const last = co2Data[co2Data.length - 1]?.co2 || 0;
+    return first > 0
+      ? Math.max(0, Math.round(((first - last) / first) * 100))
+      : 0;
   }, [co2Data]);
 
-  /* ---------- GAUGE CALC ---------- */
+  /* GAUGE CONFIG */
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const offset =
@@ -91,16 +93,16 @@ export default function GreenScorePage() {
           </p>
         </div>
 
-        {/* GREEN SCORE + GAUGE */}
+        {/* GREEN SCORE SECTION */}
         <div className="bg-white border rounded-2xl p-6 shadow-md mb-12">
           <h2 className="font-semibold text-lg mb-6">
             Your Green Score
           </h2>
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-10">
 
             {/* GAUGE */}
-            <div className="relative">
+            <div className="relative flex items-center justify-center">
               <svg width="180" height="180">
                 <circle
                   cx="90"
@@ -128,28 +130,36 @@ export default function GreenScorePage() {
                 />
               </svg>
 
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-3xl font-bold">
                   {greenScoreData.score}
                 </span>
+                <Leaf className="text-green-600 mt-1" size={20} />
               </div>
             </div>
 
-            {/* TEXT INFO */}
-            <div>
-              <p className="text-gray-600 mt-1">
-                Status: {greenScoreData.status}
+            {/* INFO */}
+            <div className="flex-1">
+              <p className="text-gray-600">
+                Status:{" "}
+                <span className="font-semibold">
+                  {greenScoreData.status}
+                </span>
               </p>
+
               <p className="text-sm text-gray-500 mt-2 max-w-md">
                 {greenScoreData.message}
               </p>
 
-              <div className="mt-4 bg-green-50 border border-green-200 rounded-lg px-4 py-2 inline-block">
-                🌿 CO₂ reduced by{" "}
-                <span className="font-semibold text-green-600">
-                  {reductionPercent}%
-                </span>{" "}
-                over last months
+              <div className="mt-4 bg-green-50 border border-green-200 rounded-lg px-4 py-2 inline-flex items-center gap-2">
+                <Leaf className="text-green-600" size={18} />
+                <span>
+                  CO₂ reduced by{" "}
+                  <span className="font-semibold text-green-600">
+                    {reductionPercent}%
+                  </span>{" "}
+                  over last months
+                </span>
               </div>
             </div>
           </div>
@@ -177,20 +187,29 @@ export default function GreenScorePage() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
 
-        {/* HOW IT WORKS */}
-        <div className="mb-12 bg-white border rounded-2xl p-6 shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">
-            How Green Score Works
-          </h2>
+          <p className="text-sm text-gray-500 mt-2">
+            Last updated: {co2Data[co2Data.length - 1]?.month}
+          </p>
+           </div>
 
-          <ul className="space-y-2 text-gray-600">
-            <li>• EnerSense analyzes energy consumption patterns.</li>
-            <li>• CO₂ emissions are estimated from energy usage.</li>
-            <li>• Efficient usage improves your green score.</li>
-            <li>• Suggestions help reduce environmental impact.</li>
-          </ul>
+          {/* HOW IT WORKS */}
+          <div className="mt-6 text-sm text-gray-600 rounded-lg p-4 bg-green-50 border border-green-200">
+            <p className="font-semibold mb-2">How Green Score Works</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>EnerSense analyzes energy consumption patterns.</li>
+              <li>CO₂ emissions are estimated from energy usage.</li>
+              <li>Efficient usage improves your green score.</li>
+              <li>Suggestions help reduce environmental impact.</li>
+            </ul>
+
+            <p className="mt-3">
+              Your Green Score is calculated based on energy consumption,
+              time-of-use patterns, and estimated carbon emissions.
+              A higher score indicates more efficient and eco-friendly
+              energy usage.
+            </p>
+         
         </div>
 
         {/* CTA */}
