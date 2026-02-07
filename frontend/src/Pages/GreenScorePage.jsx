@@ -1,7 +1,7 @@
 import { Leaf } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -52,6 +52,24 @@ export default function GreenScorePage() {
 
   const co2Data = useMemo(() => generateRandomCO2Data(), []);
   const greenScoreData = useMemo(() => generateGreenScore(), []);
+
+  /* -------- ANIMATED SCORE COUNTER -------- */
+  const [displayScore, setDisplayScore] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const end = greenScoreData.score;
+    const duration = 900;
+    const stepTime = Math.abs(Math.floor(duration / end));
+
+    const timer = setInterval(() => {
+      start += 1;
+      setDisplayScore(start);
+      if (start >= end) clearInterval(timer);
+    }, stepTime);
+
+    return () => clearInterval(timer);
+  }, [greenScoreData.score]);
 
   /* CO2 REDUCTION CALC */
   const reductionPercent = useMemo(() => {
@@ -132,7 +150,7 @@ export default function GreenScorePage() {
 
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-3xl font-bold">
-                  {greenScoreData.score}
+                  {displayScore}
                 </span>
                 <Leaf className="text-green-600 mt-1" size={20} />
               </div>
@@ -191,25 +209,45 @@ export default function GreenScorePage() {
           <p className="text-sm text-gray-500 mt-2">
             Last updated: {co2Data[co2Data.length - 1]?.month}
           </p>
-           </div>
+        </div>
 
-          {/* HOW IT WORKS */}
-          <div className="mt-6 text-sm text-gray-600 rounded-lg p-4 bg-green-50 border border-green-200">
-            <p className="font-semibold mb-2">How Green Score Works</p>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>EnerSense analyzes energy consumption patterns.</li>
-              <li>CO₂ emissions are estimated from energy usage.</li>
-              <li>Efficient usage improves your green score.</li>
-              <li>Suggestions help reduce environmental impact.</li>
-            </ul>
+        {/* AI SUGGESTIONS */}
+        <div className="bg-white border rounded-2xl p-6 shadow-md mb-12">
+          <h2 className="font-semibold text-lg mb-4">
+            AI Suggestions to Improve Score
+          </h2>
 
-            <p className="mt-3">
-              Your Green Score is calculated based on energy consumption,
-              time-of-use patterns, and estimated carbon emissions.
-              A higher score indicates more efficient and eco-friendly
-              energy usage.
-            </p>
-         
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-green-50 border border-green-200">
+              🌿 Reduce AC usage during peak hours to save up to 8% energy.
+            </div>
+
+            <div className="p-4 rounded-xl bg-green-50 border border-green-200">
+              ⚡ Switching to LED lighting can reduce CO₂ emissions.
+            </div>
+
+            <div className="p-4 rounded-xl bg-green-50 border border-green-200">
+              🔌 Turn off standby devices to improve efficiency score.
+            </div>
+          </div>
+        </div>
+
+        {/* HOW IT WORKS */}
+        <div className="mt-6 text-sm text-gray-600 rounded-lg p-4 bg-green-50 border border-green-200">
+          <p className="font-semibold mb-2">How Green Score Works</p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>EnerSense analyzes energy consumption patterns.</li>
+            <li>CO₂ emissions are estimated from energy usage.</li>
+            <li>Efficient usage improves your green score.</li>
+            <li>Suggestions help reduce environmental impact.</li>
+          </ul>
+
+          <p className="mt-3">
+            Your Green Score is calculated based on energy consumption,
+            time-of-use patterns, and estimated carbon emissions.
+            A higher score indicates more efficient and eco-friendly
+            energy usage.
+          </p>
         </div>
 
         {/* CTA */}
