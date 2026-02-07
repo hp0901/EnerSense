@@ -9,11 +9,10 @@ const UserCardQR = ({ card }) => {
   return (
     <div className="flex flex-col items-center gap-2">
       {/* QR Container */}
-      <div className="relative p-3 bg-white rounded-xl shadow-md border">
+      <div className="relative p-2 rounded-xl shadow-md inline-flex items-center justify-center">
         <QRCodeCanvas
           value={qrUrl}
           size={110}
-          bgColor="#ffffff"
           fgColor="#000000"
           level="H"
         />
