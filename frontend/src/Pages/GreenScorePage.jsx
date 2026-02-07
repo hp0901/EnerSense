@@ -31,7 +31,8 @@ const generateRandomCO2Data = () => {
 };
 
 const generateGreenScore = () => {
-  const score = Math.floor(Math.random() * 20) + 70; // 70–90
+  const score = Math.floor(Math.random() * 20) + 70;
+
   return {
     score,
     status: score >= 80 ? "Good" : "Average",
@@ -47,17 +48,29 @@ const generateGreenScore = () => {
 export default function GreenScorePage() {
   const { user } = useUser();
   const navigate = useNavigate();
-
   const isPremium = user?.isPremium;
 
-  // Generate data once per page load
   const co2Data = useMemo(() => generateRandomCO2Data(), []);
   const greenScoreData = useMemo(() => generateGreenScore(), []);
 
+  /* ---------- CO2 REDUCTION CALC ---------- */
+  const reductionPercent = useMemo(() => {
+    const first = co2Data[0].co2;
+    const last = co2Data[co2Data.length - 1].co2;
+    return Math.max(0, Math.round(((first - last) / first) * 100));
+  }, [co2Data]);
+
+  /* ---------- GAUGE CALC ---------- */
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
+  const offset =
+    circumference -
+    (greenScoreData.score / 100) * circumference;
+
   const getScoreColor = () => {
-    if (greenScoreData.score >= 80) return "text-green-600";
-    if (greenScoreData.score >= 60) return "text-yellow-600";
-    return "text-red-600";
+    if (greenScoreData.score >= 80) return "#16a34a";
+    if (greenScoreData.score >= 60) return "#ca8a04";
+    return "#dc2626";
   };
 
   return (
@@ -78,26 +91,67 @@ export default function GreenScorePage() {
           </p>
         </div>
 
-        {/* GREEN SCORE CARD */}
+        {/* GREEN SCORE + GAUGE */}
         <div className="bg-white border rounded-2xl p-6 shadow-md mb-12">
-          <h2 className="font-semibold text-lg mb-4">
+          <h2 className="font-semibold text-lg mb-6">
             Your Green Score
           </h2>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+
+            {/* GAUGE */}
+            <div className="relative">
+              <svg width="180" height="180">
+                <circle
+                  cx="90"
+                  cy="90"
+                  r={radius}
+                  stroke="#e5e7eb"
+                  strokeWidth="12"
+                  fill="none"
+                />
+                <circle
+                  cx="90"
+                  cy="90"
+                  r={radius}
+                  stroke={getScoreColor()}
+                  strokeWidth="12"
+                  fill="none"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  strokeLinecap="round"
+                  style={{
+                    transition: "stroke-dashoffset 1.2s ease",
+                    transform: "rotate(-90deg)",
+                    transformOrigin: "50% 50%",
+                  }}
+                />
+              </svg>
+
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-3xl font-bold">
+                  {greenScoreData.score}
+                </span>
+              </div>
+            </div>
+
+            {/* TEXT INFO */}
             <div>
-              <p className={`text-5xl font-bold ${getScoreColor()}`}>
-                {greenScoreData.score}
-              </p>
               <p className="text-gray-600 mt-1">
                 Status: {greenScoreData.status}
               </p>
               <p className="text-sm text-gray-500 mt-2 max-w-md">
                 {greenScoreData.message}
               </p>
-            </div>
 
-            <div className="text-6xl">🌱</div>
+              <div className="mt-4 bg-green-50 border border-green-200 rounded-lg px-4 py-2 inline-block">
+                🌿 CO₂ reduced by{" "}
+                <span className="font-semibold text-green-600">
+                  {reductionPercent}%
+                </span>{" "}
+                over last months
+              </div>
+            </div>
           </div>
         </div>
 
@@ -118,6 +172,7 @@ export default function GreenScorePage() {
                   dataKey="co2"
                   stroke="#16a34a"
                   strokeWidth={3}
+                  animationDuration={1200}
                 />
               </LineChart>
             </ResponsiveContainer>
