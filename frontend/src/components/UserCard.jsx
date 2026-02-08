@@ -18,10 +18,12 @@ const cardStyles = {
     badge: "text-purple-800 border-purple-700 bg-purple-300/50",
   },
   Bronze: {
-    bg: "bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-200",
-    border: "border-yellow-500",
-    badge: "text-yellow-800 border-yellow-600 bg-yellow-300/50",
-  },
+  bg: "bg-gradient-to-br from-[#f5e6c8] via-[#e0b97a] to-[#b07a3f]",
+  border: "border-[#8b5a2b]",
+  badge: "text-[#5c3a1e] border-[#8b5a2b] bg-[#e6c79c]/70",
+},
+
+
 };
 
 const UserCard = ({ card }) => {
@@ -76,27 +78,20 @@ const UserCard = ({ card }) => {
               </span>
               <span className="font-mono">{card.userUID}</span>
             </div>
-
             <div className="flex flex-col border-l-2 border-slate-300 pl-3">
               <span className="opacity-50 text-[9px] md:text-[10px]">
                 Board UID
               </span>
               <span className="font-mono">{card.boardUID}</span>
             </div>
-
-<div className="flex flex-col border-l-2 border-slate-300 pl-3 min-w-0">
-  <span className="opacity-50 text-[9px] md:text-[10px]">
-    Phone
-  </span>
-
- <span className="font-mono tracking-wide">
-  {card.phone}
-</span>
-
-
-</div>
-
-
+            <div className="flex flex-col border-l-2 border-slate-300 pl-3 min-w-0">
+              <span className="opacity-50 text-[9px] md:text-[10px]">
+                Phone
+              </span>
+            <span className="font-mono tracking-wide">
+              {card.phone}
+            </span>
+            </div>
             <div className="flex flex-col border-l-2 border-slate-300 p-3">
               <span className="opacity-50 text-[9px] md:text-[10px]">
                 Devices

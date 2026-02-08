@@ -1,6 +1,6 @@
 export const PREMIUM_PLANS = {
   "1-month": {
-    price: 1,
+    price: 99,
     durationDays: 30,
     cardType: "Silver",
   },
