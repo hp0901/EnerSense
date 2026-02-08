@@ -7,10 +7,12 @@ import toast from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useAuth } from "../context/AuthContex";
+import { useUser } from "../context/UserContext";
 
 const EnerSenseLogin = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { fetchUser } = useUser();
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,6 +60,8 @@ const EnerSenseLogin = () => {
         id: toastId,
       });
 
+      await fetchUser(); // UserContext update
+
       navigate("/dashboard");
     } catch (error) {
       console.error("LOGIN ERROR:", error);
@@ -90,6 +94,8 @@ const EnerSenseLogin = () => {
       toast.success(`Welcome ${res.user.firstName || "User"} 🚀`, {
         id: toastId,
       });
+
+      await fetchUser(); // update user context
 
       navigate("/dashboard");
     } catch (error) {

@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContex.js";
 import { fetchUserCard } from "../services/card.js";
 import CardPopover from "../components/CardPopover";
 import { useUser } from "../context/UserContext.js";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);          // menu
@@ -19,7 +20,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { isAuth, logout } = useAuth();
 
-  const { user } = useUser();
+  const { user , setUser } = useUser();
   const isPremium = user?.isPremium;
 
   /* =====================================================
@@ -67,12 +68,13 @@ isPremium
   /* =====================================================
      🔐 Logout
      ===================================================== */
-  const handleLogout = () => {
-    logout();
-    setOpen(false);
-    setCardOpen(false);
-    navigate("/login");
-  };
+    const handleLogout = () => {
+      logout();        // service logout (remove token)
+      setUser(null);   // clear React state
+      navigate("/login");
+      toast.success("Logged out successfully");
+    };
+
 
   /* =====================================================
      📡 Fetch user card

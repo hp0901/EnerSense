@@ -1,6 +1,7 @@
 import { apiConnector } from "../apiConnector";
 import { toast } from "react-hot-toast";
 import { userProfile, authEndpoints } from "../api";
+import {getMyProfile}from "./profileapi"
 
 /* ===============================
    SEND OTP (SIGNUP + RESEND)
@@ -60,7 +61,7 @@ export const signup = async (payload) => {
 /* ===============================
    LOGIN
 ================================ */
-export const login = async (email, password) => {
+export const login = async (email, password, setUser) => {
   try {
     const res = await apiConnector(
       "POST",
@@ -71,13 +72,23 @@ export const login = async (email, password) => {
 
     if (res.data?.token) {
       localStorage.setItem("token", res.data.token);
+      try {
+        // ✅ fetch profile separately
+        const profileRes = await getMyProfile();
+        setUser(profileRes.data);
+      } catch (profileError) {
+        console.log("Profile fetch failed:", profileError);
+      }
     }
 
     return res.data;
+
   } catch (error) {
     throw error?.response?.data?.message || "Login failed";
   }
 };
+
+
 
 /* ===============================
    SEND FORGOT PASSWORD OTP
@@ -161,6 +172,7 @@ export const resetPassword = async (data) => {
 export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  toast.success("Logged out successfully");
 };
 
 /* ===============================

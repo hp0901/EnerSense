@@ -8,10 +8,6 @@ export const getMyProfile = async () => {
   const res = await apiConnector(
     "GET",
     profileEndpoints.GET_PROFILE,
-    null,
-    {
-      Authorization: `Bearer ${token}`,
-    }
   );
   return res.data;
 };
