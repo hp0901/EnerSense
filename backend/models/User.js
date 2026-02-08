@@ -49,8 +49,8 @@ const userSchema = new mongoose.Schema(
 
     cardType: {
       type: String,
-      enum: ["Silver", "Gold", "Platinum"],
-      default: "Silver",
+      enum: ["Silver", "Gold", "Platinum", "Bronze"],
+      default: "Bronze",
     },
 
     // 🔐 PREMIUM SUBSCRIPTION FIELDS

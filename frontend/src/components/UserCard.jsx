@@ -17,10 +17,15 @@ const cardStyles = {
     border: "border-purple-600",
     badge: "text-purple-800 border-purple-700 bg-purple-300/50",
   },
+  Bronze: {
+    bg: "bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-200",
+    border: "border-yellow-500",
+    badge: "text-yellow-800 border-yellow-600 bg-yellow-300/50",
+  },
 };
 
 const UserCard = ({ card }) => {
-  const style = cardStyles[card.cardType] || cardStyles.Silver;
+  const style = cardStyles[card.cardType] || cardStyles.Bronze;
 
   return (
     <div

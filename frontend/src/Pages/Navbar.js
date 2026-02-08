@@ -124,14 +124,15 @@ isPremium
           className="w-9 h-9 rounded-full border flex items-center justify-center hover:ring-2 hover:ring-blue-500"
         >
           <img
-            src={
-              isAuth
-                ? "https://api.dicebear.com/6.x/initials/svg?seed=ES"
-                : "https://api.dicebear.com/6.x/initials/svg?seed=Guest"
-            }
-            alt="user"
-            className="w-8 h-8 rounded-full"
-          />
+  src={
+    isAuth && user?.image
+      ? user.image
+      : "https://api.dicebear.com/6.x/initials/svg?seed=Guest"
+  }
+  alt={user ? `${user.firstName} ${user.lastName}` : "Guest"}
+  className="w-8 h-8 rounded-full"
+/>
+
         </button>
 
         {/* ☰ Menu Button */}
