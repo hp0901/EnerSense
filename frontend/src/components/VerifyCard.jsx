@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { verifyUserCardApi } from "../services/operations/verifyCardApi";
 
 const VerifyCard = () => {
   const { uid } = useParams();
@@ -7,27 +8,24 @@ const VerifyCard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const verifyUser = async () => {
-      try {
-        const res = await fetch(`https://enersense.duckdns.org/api/v1/user-card/${uid}`)
+ useEffect(() => {
+  const verifyUser = async () => {
+    try {
+      setError("");
 
-        const data = await res.json();
+      const cardData = await verifyUserCardApi(uid);
+      setCard(cardData);
 
-        if (!data.success) {
-          throw new Error("Invalid UID");
-        }
+    } catch (err) {
+      setError("Invalid or expired EnerSense Card");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setCard(data.card);
-      } catch (err) {
-        setError("Invalid or expired EnerSense Card");
-      } finally {
-        setLoading(false);
-      }
-    };
+  verifyUser();
+}, [uid]);
 
-    verifyUser();
-  }, [uid]);
 
   if (loading) {
     return (
@@ -48,8 +46,21 @@ const VerifyCard = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm text-center">
+  <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-center py-4">
+        <p className="text-sm tracking-wide">
+          ENERSENSE DIGITAL VERIFICATION
+        </p>
+        <p className="text-lg font-semibold mt-1">
+          ✔ Verified Smart Card
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="p-6 text-center">
         <h2 className="text-xl font-bold text-gray-800">
           {card.name}
         </h2>
@@ -58,20 +69,27 @@ const VerifyCard = () => {
           {card.boardName}, {card.state}
         </p>
 
-        <p className="mt-2 text-xs uppercase tracking-wide">
+        <p className="mt-2 text-xs uppercase tracking-wide text-gray-500">
           {card.cardType} Card
         </p>
 
-        <div className="mt-4 text-green-600 font-semibold flex items-center justify-center gap-2">
-          ✔ EnerSense Verified User
+        <div className="mt-4 bg-green-50 text-green-700 rounded-lg py-2 text-sm font-semibold">
+          EnerSense Verified User
         </div>
 
-        <p className="mt-4 text-xs text-gray-500">
-          Verified via EnerSense Digital Identity
+        <p className="mt-5 text-xs text-gray-500">
+          This identity has been verified by EnerSense Server.
         </p>
       </div>
+
+      {/* Footer */}
+      <div className="bg-gray-50 text-center py-2 text-xs text-gray-500">
+        Official EnerSense Digital Identity
+      </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default VerifyCard;

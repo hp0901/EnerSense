@@ -50,3 +50,8 @@ export const paymentEndpoints = {
   GET_MY_PAYMENTS: "/payments/my-payments",
 };
 
+// User Card Verification API
+export const userCardEndpoints = {
+  VERIFY_CARD: BASE_URL + "/user-card/verify",
+};
+

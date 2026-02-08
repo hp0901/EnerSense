@@ -40,11 +40,11 @@ const UserCard = ({ card }) => {
       {/* HEADER */}
       <div className="flex justify-between items-center px-5 md:px-8 py-4 border-b border-black/5 bg-white/20">
         <div className="uppercase tracking-tighter">
-          <h2 className="text-base md:text-xl font-black leading-none">
+          <h2 className="text-base md:text-xl font-black ">
             EnerSense Smart Card
           </h2>
           <p className="text-[10px] md:text-xs font-bold opacity-60">
-            Government of Smart Energy
+            Government of Enersense
           </p>
         </div>
 
@@ -71,7 +71,7 @@ const UserCard = ({ card }) => {
           </div>
 
           {/* INFO GRID */}
-          <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-[11px] md:text-sm uppercase font-bold text-slate-700">
+          <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-[11px] md:text-sm uppercase font-bold text-slate-700">
             <div className="flex flex-col border-l-2 border-slate-300 pl-3">
               <span className="opacity-50 text-[9px] md:text-[10px]">
                 User UID
@@ -92,7 +92,7 @@ const UserCard = ({ card }) => {
               {card.phone}
             </span>
             </div>
-            <div className="flex flex-col border-l-2 border-slate-300 p-3">
+            <div className="flex flex-col border-l-2 border-slate-300 pl-3 min-w-0">
               <span className="opacity-50 text-[9px] md:text-[10px]">
                 Devices
               </span>
@@ -103,7 +103,7 @@ const UserCard = ({ card }) => {
 
         {/* RIGHT SIDE - QR */}
         <div className="w-full md:w-auto flex flex-col items-center gap-2 shrink-0">
-          <div className=" p-2 rounded-xl w-[120px] sm:w-[130px] md:w-[140px] lg:w-[150px]">
+          <div className="rounded-xl w-[120px] sm:w-[130px] md:w-[140px] lg:w-[150px]">
             <UserCardQR card={card} size={120} />
           </div>
         </div>

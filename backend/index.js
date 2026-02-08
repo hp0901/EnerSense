@@ -12,6 +12,8 @@ import { startPremiumExpiryCron } from "./cron/premiumExpiryCron.js";
 import notificationSettingsRoutes from "./routes/notificationSettings.js";
 import downloadInvoice from "./routes/pdf.js";
 import getMyPayments from "./routes/payments.js";
+import path from "path";
+
 
 dotenv.config();
 
@@ -65,6 +67,20 @@ app.use("/api/v1/premium", premiumRoutes);
 //Download invoice route
 app.use("/api/v1/invoice", downloadInvoice);
 app.use("/api/v1/payments",  getMyPayments);
+
+// ✅ ADD THIS PART HERE
+if (process.env.NODE_ENV === "production") {
+  const __dirname = path.resolve();
+
+  app.use(express.static(path.join(__dirname, "frontend/build")));
+
+  app.use((req, res) => {
+    res.sendFile(
+      path.join(__dirname, "frontend/build/index.html")
+    );
+  });
+}
+
  
 // Start server
 app.listen(PORT, () => {

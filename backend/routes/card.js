@@ -5,6 +5,6 @@ import { auth } from "../middlewares/auth.js"
 const router = express.Router();
 
 router.get("/", auth, getUserCard);
-router.get("/user-card/verify/:uid", verifyUserCard);
+router.get("/verify/:uid", verifyUserCard);
 
 export default router;
