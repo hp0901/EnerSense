@@ -1,3 +1,6 @@
+import User from "../models/User.js";
+import Board from "../models/Board.js";
+
 export const verifyUserCard = async (req, res) => {
   try {
     const uid = req.params.uid.toUpperCase();
