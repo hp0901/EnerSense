@@ -66,7 +66,7 @@ const UserCard = ({ card }) => {
             </h1>
 
             <p className="text-xs md:text-base text-gray-500 font-medium lowercase ">
-              {card.email}
+              {card.email?.replace(/(.{2}).+(@.+)/, "$1****$2")}
             </p>
           </div>
 
