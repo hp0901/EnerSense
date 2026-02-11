@@ -160,7 +160,7 @@ const VerifyCard = () => {
 
           {card.email && (
             <p className="text-xs text-gray-600 mt-1">
-              {card.email}
+              {card.email?.replace(/(.{2}).+(@.+)/, "$1****$2")}
             </p>
           )}
 
