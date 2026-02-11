@@ -10,6 +10,9 @@ const VerifyCard = () => {
   const [error, setError] = useState("");
   const [verifiedAt, setVerifiedAt] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+
+  /* ---------------- VERIFY USER ---------------- */
 
   useEffect(() => {
     const verifyUser = async () => {
@@ -18,9 +21,7 @@ const VerifyCard = () => {
         setCard(cardData);
         setVerifiedAt(new Date());
 
-        // success animation trigger
         setTimeout(() => setShowSuccess(true), 150);
-
       } catch {
         setError("Invalid or expired EnerSense Card");
       } finally {
@@ -31,29 +32,60 @@ const VerifyCard = () => {
     verifyUser();
   }, [uid]);
 
-  /* ---------- CARD COLOR THEMES ---------- */
+  /* ---------------- REDIRECT COUNTDOWN ---------------- */
+
+  useEffect(() => {
+    if (!card) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          window.location.href = "/";
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [card]);
+
+  /* ---------------- CARD THEMES ---------------- */
 
   const cardThemes = {
     Silver: {
+      bg: "bg-gradient-to-br from-gray-50 via-slate-100 to-gray-200",
+      border: "border-gray-300",
+      badge: "text-gray-700 border-gray-400 bg-gray-200/50",
       header: "from-gray-400 to-gray-600",
-      badge: "bg-gray-100 text-gray-700",
       avatar: "from-gray-400 to-gray-600",
     },
     Gold: {
+      bg: "bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-200",
+      border: "border-yellow-500",
+      badge: "text-yellow-800 border-yellow-600 bg-yellow-300/50",
       header: "from-yellow-400 to-yellow-600",
-      badge: "bg-yellow-100 text-yellow-700",
       avatar: "from-yellow-400 to-yellow-600",
     },
+    Platinum: {
+      bg: "bg-gradient-to-br from-purple-50 via-purple-100 to-purple-200",
+      border: "border-purple-600",
+      badge: "text-purple-800 border-purple-700 bg-purple-300/50",
+      header: "from-purple-500 to-purple-700",
+      avatar: "from-purple-500 to-purple-700",
+    },
     Bronze: {
-      header: "from-orange-400 to-amber-600",
-      badge: "bg-orange-100 text-orange-700",
-      avatar: "from-orange-400 to-amber-600",
+      bg: "bg-gradient-to-br from-[#f5e6c8] via-[#e0b97a] to-[#b07a3f]",
+      border: "border-[#8b5a2b]",
+      badge: "text-[#5c3a1e] border-[#8b5a2b] bg-[#e6c79c]/70",
+      header: "from-[#c18a4a] to-[#8b5a2b]",
+      avatar: "from-[#c18a4a] to-[#8b5a2b]",
     },
   };
 
   const theme = cardThemes[card?.cardType] || cardThemes.Silver;
 
-  /* ---------- LOADING ---------- */
+  /* ---------------- LOADING ---------------- */
 
   if (loading) {
     return (
@@ -68,7 +100,7 @@ const VerifyCard = () => {
     );
   }
 
-  /* ---------- ERROR ---------- */
+  /* ---------------- ERROR ---------------- */
 
   if (error) {
     return (
@@ -80,18 +112,18 @@ const VerifyCard = () => {
     );
   }
 
-  /* ---------- VERIFIED UI ---------- */
+  /* ---------------- VERIFIED UI ---------------- */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-4">
 
       <div
-        className={`bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden
-        transform transition-all duration-700
+        className={`w-full max-w-sm rounded-3xl shadow-2xl border ${theme.border}
+        overflow-hidden transition-all duration-700 transform
         ${showSuccess ? "scale-100 opacity-100" : "scale-90 opacity-0"}`}
       >
 
-        {/* Header */}
+        {/* HEADER */}
         <div className={`bg-gradient-to-r ${theme.header} text-white text-center py-6`}>
           <p className="text-xs tracking-widest opacity-80">
             ENERSENSE DIGITAL VERIFICATION
@@ -109,17 +141,16 @@ const VerifyCard = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-
-            <p className="text-lg font-semibold">
-              Verified Identity
-            </p>
+            <p className="text-lg font-semibold">Verified Identity</p>
           </div>
         </div>
 
-        {/* Profile Section */}
-        <div className="flex flex-col items-center -mt-10 px-6 pt-2">
+        {/* CONTENT */}
+        <div className={`${theme.bg} px-6 pb-6 pt-12 text-center`}>
+
+          {/* Avatar */}
           <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${theme.avatar}
-            flex items-center justify-center text-white text-2xl font-bold shadow-lg`}>
+            flex items-center justify-center text-white text-2xl font-bold shadow-lg mx-auto -mt-16`}>
             {card.name.charAt(0)}
           </div>
 
@@ -127,38 +158,56 @@ const VerifyCard = () => {
             {card.name}
           </h2>
 
-          <span className={`mt-1 px-3 py-1 text-xs font-semibold rounded-full ${theme.badge}`}>
-            {card.cardType} Card
-          </span>
-        </div>
-
-        {/* Info Section */}
-        <div className="px-6 mt-8 space-y-3">
-
-          <div className="bg-gray-50 rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-500">Board</p>
-            <p className="font-semibold text-gray-800">{card.boardName}</p>
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-500">State</p>
-            <p className="font-semibold text-gray-800">{card.state}</p>
-          </div>
-
-          <div className="bg-green-50 text-green-700 rounded-lg py-2 text-sm font-semibold text-center">
-            EnerSense Verified User
-          </div>
-
-          {verifiedAt && (
-            <p className="text-xs text-gray-500 text-center">
-              Verified on {verifiedAt.toLocaleDateString()} at{" "}
-              {verifiedAt.toLocaleTimeString()}
+          {card.email && (
+            <p className="text-xs text-gray-600 mt-1">
+              {card.email}
             </p>
           )}
+
+          {/* Card Badge */}
+          <span className={`inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full border ${theme.badge}`}>
+            {card.cardType} Card
+          </span>
+
+          {/* Info */}
+          <div className="mt-6 space-y-3">
+            <div className="bg-white/60 backdrop-blur rounded-lg p-3">
+              <p className="text-xs text-gray-500">Board</p>
+              <p className="font-semibold text-gray-800">
+                {card.boardName}
+              </p>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur rounded-lg p-3">
+              <p className="text-xs text-gray-500">State</p>
+              <p className="font-semibold text-gray-800">
+                {card.state}
+              </p>
+            </div>
+
+            <div className="bg-green-50 text-green-700 rounded-lg py-2 text-sm font-semibold">
+              EnerSense Verified User
+            </div>
+
+            {verifiedAt && (
+              <p className="text-xs text-gray-600">
+                Verified on {verifiedAt.toLocaleDateString()} at{" "}
+                {verifiedAt.toLocaleTimeString()}
+              </p>
+            )}
+          </div>
+
+          {/* REDIRECT MESSAGE */}
+          <div className="mt-5 text-xs text-gray-500">
+            Redirecting to homepage in{" "}
+            <span className="font-semibold text-gray-700">
+              {countdown}s
+            </span>
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 text-center py-3 mt-6 text-xs text-gray-500">
+        {/* FOOTER */}
+        <div className="bg-gray-50 text-center py-3 text-xs text-gray-500">
           Official EnerSense Digital Identity
         </div>
       </div>
