@@ -7,7 +7,7 @@ export const verifyUserCardApi = async (uid) => {
       "GET",
       `${userCardEndpoints.VERIFY_CARD}/${uid}`
     );
-    console.log("API Responce", res);
+    console.log("API Responce", res.data);
 
     if (!res.success) {
       throw new Error(res.message);
