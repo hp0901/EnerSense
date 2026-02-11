@@ -1,13 +1,13 @@
-import User from "../models/User.js";
-import Board from "../models/Board.js";
-
 export const verifyUserCard = async (req, res) => {
   try {
-    const { uid } = req.params;
+    const uid = req.params.uid.toUpperCase();
 
-    const user = await User.findOne({ userUID: uid });
-    console.log(user);
-    console.log(uid);
+    console.log("Verify UID:", uid);
+
+    const user = await User.findOne({
+      userUID: uid,
+    });
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -25,13 +25,17 @@ export const verifyUserCard = async (req, res) => {
       card: {
         name: `${user.firstName} ${user.lastName}`,
         userUID: user.userUID,
-        boardName: board ? board.boardName : user.board,
+        boardName: board?.boardName || user.board || "No Board",
         state: user.state,
         cardType: user.cardType,
       },
     });
+
   } catch (error) {
     console.error("[VERIFY CARD ERROR]", error);
-    res.status(500).json({ success: false });
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
