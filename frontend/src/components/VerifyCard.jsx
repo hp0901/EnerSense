@@ -10,7 +10,7 @@ const VerifyCard = () => {
   const [error, setError] = useState("");
   const [verifiedAt, setVerifiedAt] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(60);
 
   /* ---------------- VERIFY USER ---------------- */
 

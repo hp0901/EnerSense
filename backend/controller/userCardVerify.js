@@ -27,6 +27,7 @@ export const verifyUserCard = async (req, res) => {
       success: true,
       card: {
         name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
         userUID: user.userUID,
         boardName: board?.boardName || user.board || "No Board",
         state: user.state,
