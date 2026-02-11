@@ -29,6 +29,12 @@ const cardStyles = {
 const UserCard = ({ card }) => {
   const style = cardStyles[card.cardType] || cardStyles.Bronze;
 
+const maskPhone = (phone) => {
+  if (!phone) return "";
+  return phone.slice(0, 3) + "****" + phone.slice(-2);
+};
+
+  
   return (
     <div
       className={`
@@ -89,7 +95,7 @@ const UserCard = ({ card }) => {
                 Phone
               </span>
             <span className="font-mono tracking-wide">
-              {card.phone}
+              {maskPhone(card.phone)}
             </span>
             </div>
             <div className="flex flex-col border-l-2 border-slate-300 pl-3 min-w-0">
