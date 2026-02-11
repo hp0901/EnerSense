@@ -117,7 +117,7 @@ const VerifyCard = () => {
         </div>
 
         {/* Profile Section */}
-        <div className="flex flex-col items-center -mt-10 px-6">
+        <div className="flex flex-col items-center -mt-10 px-6 pt-2">
           <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${theme.avatar}
             flex items-center justify-center text-white text-2xl font-bold shadow-lg`}>
             {card.name.charAt(0)}
@@ -133,7 +133,7 @@ const VerifyCard = () => {
         </div>
 
         {/* Info Section */}
-        <div className="px-6 mt-6 space-y-3">
+        <div className="px-6 mt-8 space-y-3">
 
           <div className="bg-gray-50 rounded-lg p-3 text-center">
             <p className="text-xs text-gray-500">Board</p>
