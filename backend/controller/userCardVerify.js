@@ -6,6 +6,8 @@ export const verifyUserCard = async (req, res) => {
     const { uid } = req.params;
 
     const user = await User.findOne({ userUID: uid });
+    console.log(user);
+    console.log(uid);
     if (!user) {
       return res.status(404).json({
         success: false,
