@@ -7,7 +7,7 @@ import {getMyProfile}from "./profileapi"
    SEND OTP (SIGNUP + RESEND)
 ================================ */
 export const sendOtp = async (email, firstName) => {
-  const toastId = toast.loading("Sending OTP...");
+  const toastId = toast.loading("📩 Sending OTP...");
   try {
     const res = await apiConnector(
       "POST",

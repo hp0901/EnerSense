@@ -155,18 +155,18 @@ const Signup = () => {
     e.preventDefault();
     if (!isFormValid) return;
 
-    const toastId = toast.loading("📩 Sending OTP...");
+    // const toastId = toast.loading("📩 Sending OTP...");
     try {
       setLoading(true);
       await sendOtp(formData.email, formData.firstName, navigate, dispatch);
       localStorage.setItem("signupData", JSON.stringify(formData));
-      toast.success("✅ OTP sent!", { id: toastId });
+      toast.success("✅ OTP sent!");
 
       navigate("/otp", {
         state: { flow: "signup", email: formData.email }
       });
     } catch {
-      toast.error("❌ Failed to send OTP", { id: toastId });
+      toast.error("❌ Failed to send OTP");
     } finally {
       setLoading(false);
     }
