@@ -3,7 +3,7 @@ import Board from "../models/Board.js";
 
 export const verifyUserCard = async (req, res) => {
   try {
-    const uid = req.params.uid.toUpperCase();
+    const uid = req.params.uid;
 
     console.log("Verify UID:", uid);
 
