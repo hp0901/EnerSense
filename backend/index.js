@@ -68,18 +68,7 @@ app.use("/api/v1/premium", premiumRoutes);
 app.use("/api/v1/invoice", downloadInvoice);
 app.use("/api/v1/payments",  getMyPayments);
 
-// ✅ ADD THIS PART HERE
-if (process.env.NODE_ENV === "production") {
-  const __dirname = path.resolve();
 
-  app.use(express.static(path.join(__dirname, "frontend/build")));
-
-  app.use((req, res) => {
-    res.sendFile(
-      path.join(__dirname, "frontend/build/index.html")
-    );
-  });
-}
 
  
 // Start server
