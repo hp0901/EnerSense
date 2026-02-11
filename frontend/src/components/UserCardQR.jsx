@@ -5,8 +5,9 @@ import { ShieldCheck } from "lucide-react";
 const UserCardQR = ({ card }) => {
 
   // Only frontend route
-  const qrUrl = `https://enersense.duckdns.org/verify/${card.userUID}`;
-  // const qrUrl = `http://localhost:4000/verify/${card.userUID}`;
+  const qrUrl = `https://enersense.duckdns.org/api/v1/user-card/verify/${card.userUID}`;
+
+  // const qrUrl = `http://localhost:4000/api/v1/user-card/verify/${card.userUID}`;
 
   return (
     <div className="flex flex-col items-center gap-2">
