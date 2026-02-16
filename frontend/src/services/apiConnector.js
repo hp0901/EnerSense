@@ -48,7 +48,8 @@ export const apiConnector = (
   url,
   bodyData,
   headers = {},
-  params = {}
+  params = {},
+  responseType = "json"
 ) => {
   return axiosInstance({
     method,
@@ -58,5 +59,7 @@ export const apiConnector = (
       ...headers,
     },
     params,
+    responseType, // ✅ ADD THIS
   });
 };
+

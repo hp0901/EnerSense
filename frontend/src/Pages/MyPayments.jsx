@@ -1,9 +1,30 @@
 import { useEffect, useState } from "react";
-import { getMyPayments } from "../services/operations/payments";
+import { downloadInvoice , getMyPayments } from "../services/operations/payments";
 
 export default function MyPayments() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const handleDownload = async (paymentId) => {
+  try {
+    const res = await downloadInvoice(paymentId);
+
+    const url = window.URL.createObjectURL(
+      new Blob([res.data], { type: "application/pdf" })
+    );
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "EnerSense-Invoice.pdf");
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (error) {
+    console.error("Invoice download failed", error);
+  }
+};
+
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -73,12 +94,7 @@ export default function MyPayments() {
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button
-                    onClick={() =>
-                        window.open(
-                        `${process.env.REACT_APP_BASE_URL}/invoice/${p._id}`,
-                        "_blank"
-                        )
-                    }
+                    onClick={() => handleDownload(p._id)}
                     className="text-indigo-600 font-medium hover:underline"
                     >
                     Download
