@@ -13,6 +13,7 @@ import notificationSettingsRoutes from "./routes/notificationSettings.js";
 import downloadInvoice from "./routes/pdf.js";
 import getMyPayments from "./routes/payments.js";
 import path from "path";
+import upload from "./routes/upload.js";
 
 
 dotenv.config();
@@ -68,7 +69,8 @@ app.use("/api/v1/premium", premiumRoutes);
 app.use("/api/v1/invoice", downloadInvoice);
 app.use("/api/v1/payments",  getMyPayments);
 
-
+//Server upload static files
+app.use("/api/v1/uploads", upload);
 
  
 // Start server

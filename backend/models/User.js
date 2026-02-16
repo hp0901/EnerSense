@@ -45,7 +45,15 @@ const userSchema = new mongoose.Schema(
 
     isVerified: { type: Boolean, default: true },
 
-    image: String,
+   profileImage: {
+      type: String,
+      default: "",
+    },
+
+   profileImageId: {
+      type: String,
+      default: "",
+    },
 
     cardType: {
       type: String,

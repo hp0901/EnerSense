@@ -1,23 +1,39 @@
 import { apiConnector } from "../apiConnector";
 import { profileEndpoints } from "../api";
 
-
-// 🔹 Get logged-in user profile
+/* ================= GET PROFILE ================= */
 export const getMyProfile = async () => {
-  const token = localStorage.getItem("token");
-  const res = await apiConnector(
-    "GET",
-    profileEndpoints.GET_PROFILE,
-  );
-  return res.data;
+  try {
+    const res = await apiConnector(
+      "GET",
+      profileEndpoints.GET_PROFILE
+    );
+
+    return res.data;
+  } catch (error) {
+    console.error("GET PROFILE ERROR:", error);
+    throw error;
+  }
 };
 
-// 🔹 Update profile
+
+/* ================= UPDATE PROFILE ================= */
 export const updateProfile = async (data) => {
-  const res = await apiConnector(
-    "PUT",
-    profileEndpoints.UPDATE_PROFILE,
-    data
-  );
-  return res.data;
+  try {
+    const res = await apiConnector(
+      "PUT",
+      profileEndpoints.UPDATE_PROFILE,
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return res.data;
+  } catch (error) {
+    console.error("UPDATE PROFILE ERROR:", error);
+    throw error;
+  }
 };

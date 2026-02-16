@@ -40,7 +40,7 @@ const Navbar = () => {
     { name: "Device Control", path: "/device-control", auth: "private" },
     { name: "Premium Benefits", path: "/premium-benefits", auth: "private" },
     // 💎 Monetization
-isPremium
+  isPremium
   ? { name: "My Plan", path: "/premium", auth: "private" }
   : { name: "Pricing", path: "/pricing", auth: "private" },
 
@@ -125,15 +125,16 @@ isPremium
           }}
           className="w-9 h-9 rounded-full border flex items-center justify-center hover:ring-2 hover:ring-blue-500"
         >
-          <img
-  src={
-    isAuth && user?.image
-      ? user.image
-      : "https://api.dicebear.com/6.x/initials/svg?seed=Guest"
-  }
-  alt={user ? `${user.firstName} ${user.lastName}` : "Guest"}
-  className="w-8 h-8 rounded-full"
-/>
+        <img
+          src={
+            isAuth && user?.profileImage
+              ? user.profileImage
+              : `https://ui-avatars.com/api/?name=${user?.firstName || "GuestUser"} ${user?.lastName || ""}&background=16a34a&color=fff`
+          }
+          alt={user ? `${user.firstName} ${user.lastName}` : "Guest"}
+          className="w-8 h-8 rounded-full object-cover"
+        />
+
 
         </button>
 

@@ -1,55 +1,73 @@
 import User from "../models/User.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { firstName, lastName, phone } = req.body;
+    const { firstName, lastName, phone, removeProfileImage } =
+      req.body || {};
 
-    // 🔎 Validation
-    if (!firstName || !lastName) {
-      return res.status(400).json({
-        success: false,
-        message: "First name and last name are required",
-      });
-    }
+    const user = await User.findById(userId);
 
-    if (!phone) {
-      return res.status(400).json({
-        success: false,
-        message: "Phone number is required",
-      });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        phone: phone.trim(),
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    ).select("-password");
-
-    if (!updatedUser) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
+    const updateData = {};
+
+    /* ================= TEXT FIELDS ================= */
+    if (firstName && firstName.trim() !== "")
+      updateData.firstName = firstName.trim();
+
+    if (lastName && lastName.trim() !== "")
+      updateData.lastName = lastName.trim();
+
+    if (phone && phone.trim() !== "")
+      updateData.phone = phone.trim();
+
+
+    /* ================= IMAGE UPLOAD ================= */
+    if (req.file) {
+
+      // ✅ delete old image from cloudinary
+      if (user.profileImageId) {
+        await cloudinary.uploader.destroy(user.profileImageId);
+      }
+
+      updateData.profileImage = req.file.path;
+      updateData.profileImageId = req.file.filename;
+    }
+
+    /* ================= IMAGE DELETE ================= */
+    if (removeProfileImage === "true") {
+
+      if (user.profileImageId) {
+        await cloudinary.uploader.destroy(user.profileImageId);
+      }
+
+      updateData.profileImage = "";
+      updateData.profileImageId = "";
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    ).select("-password");
+
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
       user: updatedUser,
     });
+
   } catch (error) {
     console.error("UPDATE PROFILE ERROR:", error);
 
-    // ⚠️ Duplicate phone handling
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
@@ -63,6 +81,7 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
+
 
 
 export const getMyProfile = async (req, res) => {
@@ -91,3 +110,4 @@ export const getMyProfile = async (req, res) => {
     });
   }
 };
+ 

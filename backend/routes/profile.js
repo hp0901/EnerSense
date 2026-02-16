@@ -1,12 +1,18 @@
 import express from "express";
-import { updateProfile } from "../controller/profileController.js";
+import { updateProfile, getMyProfile } from "../controller/profileController.js";
 import { auth } from "../middlewares/auth.js";
-import { getMyProfile } from "../controller/profileController.js";
+import upload from "../middlewares/upload.js"; // ✅ ADD THIS
 
 const router = express.Router();
 
 // PUT /api/v1/profile/update
-router.put("/update", auth, updateProfile);
+router.put(
+  "/update",
+  auth,
+  upload.single("profileImage"), // ✅ VERY IMPORTANT
+  updateProfile
+);
+
 // GET /api/v1/profile/me
 router.get("/me", auth, getMyProfile);
 

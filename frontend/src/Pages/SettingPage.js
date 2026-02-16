@@ -15,6 +15,9 @@ import {
 } from "../services/operations/notificationAPI";
 import { updateProfile } from "../services/operations/profileapi";
 import { logout } from "../services/operations/authapi";
+import { getMyProfile } from "../services/operations/profileapi";
+import { useUser } from "../context/UserContext";
+
 
 const SettingPage = () => {
   const navigate = useNavigate();
@@ -23,8 +26,13 @@ const SettingPage = () => {
   const [profile, setProfile] = useState({
     firstName: "",
     lastName: "",
+    email:"",
     phone: "",
+    profileImage: "",
+    imageFile: null,
   });
+
+  const { setUser } = useUser();
 
   /* ================= NOTIFICATION STATE ================= */
   const [notifications, setNotifications] = useState({
@@ -34,6 +42,8 @@ const SettingPage = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [deletePhoto, setDeletePhoto] = useState(false);
+
 
   const NOTIFICATION_META = {
     emailAlerts: { number: 1, label: "Email Alerts" },
@@ -54,28 +64,57 @@ const SettingPage = () => {
     fetchSettings();
   }, []);
 
+  useEffect(() => {
+  const loadProfile = async () => {
+    try {
+      const res = await getMyProfile();
+
+      const user = res.data;
+
+      setProfile({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        profileImage: user.profileImage || "",
+        imageFile: null,
+      });
+
+    } catch (err) {
+      console.log("Failed to load profile");
+    }
+  };
+
+  loadProfile();
+}, []);
+
+
   /* ================= PROFILE SAVE ================= */
   const handleProfileSave = async () => {
-    if (!profile.firstName.trim() || !profile.lastName.trim()) {
-      toast.error("First name and last name are required");
-      return;
-    }
-
-    if (!profile.phone.trim()) {
-      toast.error("Phone number is required");
-      return;
-    }
-
     try {
       setLoading(true);
 
-      await updateProfile({
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        phone: profile.phone,
-      });
+      const formData = new FormData();
+      formData.append("firstName", profile.firstName || "");
+      formData.append("lastName", profile.lastName || "");
+      formData.append("phone", profile.phone || "");
 
+      if (profile.imageFile) {
+        formData.append("profileImage", profile.imageFile);
+      }
+
+      if (deletePhoto) {
+        formData.append("removeProfileImage", true);
+      }
+
+      const res = await updateProfile(formData);
+
+      // ✅ THIS LINE IS THE KEY
+      setUser(res.user);
+
+      setDeletePhoto(false);
       toast.success("✅ Profile updated successfully");
+
     } catch (err) {
       toast.error(
         err?.response?.data?.message || "❌ Failed to update profile"
@@ -110,11 +149,27 @@ const SettingPage = () => {
   };
 
   /* ================= LOGOUT ================= */
-   const handleLogout = () => {
-  logout();
-  toast.success("Logout Successfully.");
-  navigate("/login", { replace: true });
-};
+  const handleLogout = () => {
+    logout();
+    toast.success("Logout Successfully.");
+    navigate("/login", { replace: true });
+  };
+
+  const maskEmail = (email) => {
+    if (!email) return "";
+
+    const [name, domain] = email.split("@");
+
+    // if email name too short
+    if (name.length <= 5) {
+      return name.substring(0, 2) + "***@" + domain;
+    }
+
+    const start = name.substring(0, 3);
+    const end = name.substring(name.length - 2);
+
+    return `${start}***${end}@${domain}`;
+  };
 
 
   return (
@@ -125,6 +180,61 @@ const SettingPage = () => {
 
         {/* PROFILE */}
         <Section icon={<FiUser />} title="Profile Settings">
+
+          {/* PROFILE IMAGE */}
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-full overflow-hidden border border-white/20">
+              <img
+                src={
+                  profile.profileImage ||
+                  "https://ui-avatars.com/api/?name=User&background=16a34a&color=fff"
+                }
+                alt="profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="cursor-pointer bg-green-600 px-3 py-2 rounded-md text-sm">
+                Change Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const preview = URL.createObjectURL(file);
+                    setDeletePhoto(false);
+                    setProfile({
+                      ...profile,
+                      profileImage: preview,
+                      imageFile: file,
+                    });
+                  }}
+                />
+              </label>
+
+              {profile.profileImage && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeletePhoto(true);
+                    setProfile({
+                      ...profile,
+                      profileImage: "",
+                      imageFile: null,
+                    })
+                  }}
+                  className="text-red-400 text-sm hover:text-red-500"
+                >
+                  Delete Photo
+                </button>
+              )}
+            </div>
+          </div>
+
           <Input
             label="First Name"
             value={profile.firstName}
@@ -141,7 +251,15 @@ const SettingPage = () => {
             }
           />
 
-          <Input label="Email" value="enersense@email.com" disabled />
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">
+              Email
+            </label>
+
+            <div className="w-full p-3 rounded-lg bg-[#0f172a] border border-white/10 text-slate-300">
+              {maskEmail(profile.email)}
+            </div>
+          </div>
 
           <Input
             label="Phone Number"
@@ -266,7 +384,7 @@ const Toggle = ({ label, value, onChange, loading, disabled }) => (
     >
       <span
         className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full
-        ${value ? "translate-x-5" : ""}`}
+        transition-transform ${value ? "translate-x-5" : ""}`}
       />
     </button>
   </div>
