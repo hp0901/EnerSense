@@ -1,5 +1,7 @@
 import React from "react";
 import UserCardQR from "./UserCardQR";
+import { maskEmail } from "../utils/maskEmail";
+import { maskPhone } from "../utils/maskPhone";
 
 const cardStyles = {
   Silver: {
@@ -29,10 +31,7 @@ const cardStyles = {
 const UserCard = ({ card }) => {
   const style = cardStyles[card.cardType] || cardStyles.Bronze;
 
-const maskPhone = (phone) => {
-  if (!phone) return "";
-  return phone.slice(0, 3) + "****" + phone.slice(-2);
-};
+
 
   
   return (
@@ -72,7 +71,7 @@ const maskPhone = (phone) => {
             </h1>
 
             <p className="text-xs md:text-base text-gray-500 font-medium lowercase ">
-              {card.email?.replace(/(.{2}).+(@.+)/, "$1****$2")}
+              {maskEmail(card.email)}
             </p>
           </div>
 

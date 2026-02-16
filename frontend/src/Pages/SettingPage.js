@@ -9,6 +9,9 @@ import {
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 
+import { maskEmail } from "../utils/maskEmail";
+import { maskPhone } from "../utils/maskPhone";
+
 import {
   getNotificationSettings,
   updateNotificationSettings,
@@ -155,21 +158,7 @@ const SettingPage = () => {
     navigate("/login", { replace: true });
   };
 
-  const maskEmail = (email) => {
-    if (!email) return "";
-
-    const [name, domain] = email.split("@");
-
-    // if email name too short
-    if (name.length <= 5) {
-      return name.substring(0, 2) + "***@" + domain;
-    }
-
-    const start = name.substring(0, 3);
-    const end = name.substring(name.length - 2);
-
-    return `${start}***${end}@${domain}`;
-  };
+  
 
 
   return (
@@ -252,21 +241,17 @@ const SettingPage = () => {
           />
 
           <div>
-            <label className="block text-sm text-slate-400 mb-1">
-              Email
-            </label>
-
-            <div className="w-full p-3 rounded-lg bg-[#0f172a] border border-white/10 text-slate-300">
-              {maskEmail(profile.email)}
-            </div>
+            <Input
+              label="Email"
+              value={maskEmail(profile.email)}
+              disabled
+            />
           </div>
 
           <Input
             label="Phone Number"
-            value={profile.phone}
-            onChange={(e) =>
-              setProfile({ ...profile, phone: e.target.value })
-            }
+            value={maskPhone(profile.phone)}
+            disabled
           />
 
           <button
