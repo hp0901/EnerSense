@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { verifyUserCardApi } from "../services/operations/verifyCardApi";
-import { maskEmail } from "../utils/stringUtils";
+import { maskEmail } from "../utils/maskEmail";
 
 const VerifyCard = () => {
   const { uid } = useParams();
