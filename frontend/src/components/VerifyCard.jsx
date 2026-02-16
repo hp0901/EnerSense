@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { verifyUserCardApi } from "../services/operations/verifyCardApi";
+import { maskEmail } from "../utils/stringUtils";
 
 const VerifyCard = () => {
   const { uid } = useParams();
@@ -160,7 +161,7 @@ const VerifyCard = () => {
 
           {card.email && (
             <p className="text-xs text-gray-600 mt-1">
-              {card.email?.replace(/(.{2}).+(@.+)/, "$1****$2")}
+              {maskEmail(card.email)}
             </p>
           )}
 
