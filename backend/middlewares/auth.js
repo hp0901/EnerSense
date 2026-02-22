@@ -24,7 +24,12 @@ export const auth = async (req, res, next) => {
       });
     }
 
-    req.user = { id: user._id.toString() };
+    req.user = {
+      id: user._id.toString(),
+      role: user.role,   // ✅ VERY IMPORTANT
+      email: user.email,
+    };
+
     next();
   } catch (error) {
     return res.status(401).json({
@@ -33,4 +38,3 @@ export const auth = async (req, res, next) => {
     });
   }
 };
-

@@ -16,7 +16,7 @@ const deviceSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      default: null   // ❗ allow unpaired device
     },
 
     location: {
@@ -24,7 +24,42 @@ const deviceSchema = new mongoose.Schema(
       default: "Unknown"
     },
 
-    status: {
+    deviceType: {
+      type: String,
+      enum: [
+        "bulb",
+        "fan",
+        "plug",
+        "ac",
+        "heater",
+        "tv",
+        "fridge",
+        "washer",
+        "oven",
+        "speaker",
+        "computer",
+        "router",
+        "other"
+      ],
+      default: "bulb"
+    },
+
+    powerStatus: {
+      type: Boolean,
+      default: false
+    },
+
+    voltage: {
+      type: Number,
+      default: 0
+    },
+
+    usage: {
+      type: Number,
+      default: 0
+    },
+
+    connectionStatus: {
       type: String,
       enum: ["online", "offline"],
       default: "offline"

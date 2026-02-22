@@ -5,6 +5,16 @@ import {
   FaPlug,
   FaSnowflake,
   FaTrash,
+  FaFire,
+  FaTv,
+  FaSnowflake as FaFridge,
+  FaBlender,
+  FaUtensils,
+  FaVolumeUp,
+  FaLaptop,
+  FaWifi,
+  FaCogs,
+  FaQuestionCircle,
 } from "react-icons/fa";
 
 const iconMap = {
@@ -12,6 +22,16 @@ const iconMap = {
   fan: <FaFan size={26} />,
   plug: <FaPlug size={26} />,
   ac: <FaSnowflake size={26} />,
+  heater: <FaFire size={26} />,
+  tv: <FaTv size={26} />,
+  fridge: <FaSnowflake size={26} />,
+  washer: <FaBlender size={26} />,
+  oven: <FaUtensils size={26} />,
+  speaker: <FaVolumeUp size={26} />,
+  computer: <FaLaptop size={26} />,
+  router: <FaWifi size={26} />,
+  "washing-machine": <FaCogs size={26} />,
+  Other: <FaQuestionCircle size={26} />,
 };
 
 const DeviceCard = ({ device, setDevices, onDelete }) => {
@@ -40,7 +60,7 @@ const DeviceCard = ({ device, setDevices, onDelete }) => {
     <div className="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-lg relative">
       {/* Delete */}
       <button
-        onClick={() => onDelete(device.id)}
+        onClick={() => onDelete(device._id)}
         className="absolute top-3 right-3 text-red-400 hover:text-red-600"
       >
         <FaTrash />
@@ -51,7 +71,7 @@ const DeviceCard = ({ device, setDevices, onDelete }) => {
         className={`w-14 h-14 flex items-center justify-center rounded-full mb-4
         ${device.status ? "bg-yellow-500 text-black" : "bg-slate-700 text-gray-300"}`}
       >
-        {iconMap[device.icon]}
+        {iconMap[device.icon] || <FaQuestionCircle size={26} />}
       </div>
 
       <h3 className="text-white text-lg font-semibold">{device.name}</h3>

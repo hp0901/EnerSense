@@ -1,57 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DeviceCard from "../components/DeviceCard";
 import IconPicker from "../components/IconPicker";
+import toast from "react-hot-toast";
+import {
+  pairDeviceApi,
+  getMyDevicesApi,
+  unpairDeviceApi,
+} from "../services/operations/deviceApi";
 
 const DeviceControl = () => {
-  const [devices, setDevices] = useState([
-    {
-      id: 1,
-      name: "Living Room Light",
-      icon: "bulb",
-      status: false,
-      voltage: 0,
-      usage: 0,
-    },
-    {
-      id: 2,
-      name: "Ceiling Fan",
-      icon: "fan",
-      status: true,
-      voltage: 228,
-      usage: 75,
-    },
-    {
-      id: 3,
-      name: "Smart Plug",
-      icon: "plug",
-      status: false,
-      voltage: 0,
-      usage: 0,
-    },
-  ]);
-
+  const [devices, setDevices] = useState([]);
   const [icon, setIcon] = useState("bulb");
   const [name, setName] = useState("");
+  const [deviceCode, setDeviceCode] = useState("");
 
-  const addDevice = () => {
-    if (!name) return;
+  // ✅ Load Devices on Mount
+  useEffect(() => {
+    fetchDevices();
+  }, []);
 
-    setDevices((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        name,
-        icon,
-        status: false,
-        voltage: 0,
-        usage: 0,
-      },
-    ]);
-    setName("");
+  const fetchDevices = async () => {
+    try {
+      const res = await getMyDevicesApi();
+      setDevices(res.devices || []);
+    } catch (error) {
+      toast.error(error);
+    }
   };
 
-  const deleteDevice = (id) => {
-    setDevices((prev) => prev.filter((d) => d.id !== id));
+  // ✅ Pair Device
+  const addDevice = async () => {
+    if (!deviceCode) {
+      toast.error("Enter device code");
+      return;
+    }
+
+    try {
+      await pairDeviceApi(deviceCode);
+      toast.success("Device paired successfully 🔥");
+
+      setDeviceCode("");
+      setName("");
+      fetchDevices(); // reload devices
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  // ✅ Unpair Device
+  const deleteDevice = async (id) => {
+    try {
+      await unpairDeviceApi(id);
+      toast.success("Device removed");
+      fetchDevices();
+    } catch (error) {
+      toast.error(error);
+    }
   };
 
   return (
@@ -65,7 +69,14 @@ const DeviceControl = () => {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Device name"
+          placeholder="Device name (optional)"
+          className="bg-slate-800 text-white p-2 rounded-md outline-none"
+        />
+
+        <input
+          value={deviceCode}
+          onChange={(e) => setDeviceCode(e.target.value)}
+          placeholder="Enter Unique Code"
           className="bg-slate-800 text-white p-2 rounded-md outline-none"
         />
 
@@ -83,7 +94,7 @@ const DeviceControl = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {devices.map((device) => (
           <DeviceCard
-            key={device.id}
+            key={device._id}
             device={device}
             setDevices={setDevices}
             onDelete={deleteDevice}

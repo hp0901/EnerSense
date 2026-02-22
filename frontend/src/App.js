@@ -63,6 +63,9 @@ import ResourcesCenter from "./Footer/ResourcesCenter";
 import IoTDevices from "./Footer/IoTDevices";
 import Legal from "./Footer/Legal";
 
+//Admin-only pages
+import AdminPanel from "./Pages/AdminPanel.jsx";
+
 /* =========================
    ERROR PAGE
 ========================= */
@@ -83,6 +86,10 @@ const App = () => {
 
       {/* Application Routes */}
       <Routes>
+
+
+         {/* ---------- ADMIN PANEL ---------- */}
+        <Route path="/admin" element={<AdminPanel />} />
 
         {/* ---------- PUBLIC ROUTES ---------- */}
         <Route path="/" element={<HomePage />} />

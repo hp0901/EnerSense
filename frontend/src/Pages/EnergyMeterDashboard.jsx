@@ -1,13 +1,22 @@
 import { useEffect, useState } from "react";
+import {getMyProfile} from "../services/operations/profileapi";
 
 const EnergyMeterDashboard = () => {
   // User Info
-  const user = {
-    name: "Harsh Patel",
-    uid: "ENS-UID-0901",
-    State: "Gujarat",
-    board: "MGVCL",
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      const res = await getMyProfile();
+      console.log(res)
+      setUser(res.data); // or data depending on backend response
+    } catch (error) {
+      console.error("Failed to load profile", error);
+    }
   };
+
+  fetchProfile();
+}, []);
 
   // Device Stats
   const [totalPoints] = useState(8);
@@ -46,7 +55,11 @@ const EnergyMeterDashboard = () => {
       <div className="mb-6">
         <h1 className="text-3xl font-bold">⚡ EnerSense Live Meter</h1>
         <p className="text-gray-400 mt-1">
-          {user.name} | {user.uid} | {user.State} | {user.board}
+          {user ? (
+            `${user.firstName} ${user.lastName} | ${user.userUID} | ${user.state} | ${user.board}`
+          ) : (
+            "Loading profile..."
+          )}
         </p>
       </div>
 

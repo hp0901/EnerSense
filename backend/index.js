@@ -14,6 +14,7 @@ import downloadInvoice from "./routes/pdf.js";
 import getMyPayments from "./routes/payments.js";
 import path from "path";
 import upload from "./routes/upload.js";
+import deviceRoutes from "./routes/deviceRoutes.js";
 
 
 dotenv.config();
@@ -60,6 +61,9 @@ app.use("/api/v1/chatbot", chatbotRoutes);
 app.use("/api/v1/profile",updatedprofile)
 app.use("/api/v1/settings", notificationSettingsRoutes);
 app.use("/api/v1/profile", profileRoutes);
+
+// Device routes
+app.use("/api/v1/device", deviceRoutes);
 
 
 // Premium routes

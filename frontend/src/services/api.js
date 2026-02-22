@@ -60,3 +60,12 @@ export const invoiceEndpoints = {
   DOWNLOAD_INVOICE: BASE_URL + "/invoice",
 };
 
+// Device Management APIs
+export const deviceEndpoints = {
+  PAIR_DEVICE: BASE_URL + "/device/pair",
+  GET_MY_DEVICES: BASE_URL + "/device/my-devices",
+  TOGGLE_DEVICE: BASE_URL + "/device/toggle",
+  UNPAIR_DEVICE: BASE_URL + "/device/unpair",
+   CREATE_DEVICE: BASE_URL + "/device/create",
+  GET_ALL_DEVICES: BASE_URL + "/device/all",
+};
