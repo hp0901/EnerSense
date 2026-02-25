@@ -1,6 +1,8 @@
 // controllers/deviceController.js
 import { nanoid } from "nanoid";
 import Device from "../models/Device.js";
+import User from "../models/User.js"; 
+import { maintenanceEmail } from "../Email/maintenanceTemplate.js";
 
 export const pairDevice = async (req, res) => {
   try {
@@ -160,5 +162,37 @@ export const getAllDevices = async (req, res) => {
       success: false,
       message: "Failed to fetch devices",
     });
+  }
+};
+
+
+
+// Admin-only function to send bulk email to all users
+export const sendBulkEmail = async (req, res) => {
+  try {
+    const users = await User.find({}, "email firstName");
+
+    let successCount = 0;
+
+    for (const user of users) {
+      await maintenanceEmail(
+        user.email,
+        user.firstName,
+        "28 Feb 2026",
+        "2 PM – 4 PM"
+      );
+
+      successCount++;
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    return res.json({
+      success: true,
+      totalSent: successCount,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false });
   }
 };
