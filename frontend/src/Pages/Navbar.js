@@ -22,6 +22,7 @@ const Navbar = () => {
 
   const { user , setUser } = useUser();
   const isPremium = user?.isPremium;
+  const isAdmin = user?.role === "admin";
 
   /* =====================================================
      🔗 NAV LINKS (LOGICAL ORDER – UX FRIENDLY)
@@ -52,7 +53,11 @@ const Navbar = () => {
     { name: "Signup", path: "/signup", auth: "guest" },
 
     //For Payments
-    { name: "My Payments", path: "/my-payments", auth: "private" }
+    { name: "My Payments", path: "/my-payments", auth: "private" },
+
+    // Admin links can be added here with auth: "admin" and handled in the filter logic 
+    { name: "Admin Panel", path: "/admin", auth: "admin" }
+
   ];
 
   /* =====================================================
@@ -62,6 +67,7 @@ const Navbar = () => {
     if (link.auth === "all") return true;
     if (link.auth === "private") return isAuth;
     if (link.auth === "guest") return !isAuth;
+    if (link.auth === "admin") return isAuth && isAdmin;
     return false;
   });
 

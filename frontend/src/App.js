@@ -64,8 +64,12 @@ import IoTDevices from "./Footer/IoTDevices";
 import Legal from "./Footer/Legal";
 
 //Admin-only pages
-import AdminPanel from "./Pages/AdminPanel.jsx";
-
+import Admin from "./Pages/Admin.jsx";
+import AdminManageUsers from "./Pages/AdminManageUsers.jsx";
+import Sendbulkemail from "./Pages/Sendbulkemail.jsx";
+import CreateUniqueid from "./Pages/CreateUniqueid.jsx";
+import AdminLoginPage from "./Pages/AdminLoginPage.jsx";
+import AdminPayments from "./Pages/AdminPayments.jsx";
 /* =========================
    ERROR PAGE
 ========================= */
@@ -89,8 +93,12 @@ const App = () => {
 
 
          {/* ---------- ADMIN PANEL ---------- */}
-        <Route path="/admin" element={<AdminPanel />} />
-
+         <Route path="/admin" element={<Admin />} />
+         <Route path="/admin/manage-users" element={<AdminManageUsers />} />
+         <Route path="/admin/send-bulk-email" element={<Sendbulkemail />} />
+         <Route path="/admin/create-unique-id" element={<CreateUniqueid />} />
+         <Route path="/admin/login" element={<AdminLoginPage />} />
+         <Route path="/admin/payments" element={<AdminPayments />} />
         {/* ---------- PUBLIC ROUTES ---------- */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />

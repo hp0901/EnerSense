@@ -18,7 +18,7 @@ import deviceRoutes from "./routes/deviceRoutes.js";
 
 
 dotenv.config();
-
+ 
 // Start the premium expiry cron job
 startPremiumExpiryCron();
 

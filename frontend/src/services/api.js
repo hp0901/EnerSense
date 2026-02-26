@@ -67,6 +67,7 @@ export const deviceEndpoints = {
   GET_MY_DEVICES: BASE_URL + "/device/my-devices",
   TOGGLE_DEVICE: BASE_URL + "/device/toggle",
   UNPAIR_DEVICE: BASE_URL + "/device/unpair",
+  // Admin APIs 
   CREATE_DEVICE: BASE_URL + "/device/create",
   GET_ALL_DEVICES: BASE_URL + "/device/all",
 };

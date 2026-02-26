@@ -5,7 +5,7 @@ import {
   getAllDevicesApi,
 } from "../services/operations/deviceApi";
 
-const AdminPanel = () => {
+const CreateUniqueid = () => {
   const [devices, setDevices] = useState([]);
   const [deviceType, setDeviceType] = useState("bulb");
 
@@ -72,4 +72,4 @@ const AdminPanel = () => {
   );
 };
 
-export default AdminPanel;
+export default CreateUniqueid;
