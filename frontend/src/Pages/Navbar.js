@@ -56,7 +56,7 @@ const Navbar = () => {
     { name: "My Payments", path: "/my-payments", auth: "private" },
 
     // Admin links can be added here with auth: "admin" and handled in the filter logic 
-    { name: "Admin Panel", path: "/admin", auth: "admin" }
+    { name: "Admin Panel", path: "/admin/login", auth: "admin" }
 
   ];
 
