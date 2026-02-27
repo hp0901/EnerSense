@@ -37,13 +37,13 @@ const UserCard = ({ card }) => {
   return (
     <div
       className={`
-        w-full mx-auto rounded-2xl border-2 shadow-2xl overflow-hidden
+        w-full mx-auto rounded-2xl  overflow-hidden
         max-w-[340px] md:max-w-[750px]
         ${style.bg} ${style.border}
       `}
     >
       {/* HEADER */}
-      <div className="flex justify-between items-center px-5 md:px-8 py-4 border-b border-black/5 bg-white/20">
+      <div className="flex justify-between items-center px-5 md:px-8 py-4  border-black/5">
         <div className="uppercase tracking-tighter">
           <h2 className="text-base md:text-xl font-black ">
             EnerSense Smart Card

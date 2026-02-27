@@ -30,9 +30,9 @@ export default function MyPlanPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-16">
+    <div className="w-full bg-gradient-to-br from-gray-400 to-yellow-150 border border-indigo-200  mx-auto px-6 py-16">
       {/* Heading */}
-      <div className="mb-10">
+      <div className="text-center mb-10">
         <h1 className="text-3xl font-bold mb-2">My Plan 💎</h1>
         <p className="text-gray-600">
           Manage your EnerSense Premium subscription
@@ -40,10 +40,10 @@ export default function MyPlanPage() {
       </div>
 
       {/* ================= PLAN SUMMARY ================= */}
-      <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-200 rounded-2xl p-8 shadow-sm mb-10">
+      <div className="bg-gradient-to-br from-purple-200 to-indigo-100 border border-indigo-200 rounded-2xl p-8 shadow-sm mb-10">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-center text-xl font-semibold">
               {user.cardType} Membership
             </h2>
             <p className="text-sm text-gray-600">
@@ -74,7 +74,7 @@ export default function MyPlanPage() {
       </div>
 
       {/* ================= ACCOUNT DETAILS ================= */}
-      <div className="bg-white border rounded-2xl p-8 mb-10">
+      <div className="bg-gradient-to-br from-indigo-300 to-yellow-200 border border-indigo-200  border rounded-2xl p-8 mb-10">
         <h3 className="text-lg font-semibold mb-6">
           Account Details 👤
         </h3>
@@ -111,7 +111,7 @@ export default function MyPlanPage() {
       </div>
 
       {/* ================= BENEFITS ================= */}
-      <div className="bg-white border rounded-2xl p-8">
+      <div className="bg-gradient-to-br from-pink-200 to-blue-200 border border-indigo-200  border rounded-2xl p-8">
         <h3 className="text-lg font-semibold mb-4">
           Premium Benefits
         </h3>
