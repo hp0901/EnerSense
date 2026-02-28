@@ -70,6 +70,8 @@ import Sendbulkemail from "./Pages/Sendbulkemail.jsx";
 import CreateUniqueid from "./Pages/CreateUniqueid.jsx";
 import AdminLoginPage from "./Pages/AdminLoginPage.jsx";
 import AdminPayments from "./Pages/AdminPayments.jsx";
+import AdminDashboard from "./Pages/AdminDashboard.jsx";
+import AdminNavbar from "./components/AdminNavbar.jsx";
 
 /* =========================
    ERROR PAGE
@@ -90,7 +92,7 @@ const App = () => {
     <>
       {/* Hide Navbar on admin routes */}
       {!isAdminRoute && <Navbar />}
-
+      { isAdminRoute && <AdminNavbar /> }
       {/* Floating AI Assistant */}
       <Chatbot />
 
@@ -98,13 +100,13 @@ const App = () => {
       <Routes>
 
         {/* ---------- ADMIN PANEL ---------- */}
-        <Route path="/admin/dashboard" element={<Admin />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="/admin/manage-users" element={<AdminManageUsers />} />
         <Route path="/admin/send-bulk-email" element={<Sendbulkemail />} />
         <Route path="/admin/create-unique-id" element={<CreateUniqueid />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/payments" element={<AdminPayments />} />
-
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         {/* ---------- PUBLIC ROUTES ---------- */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />

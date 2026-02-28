@@ -37,7 +37,7 @@ const EnerSenseLogin = () => {
   // ===============================
   const redirectBasedOnRole = (user) => {
     if (user.role === "admin") {
-      navigate("/admin/dashboard");
+      navigate("/admin");
     } else {
       navigate("/dashboard");
     }

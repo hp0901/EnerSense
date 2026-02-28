@@ -1,14 +1,45 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../components/AdminNavbar";
-
 
 const Admin = () => {
+  const adminCards = [
+    {
+      title: "Dashboard Stats",
+      description:
+        "View overall platform statistics and revenue analytics.",
+      link: "/admin/dashboard",
+      button: "View Dashboard →",
+    },
+    {
+      title: "Manage Users",
+      description: "View and manage registered users.",
+      link: "/admin/manage-users",
+      button: "View Users →",
+    },
+    {
+      title: "Send Bulk Email",
+      description: "Send emails to all registered users.",
+      link: "/admin/send-bulk-email",
+      button: "Send Bulk Email →",
+    },
+    {
+      title: "Devices",
+      description: "Monitor and control connected devices.",
+      link: "/admin/create-unique-id",
+      button: "Manage Devices →",
+    },
+    {
+      title: "Payments",
+      description: "View premium subscriptions and payments.",
+      link: "/admin/payments",
+      button: "View Payments →",
+    },
+  ];
+
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-gray-100 px-6 py-10">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
 
           {/* Header */}
           <div className="bg-white shadow-md rounded-xl p-6 mb-8">
@@ -21,57 +52,27 @@ const Admin = () => {
             </p>
           </div>
 
-          {/* Simple Cards Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-            <div className="bg-white shadow-md rounded-xl p-6 text-center">
-              <h2 className="text-lg font-semibold mb-2">Manage Users</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                View and manage registered users.
-              </p>
-              <Link
-                to="/admin/manage-users"
-                className="text-blue-600 hover:underline"
+          {/* Dynamic Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {adminCards.map((card, index) => (
+              <div
+                key={index}
+                className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-lg transition duration-300"
               >
-                View Users →
-              </Link>
-            </div>
-            <div className="bg-white shadow-md rounded-xl p-6 text-center">
-              <h2 className="text-lg font-semibold mb-2">Send Bulk Email</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                Send emails to all registered users.
-              </p>
-              <Link to="/admin/send-bulk-email" className="text-blue-600 hover:underline mt-2 block">
-                Send Bulk Email →
-              </Link>
-            </div>  
-
-            <div className="bg-white shadow-md rounded-xl p-6 text-center">
-              <h2 className="text-lg font-semibold mb-2">Devices</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                Monitor and control connected devices.
-              </p>
-              <Link
-                to="/admin/create-unique-id"
-                className="text-blue-600 hover:underline"
-              >
-                Manage Devices →
-              </Link>
-            </div>
-
-            <div className="bg-white shadow-md rounded-xl p-6 text-center">
-              <h2 className="text-lg font-semibold mb-2">Payments</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                View premium subscriptions and payments.
-              </p>
-              <Link
-                to="/admin/payments"
-                className="text-blue-600 hover:underline"
-              >
-                View Payments →
-              </Link>
-            </div>
-
+                <h2 className="text-lg font-semibold mb-2">
+                  {card.title}
+                </h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  {card.description}
+                </p>
+                <Link
+                  to={card.link}
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  {card.button}
+                </Link>
+              </div>
+            ))}
           </div>
 
         </div>

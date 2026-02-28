@@ -1,8 +1,8 @@
 //User Profile API Service
 
-// const BASE_URL = 'http://localhost:4000/api/v1';
+const BASE_URL = 'http://localhost:4000/api/v1';
 
-const BASE_URL = "https://enersense.duckdns.org/api/v1";
+// const BASE_URL = "https://enersense.duckdns.org/api/v1";
    
  
 export const userProfile = {
@@ -68,9 +68,15 @@ export const deviceEndpoints = {
   GET_MY_DEVICES: BASE_URL + "/device/my-devices",
   TOGGLE_DEVICE: BASE_URL + "/device/toggle",
   UNPAIR_DEVICE: BASE_URL + "/device/unpair",
-
-  // Admin APIs
   CREATE_DEVICE: BASE_URL + "/admin/create",
   GET_ALL_DEVICES: BASE_URL + "/admin/all",
+};
+
+// Admin APIs
+export const adminEndpoints = {
   SEND_BULK_EMAIL: BASE_URL + "/admin/send-email",
+  GET_DASHBOARD: BASE_URL + "/admin/dashboard",
+  GET_MONTHLY_REVENUE: BASE_URL + "/admin/monthly-revenue",
+  GET_ALL_USERS: BASE_URL + "/admin/users",
+  GET_ALL_PAYMENTS: BASE_URL + "/admin/payments/all",
 };

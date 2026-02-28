@@ -59,50 +59,91 @@ const DeviceControl = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-6">
-      <h1 className="text-3xl text-white font-bold mb-6">
+  <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-6 py-10">
+
+    {/* Header */}
+    <div className="max-w-7xl mx-auto mb-10">
+      <h1 className="text-4xl font-bold text-white tracking-wide">
         ⚡ Device Control Panel
       </h1>
+      <p className="text-slate-400 mt-2">
+        Manage and control all your connected smart devices.
+      </p>
+    </div> 
 
-      {/* Add Device */}
-      <div className="flex flex-wrap gap-3 mb-8 bg-slate-900 p-4 rounded-xl">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Device name (optional)"
-          className="bg-slate-800 text-white p-2 rounded-md outline-none"
-        />
+    <div className="max-w-7xl mx-auto">
 
-        <input
-          value={deviceCode}
-          onChange={(e) => setDeviceCode(e.target.value)}
-          placeholder="Enter Unique Code"
-          className="bg-slate-800 text-white p-2 rounded-md outline-none"
-        />
+      {/* Add Device Card */}
+      <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl mb-12">
 
-        <IconPicker icon={icon} setIcon={setIcon} />
+        <h2 className="text-xl font-semibold text-white mb-6">
+          ➕ Pair New Device
+        </h2>
 
-        <button
-          onClick={addDevice}
-          className="bg-blue-500 px-4 rounded-md text-white hover:bg-blue-600"
-        >
-          Add Device
-        </button>
-      </div>
+        <div className="flex flex-col lg:flex-row gap-4">
 
-      {/* Devices */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {devices.map((device) => (
-          <DeviceCard
-            key={device._id}
-            device={device}
-            setDevices={setDevices}
-            onDelete={deleteDevice}
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Device name (optional)"
+            className="flex-1 bg-slate-800/70 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
-        ))}
+
+          <input
+            value={deviceCode}
+            onChange={(e) => setDeviceCode(e.target.value)}
+            placeholder="Enter Unique Code"
+            className="flex-1 bg-slate-800/70 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
+
+          <div className="flex items-center">
+            <IconPicker icon={icon} setIcon={setIcon} />
+          </div>
+
+          <button
+            onClick={addDevice}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold hover:scale-105 transition duration-300 shadow-lg"
+          >
+            Add Device
+          </button>
+
+        </div>
       </div>
+
+      {/* Devices Section */}
+      <div className="mb-6 flex justify-between items-center">
+        <h2 className="text-2xl font-semibold text-white">
+          🔌 Your Devices
+        </h2>
+
+        <span className="text-sm text-slate-400">
+          {devices.length} device{devices.length !== 1 && "s"} connected
+        </span>
+      </div>
+
+      {devices.length === 0 ? (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center text-slate-400">
+          No devices paired yet. Add your first smart device 🚀
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+          {devices.map((device) => (
+            <div
+              key={device._id}
+              className="hover:scale-[1.02] transition duration-300"
+            >
+              <DeviceCard
+                device={device}
+                setDevices={setDevices}
+                onDelete={deleteDevice}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 };
 
 export default DeviceControl;
