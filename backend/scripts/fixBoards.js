@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import User from "../models/User.js";
-import Board from "../models/Board.js";
-import { generateBoardUID } from "../utils/uid.js";
+import User from "../../models/User.js";
+import Board from "../../models/Board.js";
+import { generateBoardUID } from "../uid.js";
 import dotenv from "dotenv";
 dotenv.config();
 

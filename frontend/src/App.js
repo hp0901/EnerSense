@@ -2,7 +2,7 @@
    CORE LIBRARIES
 ========================= */
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 /* =========================
    GLOBAL COMPONENTS
@@ -63,13 +63,14 @@ import ResourcesCenter from "./Footer/ResourcesCenter";
 import IoTDevices from "./Footer/IoTDevices";
 import Legal from "./Footer/Legal";
 
-//Admin-only pages
+// Admin-only pages
 import Admin from "./Pages/Admin.jsx";
 import AdminManageUsers from "./Pages/AdminManageUsers.jsx";
 import Sendbulkemail from "./Pages/Sendbulkemail.jsx";
 import CreateUniqueid from "./Pages/CreateUniqueid.jsx";
 import AdminLoginPage from "./Pages/AdminLoginPage.jsx";
 import AdminPayments from "./Pages/AdminPayments.jsx";
+
 /* =========================
    ERROR PAGE
 ========================= */
@@ -80,10 +81,15 @@ import Error from "./Pages/Error";
 ========================= */
 
 const App = () => {
+  const location = useLocation();
+
+  // Hide Navbar if route starts with /admin
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
   return (
     <>
-      {/* Global Navigation */}
-      <Navbar />
+      {/* Hide Navbar on admin routes */}
+      {!isAdminRoute && <Navbar />}
 
       {/* Floating AI Assistant */}
       <Chatbot />
@@ -91,14 +97,14 @@ const App = () => {
       {/* Application Routes */}
       <Routes>
 
+        {/* ---------- ADMIN PANEL ---------- */}
+        <Route path="/admin/dashboard" element={<Admin />} />
+        <Route path="/admin/manage-users" element={<AdminManageUsers />} />
+        <Route path="/admin/send-bulk-email" element={<Sendbulkemail />} />
+        <Route path="/admin/create-unique-id" element={<CreateUniqueid />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/payments" element={<AdminPayments />} />
 
-         {/* ---------- ADMIN PANEL ---------- */}
-         <Route path="/admin" element={<Admin />} />
-         <Route path="/admin/manage-users" element={<AdminManageUsers />} />
-         <Route path="/admin/send-bulk-email" element={<Sendbulkemail />} />
-         <Route path="/admin/create-unique-id" element={<CreateUniqueid />} />
-         <Route path="/admin/login" element={<AdminLoginPage />} />
-         <Route path="/admin/payments" element={<AdminPayments />} />
         {/* ---------- PUBLIC ROUTES ---------- */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />

@@ -63,11 +63,14 @@ export const invoiceEndpoints = {
 
 // Device Management APIs
 export const deviceEndpoints = {
+  // User APIs
   PAIR_DEVICE: BASE_URL + "/device/pair",
   GET_MY_DEVICES: BASE_URL + "/device/my-devices",
   TOGGLE_DEVICE: BASE_URL + "/device/toggle",
   UNPAIR_DEVICE: BASE_URL + "/device/unpair",
-  // Admin APIs 
-  CREATE_DEVICE: BASE_URL + "/device/create",
-  GET_ALL_DEVICES: BASE_URL + "/device/all",
+
+  // Admin APIs
+  CREATE_DEVICE: BASE_URL + "/admin/create",
+  GET_ALL_DEVICES: BASE_URL + "/admin/all",
+  SEND_BULK_EMAIL: BASE_URL + "/admin/send-email",
 };

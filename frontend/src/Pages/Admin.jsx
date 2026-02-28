@@ -1,11 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Navbar from "../components/AdminNavbar";
 
 
 const Admin = () => {
   return (
     <>
-
+      <Navbar />
       <div className="min-h-screen bg-gray-100 px-6 py-10">
         <div className="max-w-5xl mx-auto">
 

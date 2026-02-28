@@ -170,20 +170,34 @@ export const getAllDevices = async (req, res) => {
 // Admin-only function to send bulk email to all users
 export const sendBulkEmail = async (req, res) => {
   try {
+    const { subject, content } = req.body;
+
+    if (!subject || !content) {
+      return res.status(400).json({
+        success: false,
+        message: "Subject and content are required",
+      });
+    }
+
     const users = await User.find({}, "email firstName");
 
     let successCount = 0;
 
     for (const user of users) {
-      await maintenanceEmail(
-        user.email,
-        user.firstName,
-        "28 Feb 2026",
-        "2 PM – 4 PM"
-      );
+      try {
+        await maintenanceEmail(
+          user.email,
+          user.firstName,
+          subject,
+          content
+        );
 
-      successCount++;
-      await new Promise(resolve => setTimeout(resolve, 200));
+        successCount++;
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+      } catch (err) {
+        console.log("Failed for:", user.email);
+      }
     }
 
     return res.json({
@@ -192,7 +206,10 @@ export const sendBulkEmail = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false });
+    console.error("Bulk email error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Bulk email failed",
+    });
   }
 };

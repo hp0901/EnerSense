@@ -1,133 +1,87 @@
-import { mailSender } from "../utils/mailSender.js";
+import { sendEmail } from "../utils/brevoSender.js";
 
 export const maintenanceEmail = async (
   email,
   firstName = "User",
-  date,
-  time
+  subject,
+  content
 ) => {
-  return await mailSender(
-    email,
-    "EnerSense Scheduled Maintenance ⚡",
-    `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>EnerSense Maintenance Notice</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #f4f7fb;
-      font-family: Arial, Helvetica, sans-serif;
-    }
 
-    .wrapper {
-      padding: 60px 0;
-    }
+  const htmlTemplate = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${subject}</title>
+  </head>
 
-    .container {
-      max-width: 650px;
-      margin: 0 auto;
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 60px 50px;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
-    }
+  <body style="margin:0;padding:0;background:#0f172a;font-family:Arial,Helvetica,sans-serif;">
 
-    .logo {
-      width: 180px;
-      margin-bottom: 30px;
-    }
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:20px 10px;">
+      <tr>
+        <td align="center">
 
-    h1 {
-      color: #dc2626;
-      font-size: 32px;
-      margin-bottom: 18px;
-    }
+          <table width="100%" cellpadding="0" cellspacing="0"
+            style="max-width:600px;background:#111827;border-radius:16px;padding:30px;">
 
-    .text {
-      font-size: 18px;
-      color: #444;
-      line-height: 1.7;
-    }
+            <!-- Logo -->
+            <tr>
+              <td align="center" style="padding-bottom:20px;">
+                <img
+                  src="https://res.cloudinary.com/harshpatel0901/image/upload/v1768970755/EnerSence_logo_oarobg.png"
+                  width="140"
+                  style="display:block;"
+                />
+              </td>
+            </tr>
 
-    .highlight-box {
-      display: inline-block;
-      padding: 18px 35px;
-      background: #fef2f2;
-      border: 2px dashed #ef4444;
-      border-radius: 16px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #dc2626;
-      margin: 25px 0 30px;
-    }
+            <!-- Subject -->
+            <tr>
+              <td align="center"
+                style="color:#ffffff;font-size:22px;font-weight:bold;padding-bottom:20px;">
+                ${subject}
+              </td>
+            </tr>
 
-    .note {
-      font-size: 15px;
-      color: #666;
-      line-height: 1.6;
-    }
+            <!-- Content -->
+            <tr>
+              <td
+                style="color:#d1d5db;font-size:16px;line-height:1.6;text-align:left;">
+                Hello <b>${firstName}</b>,<br/><br/>
+                ${content.replace(/\n/g, "<br/>")}
+              </td>
+            </tr>
 
-    .divider {
-      height: 1px;
-      background: #e5e7eb;
-      margin: 40px 0;
-    }
+            <!-- Divider -->
+            <tr>
+              <td style="padding:25px 0;">
+                <hr style="border:none;height:1px;background:#374151;" />
+              </td>
+            </tr>
 
-    .footer {
-      font-size: 15px;
-      color: #666;
-      line-height: 1.6;
-    }
-  </style>
-</head>
+            <!-- Footer -->
+            <tr>
+              <td
+                style="color:#9ca3af;font-size:14px;text-align:center;">
+                ⚡ <b>Team EnerSense</b><br/>
+                Smart Energy. Smarter Living.
+              </td>
+            </tr>
 
-<body>
-  <div class="wrapper">
-    <div class="container">
+          </table>
 
-      <img
-        src="https://res.cloudinary.com/harshpatel0901/image/upload/v1768970755/EnerSence_logo_oarobg.png"
-        alt="EnerSense Logo"
-        class="logo"
-      />
+        </td>
+      </tr>
+    </table>
 
-      <h1>Scheduled Maintenance Notice ⚡</h1>
+  </body>
+  </html>
+  `;
 
-      <p class="text">
-        Hello <b>${firstName}</b>,<br /><br />
-        We will be performing scheduled system maintenance to improve performance and reliability.
-      </p>
-
-      <div class="highlight-box">
-        ${date} <br/>
-        ${time}
-      </div>
-
-      <p class="note">
-        During this period, some services may be temporarily unavailable.
-        We are working to ensure minimal disruption.
-      </p>
-
-      <p class="note" style="margin-top:15px;">
-        Thank you for your patience and for being a valued EnerSense user.
-      </p>
-
-      <div class="divider"></div>
-
-      <p class="footer">
-        ⚡ <b>Team EnerSense</b><br />
-        Smart Energy. Smarter Living.
-      </p>
-
-    </div>
-  </div>
-</body>
-</html>
-`
-  );
+  return await sendEmail({
+    to: email,
+    subject,
+    htmlContent: htmlTemplate,
+  });
 };

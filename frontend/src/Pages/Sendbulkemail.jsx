@@ -1,86 +1,99 @@
-import React from "react";
+import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { sendBulkEmailApi } from "../services/operations/adminapi";
 
 const SendBulkEmail = () => {
+  const [subject, setSubject] = useState("");
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async () => {
+  if (!subject || !content) {
+    toast.error("Please fill all fields");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const message = await sendBulkEmailApi(subject, content);
+
+    toast.success(message || "Bulk email sent successfully 🚀");
+
+    setSubject("");
+    setContent("");
+
+  } catch (error) {
+    toast.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 px-6 py-10">
+      <div className="max-w-5xl mx-auto">
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 px-6 py-10">
-        <div className="max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Bulk Email Manager
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Send announcements and updates to EnerSense users.
+            </p>
+          </div>
+        </div>
 
-          {/* Page Header */}
-          <div className="flex items-center justify-between mb-8">
+        <div className="bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
+          <div className="space-y-6">
+
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">
-                Bulk Email Manager
-              </h1>
-              <p className="text-gray-500 mt-1">
-                Send announcements and updates to EnerSense users.
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Subject
+              </label>
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Enter subject line..."
+                className="w-full border border-gray-300 rounded-lg px-4 py-3"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Content
+              </label>
+              <textarea
+                rows="6"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write your message here..."
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 resize-none"
+              ></textarea>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <p className="text-sm text-blue-700">
+                📢 This message will be delivered to <strong>all registered users</strong>.
               </p>
             </div>
 
-            <span className="px-4 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-full font-medium">
-              Feature Coming Soon
-            </span>
-          </div>
-
-          {/* Main Card */}
-          <div className="bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
-
-            {/* Form Section */}
-            <div className="space-y-6">
-
-              {/* Subject Field */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Subject
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter subject line..."
-                  disabled
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-500 cursor-not-allowed"
-                />
-              </div>
-
-              {/* Message Field */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Content
-                </label>
-                <textarea
-                  rows="6"
-                  placeholder="Write your message here..."
-                  disabled
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-500 resize-none cursor-not-allowed"
-                ></textarea>
-              </div>
-
-              {/* Info Box */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <p className="text-sm text-blue-700">
-                  📢 This message will be delivered to <strong>all registered users</strong>.
-                  Future updates will include filtering options such as Premium Users,
-                  State-based targeting, and Scheduled Email Delivery.
-                </p>
-              </div>
-
-              {/* Action Button */}
-              <div className="flex justify-end">
-                <button
-                  disabled
-                  className="px-6 py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed"
-                >
-                  Send Email
-                </button>
-              </div>
-
+            <div className="flex justify-end">
+              <button
+                onClick={handleSend}
+                disabled={loading}
+                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              >
+                {loading ? "Sending..." : "Send Email"}
+              </button>
             </div>
 
           </div>
-
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

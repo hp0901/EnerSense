@@ -15,7 +15,7 @@ import getMyPayments from "./routes/payments.js";
 import path from "path";
 import upload from "./routes/upload.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
-
+import adminRoutes from "./routes/adminDeviceRoutes.js";
 
 dotenv.config();
  
@@ -75,6 +75,9 @@ app.use("/api/v1/payments",  getMyPayments);
 
 //Server upload static files
 app.use("/api/v1/uploads", upload);
+
+//For Admin panel
+app.use("/api/v1/admin", adminRoutes);
 
  
 // Start server

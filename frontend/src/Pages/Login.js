@@ -33,6 +33,17 @@ const EnerSenseLogin = () => {
   };
 
   // ===============================
+  // REDIRECT BASED ON ROLE
+  // ===============================
+  const redirectBasedOnRole = (user) => {
+    if (user.role === "admin") {
+      navigate("/admin/dashboard");
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
+  // ===============================
   // MANUAL LOGIN
   // ===============================
   const handleSubmit = async (e) => {
@@ -50,19 +61,19 @@ const EnerSenseLogin = () => {
 
       const res = await loginApi(formData.email, formData.password);
 
-      // ✅ STORE BACKEND JWT
+      // Store JWT
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
 
-      login(); // AuthContext update
+      login(); // update auth context
+      await fetchUser(); // update user context
 
       toast.success("✅ Login successful! Welcome back 🚀", {
         id: toastId,
       });
 
-      await fetchUser(); // UserContext update
+      redirectBasedOnRole(res.user);
 
-      navigate("/dashboard");
     } catch (error) {
       console.error("LOGIN ERROR:", error);
       toast.error("❌ Invalid email or password", {
@@ -74,7 +85,7 @@ const EnerSenseLogin = () => {
   };
 
   // ===============================
-  // GOOGLE LOGIN (FIXED)
+  // GOOGLE LOGIN
   // ===============================
   const handleGoogleSuccess = async (credentialResponse) => {
     const toastId = toast.loading("🔐 Signing in with Google...");
@@ -82,22 +93,21 @@ const EnerSenseLogin = () => {
     try {
       setLoading(true);
 
-      // ✅ SEND GOOGLE TOKEN TO BACKEND
       const res = await googleLoginApi(credentialResponse.credential);
 
-      // ✅ STORE BACKEND JWT (NOT GOOGLE TOKEN)
+      // Store backend JWT (NOT Google token)
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
 
-      login(); // update auth state
+      login();
+      await fetchUser();
 
       toast.success(`Welcome ${res.user.firstName || "User"} 🚀`, {
         id: toastId,
       });
 
-      await fetchUser(); // update user context
+      redirectBasedOnRole(res.user);
 
-      navigate("/dashboard");
     } catch (error) {
       console.error("GOOGLE LOGIN ERROR:", error);
       toast.error("❌ Google login failed", {
@@ -142,77 +152,65 @@ const EnerSenseLogin = () => {
 
           {/* FORM */}
           <div className="w-full max-w-sm">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-500 mb-2">
+            <h2 className="text-3xl font-bold text-green-500 mb-2">
               Welcome Back!
             </h2>
-            <p className="text-slate-300 text-sm sm:text-base mb-6">
+            <p className="text-slate-300 text-sm mb-6">
               Please enter your details.
             </p>
 
-            <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <input
                 type="email"
                 name="email"
                 placeholder="Email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 sm:py-4 rounded-xl bg-slate-800/70
+                className="w-full px-4 py-4 rounded-xl bg-slate-800/70
                 border border-slate-700 text-white placeholder:text-slate-400
                 focus:outline-none focus:ring-2 focus:ring-green-500/50"
                 required
               />
 
-              <div className="space-y-2">
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 sm:py-4 rounded-xl bg-slate-800/70
-                    border border-slate-700 text-white placeholder:text-slate-400
-                    focus:outline-none focus:ring-2 focus:ring-green-500/50 pr-12"
-                    required
-                  />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-4 rounded-xl bg-slate-800/70
+                  border border-slate-700 text-white placeholder:text-slate-400
+                  focus:outline-none focus:ring-2 focus:ring-green-500/50 pr-12"
+                  required
+                />
 
-                  <span
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2
-                    cursor-pointer text-slate-400 hover:text-white transition"
-                  >
-                    {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-                  </span>
-                </div>
-
-                  {/* 👇 ADD GAP HERE */}
-                  <p
-                    onClick={() => navigate("/forget-password")}
-                    className="mt-2 text-right text-sm text-green-400 hover:underline cursor-pointer"
-                  >
-                    Forgot password?
-                  </p>
-                </div>
-
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2
+                  cursor-pointer text-slate-400 hover:text-white transition"
+                >
+                  {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                </span>
+              </div>
 
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full bg-green-500 hover:bg-green-600 text-white
-                py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg
+                py-4 rounded-xl font-bold text-lg
                 shadow-lg shadow-green-500/20 transition active:scale-[0.98]"
               >
                 {loading ? "Logging in..." : "Login"}
               </button>
 
-              {/* DIVIDER */}
+              {/* Divider */}
               <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-px bg-slate-700" />
                 <span className="text-xs text-slate-400">OR</span>
                 <div className="flex-1 h-px bg-slate-700" />
               </div>
 
-              {/* GOOGLE LOGIN */}
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
