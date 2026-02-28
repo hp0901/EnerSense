@@ -16,6 +16,7 @@ import path from "path";
 import upload from "./routes/upload.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import adminRoutes from "./routes/adminDeviceRoutes.js";
+import twoFactorRoutes from "./routes/twoFactorRoutes.js";
 
 dotenv.config();
  
@@ -78,6 +79,9 @@ app.use("/api/v1/uploads", upload);
 
 //For Admin panel
 app.use("/api/v1/admin", adminRoutes);
+
+// 2FA routes
+app.use("/api/v1/2fa", twoFactorRoutes);
 
  
 // Start server

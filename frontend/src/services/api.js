@@ -1,8 +1,8 @@
 //User Profile API Service
 
-// const BASE_URL = 'http://localhost:4000/api/v1';
+const BASE_URL = 'http://localhost:4000/api/v1';
 
-const BASE_URL = "https://enersense.duckdns.org/api/v1";
+// const BASE_URL = "https://enersense.duckdns.org/api/v1";
    
  
 export const userProfile = {
@@ -79,4 +79,11 @@ export const adminEndpoints = {
   GET_MONTHLY_REVENUE: BASE_URL + "/admin/monthly-revenue",
   GET_ALL_USERS: BASE_URL + "/admin/users",
   GET_ALL_PAYMENTS: BASE_URL + "/admin/payments/all",
+};
+
+// 2FA APIs
+export const twoFactorEndpoints = {
+  GENERATE_2FA: BASE_URL + "/2fa/generate",
+  VERIFY_2FA: BASE_URL + "/2fa/verify",
+  LOGIN_API: BASE_URL + "/auth/login-2fa",
 };

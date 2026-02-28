@@ -26,7 +26,7 @@ const DigitalIdModal = ({ open, onClose, user }) => {
     name: `${user.firstName} ${user.lastName}`,
     email: user.email,
     phone: user.phone || "0000000000",
-    userUID: `USER-${user._id?.slice(-6).toUpperCase()}`,
+    userUID: user.userUID || "UNKNOWN",
     boardUID: "ENER-METER-476752",
     deviceCount: user.devices?.length || 0,
   };

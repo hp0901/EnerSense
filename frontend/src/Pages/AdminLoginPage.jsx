@@ -2,12 +2,10 @@ import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext";
 import { useUser } from "../context/UserContext";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-//   const { login } = useAuth();
   const { setUser } = useUser();
 
   const [step, setStep] = useState("credentials"); 
@@ -61,7 +59,9 @@ const AdminLogin = () => {
         userId: tempUserId
       });
 
-    //   login(res.data.token);
+      // ✅ store JWT
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       setUser(res.data.user);
 
       toast.success("Admin login successful");

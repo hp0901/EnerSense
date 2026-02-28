@@ -11,6 +11,7 @@ import { generateUserUID, generateBoardUID } from "../utils/uid.js";
 import {forgotOtpTemplate} from "../Email/forgotOtpTemplate.js";
 import { passwordResetSuccessTemplate } from "../Email/passwordResetSuccessTemplate.js";
 import { isStrongPassword } from "../utils/passwordValidator.js";
+import speakeasy from "speakeasy";
 
 dotenv.config();
 
@@ -139,6 +140,7 @@ export const login = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -147,6 +149,7 @@ export const login = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -154,8 +157,26 @@ export const login = async (req, res) => {
       });
     }
 
+    // 🔐 ADMIN CHECK MUST COME BEFORE TOKEN GENERATION
+    if (user.role === "admin") {
+
+      if (!user.twoFactorEnabled) {
+        return res.status(403).json({
+          success: false,
+          message: "Admin must enable 2FA",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        require2FA: true,
+        userId: user._id,
+      });
+    }
+
+    // ✅ NORMAL USER TOKEN
     const token = jwt.sign(
-      { id: user._id, email: user.email , role: user.role},
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
@@ -163,13 +184,13 @@ export const login = async (req, res) => {
     user.password = undefined;
 
     return res.status(200).json({
-      success: true, 
+      success: true,
       token,
       user,
-      message: "Login successful",
     });
 
   } catch (error) {
+    console.error("LOGIN ERROR:", error);
     return res.status(500).json({
       success: false,
       message: "Login failed",
@@ -399,5 +420,67 @@ export const resetPassword = async (req, res) => {
 };
 
 
+// ===============================
+// VERIFY LOGIN 2FA OTP
+// ===============================
+// controllers/auth.js
 
+export const verifyLogin2FA = async (req, res) => {
+  try {
+    const { userId, token } = req.body;
+
+    if (!userId || !token) {
+      return res.status(400).json({
+        success: false,
+        message: "UserId and OTP required",
+      });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user || !user.twoFactorEnabled) {
+      return res.status(400).json({
+        success: false,
+        message: "2FA not enabled",
+      });
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: "base32",
+      token,
+      window: 1,
+    });
+
+    if (!verified) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    // 🔐 NOW ISSUE TOKEN
+    const jwtToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    user.password = undefined;
+
+    return res.status(200).json({
+      success: true,
+      token: jwtToken,
+      user,
+      message: "Admin login successful",
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "2FA verification failed",
+    });
+  }
+};
 

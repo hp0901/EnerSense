@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import DigitalIdModal from "./AdminDigitalIdModal";
 
 const AdminTopbar = () => {
-  const { user, setUser } = useUser();
+  const { user, setUser, loading } = useUser();
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -16,14 +16,12 @@ const AdminTopbar = () => {
   const [showCard, setShowCard] = useState(false);
   const dropdownRef = useRef(null);
 
-  const handleLogout = () => {
-    logout();
-    setUser(null);
-    toast.success("Logged out successfully");
-    navigate("/login");
-  };
+  // 🔥 Debug log
+  useEffect(() => {
+    console.log("ADMIN USER:", user);
+  }, [user]);
 
-  // Close dropdown on outside click
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -32,14 +30,28 @@ const AdminTopbar = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // 🔥 Block render until user is ready
+  if (loading) return null;
+  if (!user) return null;
+
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
 
   return (
     <>
       <div className="w-full bg-white shadow-sm px-6 py-3 flex items-center justify-between border-b">
-        
-        {/* Left */}
+
+        {/* LEFT */}
         <div className="flex items-center gap-3">
           <Link to="/admin" className="flex items-center gap-2">
             <img src={logo} alt="EnerSense Logo" className="h-8" />
@@ -49,9 +61,9 @@ const AdminTopbar = () => {
           </Link>
         </div>
 
-        {/* Right */}
+        {/* RIGHT */}
         <div ref={dropdownRef} className="relative flex items-center gap-4">
-          
+
           {/* Avatar */}
           <div
             onClick={() => setOpen((prev) => !prev)}
@@ -59,12 +71,12 @@ const AdminTopbar = () => {
               flex items-center justify-center font-semibold 
               cursor-pointer hover:ring-2 transition
               ${
-                user?.role === "admin"
+                user.role === "admin"
                   ? "bg-blue-600 hover:ring-blue-400"
                   : "bg-green-600 hover:ring-green-400"
               }`}
           >
-            {user?.firstName?.charAt(0)?.toUpperCase() || "A"}
+            {user.firstName.charAt(0).toUpperCase()}
           </div>
 
           {/* Three Dots */}
@@ -77,31 +89,25 @@ const AdminTopbar = () => {
 
           {/* Dropdown */}
           {open && (
-            <div className="absolute right-0 top-14 bg-white border shadow-lg rounded-lg w-56 p-3 animate-fadeIn">
-              
-              {user ? (
-                <>
-                  <p className="font-medium text-gray-800">
-                    {user.firstName} {user.lastName}
-                  </p>
+            <div className="absolute right-0 top-14 bg-white border shadow-lg rounded-lg w-56 p-3">
 
-                  <p className="text-sm text-gray-500 mb-3">
-                    Role: {user.role}
-                  </p>
+              <p className="font-medium text-gray-800">
+                {user.firstName} {user.lastName}
+              </p>
 
-                  <button
-                    onClick={() => {
-                      setShowCard(true);
-                      setOpen(false);
-                    }}
-                    className="w-full text-left text-blue-600 hover:bg-blue-50 px-2 py-1 rounded mb-1"
-                  >
-                    View Digital ID
-                  </button>
-                </>
-              ) : (
-                <p className="text-sm text-gray-500">Loading...</p>
-              )}
+              <p className="text-sm text-gray-500 mb-3">
+                Role: {user.role}
+              </p>
+
+              <button
+                onClick={() => {
+                  setShowCard(true);
+                  setOpen(false);
+                }}
+                className="w-full text-left text-blue-600 hover:bg-blue-50 px-2 py-1 rounded mb-1"
+              >
+                View Digital ID
+              </button>
 
               <button
                 onClick={handleLogout}
@@ -109,6 +115,7 @@ const AdminTopbar = () => {
               >
                 Logout
               </button>
+
             </div>
           )}
         </div>

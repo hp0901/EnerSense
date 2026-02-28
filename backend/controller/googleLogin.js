@@ -8,9 +8,8 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const googleLogin = async (req, res) => {
   try {
-    const { credential } = req.body; // Google ID token
+    const { credential } = req.body;
 
-    // ✅ Verify Google token
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -27,7 +26,7 @@ export const googleLogin = async (req, res) => {
         lastName: family_name || "",
         email,
         password: "GOOGLE_AUTH",
-        phone: { number: "0000000000" },
+        phone: "0000000000",
         state: "NA",
         board: "NA",
         gender: "Other",
@@ -45,24 +44,37 @@ export const googleLogin = async (req, res) => {
       });
     }
 
-    // ✅ ISSUE YOUR OWN JWT (THIS IS KEY)
+    // 🔐 IMPORTANT: ADMIN 2FA CHECK BEFORE JWT
+    if (user.role === "admin") {
+      if (user.twoFactorEnabled) {
+        return res.status(200).json({
+          success: true,
+          require2FA: true,
+          userId: user._id,
+        });
+      }
+    }
+
+    // ✅ NORMAL USER OR ADMIN WITHOUT 2FA
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
 
+    user.password = undefined;
+
     return res.status(200).json({
       success: true,
-      token, // 🔥 YOUR JWT, NOT GOOGLE'S
+      token,
       user,
     });
 
-  }  catch (error) {
-  console.error("GOOGLE LOGIN ERROR FULL:", error);
-  return res.status(401).json({
-    success: false,
-    message: error.message || "Google login failed",
-  });
-}
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR FULL:", error);
+    return res.status(401).json({
+      success: false,
+      message: error.message || "Google login failed",
+    });
+  }
 };

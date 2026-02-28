@@ -12,7 +12,7 @@ import { useUser } from "../context/UserContext";
 const EnerSenseLogin = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { fetchUser } = useUser();
+  const { fetchUser , setUser } = useUser();
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,12 +61,28 @@ const EnerSenseLogin = () => {
 
       const res = await loginApi(formData.email, formData.password);
 
-      // Store JWT
+      console.log("LOGIN RESPONSE:", res);
+
+      // 🔐 ADMIN REQUIRES 2FA
+      if (res.require2FA === true) {
+
+        console.log("Storing admin2FAUserId:", res.userId);
+
+        localStorage.setItem("admin2FAUserId", res.userId);
+
+        toast.dismiss(toastId);
+        navigate("/admin-2fa");
+
+        return; // ⛔ STOP (do NOT store token yet)
+      }
+
+      // ✅ NORMAL LOGIN FLOW
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
+      // 🔥 Immediately update context
+      setUser(res.user);
 
-      login(); // update auth context
-      await fetchUser(); // update user context
+      login();
 
       toast.success("✅ Login successful! Welcome back 🚀", {
         id: toastId,
@@ -88,35 +104,46 @@ const EnerSenseLogin = () => {
   // GOOGLE LOGIN
   // ===============================
   const handleGoogleSuccess = async (credentialResponse) => {
-    const toastId = toast.loading("🔐 Signing in with Google...");
+  const toastId = toast.loading("🔐 Signing in with Google...");
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const res = await googleLoginApi(credentialResponse.credential);
+    const res = await googleLoginApi(credentialResponse.credential);
 
-      // Store backend JWT (NOT Google token)
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("user", JSON.stringify(res.user));
+    // 🔐 If admin requires 2FA
+    if (res.require2FA) {
+      localStorage.setItem("admin2FAUserId", res.userId);
 
-      login();
-      await fetchUser();
+      toast.dismiss(toastId);
 
-      toast.success(`Welcome ${res.user.firstName || "User"} 🚀`, {
-        id: toastId,
-      });
-
-      redirectBasedOnRole(res.user);
-
-    } catch (error) {
-      console.error("GOOGLE LOGIN ERROR:", error);
-      toast.error("❌ Google login failed", {
-        id: toastId,
-      });
-    } finally {
-      setLoading(false);
+      navigate("/admin-2fa");
+      return; // ⛔ STOP here (do NOT store token)
     }
-  };
+
+    // ✅ Normal login flow
+    localStorage.setItem("token", res.token);
+    localStorage.setItem("user", JSON.stringify(res.user));
+
+    setUser(res.user);  // 🔥 Important
+
+    login();
+
+    redirectBasedOnRole(res.user);
+
+    toast.success(`Welcome ${res.user.firstName || "User"} 🚀`, {
+      id: toastId,
+    });
+
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR:", error);
+    toast.error("❌ Google login failed", {
+      id: toastId,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleGoogleError = () => {
     toast.error("Google Sign-In Failed");
@@ -124,6 +151,7 @@ const EnerSenseLogin = () => {
 
   return (
     <div className="relative h-dvh w-full flex items-center justify-center bg-[#0f172a] overflow-hidden">
+
       {/* MOBILE BACKGROUND */}
       <img
         src={loginimage}
@@ -204,7 +232,6 @@ const EnerSenseLogin = () => {
                 {loading ? "Logging in..." : "Login"}
               </button>
 
-              {/* Divider */}
               <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-px bg-slate-700" />
                 <span className="text-xs text-slate-400">OR</span>
@@ -219,16 +246,6 @@ const EnerSenseLogin = () => {
                 size="large"
               />
             </form>
-
-            <p className="mt-6 text-sm text-slate-300">
-              Don't have an account?{" "}
-              <span
-                onClick={() => navigate("/signup")}
-                className="text-green-500 font-semibold hover:underline cursor-pointer"
-              >
-                Sign Up
-              </span>
-            </p>
           </div>
         </div>
 

@@ -45,12 +45,12 @@ const userSchema = new mongoose.Schema(
 
     isVerified: { type: Boolean, default: true },
 
-   profileImage: {
+    profileImage: {
       type: String,
       default: "",
     },
 
-   profileImageId: {
+    profileImageId: {
       type: String,
       default: "",
     },
@@ -84,8 +84,8 @@ const userSchema = new mongoose.Schema(
     },
 
     premiumExpiryReminderSent: {
-    type: Boolean,
-    default: false,
+      type: Boolean,
+      default: false,
     },
 
     // 🔑 Unique EnerSense ID
@@ -95,6 +95,16 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    // 🔐 GOOGLE AUTHENTICATOR (2FA) FIELDS
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
+    twoFactorSecret: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );
