@@ -16,11 +16,6 @@ const AdminTopbar = () => {
   const [showCard, setShowCard] = useState(false);
   const dropdownRef = useRef(null);
 
-  // 🔥 Debug log
-  useEffect(() => {
-    console.log("ADMIN USER:", user);
-  }, [user]);
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -34,7 +29,6 @@ const AdminTopbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 🔥 Block render until user is ready
   if (loading) return null;
   if (!user) return null;
 
@@ -44,27 +38,36 @@ const AdminTopbar = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     toast.success("Logged out successfully");
-    navigate("/login");
+    navigate("/admin/login");
   };
+
+  // 🔥 Admin Menu Items
+  const adminMenu = [
+    { label: "Dashboard", path: "/admin" },
+    { label: "Manage Users", path: "/admin/manage-users" },
+    { label: "Devices", path: "/admin/create-unique-id" },
+    { label: "Payments", path: "/admin/payments" },
+    { label: "Send Bulk Email", path: "/admin/send-bulk-email" },
+  ];
 
   return (
     <>
       <div className="w-full bg-white shadow-sm px-6 py-3 flex items-center justify-between border-b">
 
-        {/* LEFT */}
+        {/* LEFT SIDE */}
         <div className="flex items-center gap-3">
           <Link to="/admin" className="flex items-center gap-2">
             <img src={logo} alt="EnerSense Logo" className="h-8" />
             <span className="text-xl font-semibold text-blue-600">
-              EnerSense
+              EnerSense Admin
             </span>
           </Link>
         </div>
 
-        {/* RIGHT */}
+        {/* RIGHT SIDE */}
         <div ref={dropdownRef} className="relative flex items-center gap-4">
 
-          {/* Avatar */}
+          {/* ✅ CLICKABLE AVATAR */}
           <div
             onClick={() => setOpen((prev) => !prev)}
             className={`w-10 h-10 text-white rounded-full 
@@ -79,43 +82,62 @@ const AdminTopbar = () => {
             {user.firstName.charAt(0).toUpperCase()}
           </div>
 
-          {/* Three Dots */}
+          {/* ✅ THREE DOTS */}
           <button
             onClick={() => setOpen((prev) => !prev)}
-            className="p-1 text-gray-500 hover:text-gray-700"
+            className="p-1 text-gray-500 hover:text-gray-700 transition"
           >
-            <BsThreeDotsVertical size={18} />
+            <BsThreeDotsVertical size={20} />
           </button>
 
-          {/* Dropdown */}
+          {/* ✅ DROPDOWN MENU */}
           {open && (
-            <div className="absolute right-0 top-14 bg-white border shadow-lg rounded-lg w-56 p-3">
+            <div className="absolute right-0 top-14 bg-white border shadow-xl rounded-xl w-60 py-3 z-50">
 
-              <p className="font-medium text-gray-800">
-                {user.firstName} {user.lastName}
-              </p>
+              {/* User Info */}
+              <div className="px-4 pb-3 border-b">
+                <p className="font-medium text-gray-800">
+                  {user.firstName} {user.lastName}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Role: {user.role}
+                </p>
+              </div>
 
-              <p className="text-sm text-gray-500 mb-3">
-                Role: {user.role}
-              </p>
+              {/* Menu Links */}
+              <div className="py-2">
+                {adminMenu.map((item, index) => (
+                  <Link
+                    key={index}
+                    to={item.path}
+                    onClick={() => setOpen(false)}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
 
+              <div className="border-t my-2"></div>
+
+              {/* Digital ID */}
               <button
                 onClick={() => {
                   setShowCard(true);
                   setOpen(false);
                 }}
-                className="w-full text-left text-blue-600 hover:bg-blue-50 px-2 py-1 rounded mb-1"
+                className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition"
               >
                 View Digital ID
               </button>
 
+              {/* Logout */}
               <button
                 onClick={handleLogout}
-                className="w-full text-left text-red-500 hover:bg-red-50 px-2 py-1 rounded"
+                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition"
               >
                 Logout
               </button>
-
             </div>
           )}
         </div>

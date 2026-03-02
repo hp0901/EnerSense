@@ -1,8 +1,8 @@
 /* =========================
    CORE LIBRARIES
 ========================= */
-import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 /* =========================
    GLOBAL COMPONENTS
@@ -63,7 +63,9 @@ import ResourcesCenter from "./Footer/ResourcesCenter";
 import IoTDevices from "./Footer/IoTDevices";
 import Legal from "./Footer/Legal";
 
-// Admin-only pages
+/* =========================
+   ADMIN PAGES
+========================= */
 import Admin from "./Pages/Admin.jsx";
 import AdminManageUsers from "./Pages/AdminManageUsers.jsx";
 import Sendbulkemail from "./Pages/Sendbulkemail.jsx";
@@ -73,6 +75,7 @@ import AdminPayments from "./Pages/AdminPayments.jsx";
 import AdminDashboard from "./Pages/AdminDashboard.jsx";
 import Admin2FAPage from "./Pages/Admin2FAPage.jsx";
 import AdminTopbar from "./components/AdminNavbar.jsx";
+
 /* =========================
    ERROR PAGE
 ========================= */
@@ -85,30 +88,101 @@ import Error from "./Pages/Error";
 const App = () => {
   const location = useLocation();
 
-  // Hide Navbar if route starts with /admin
-   
+  const [adminToken, setAdminToken] = useState(
+    localStorage.getItem("token")
+  );
+
+  // Re-check token on route change
+  useEffect(() => {
+    setAdminToken(localStorage.getItem("token"));
+  }, [location]);
+
+  /* =========================
+     PROTECTED ADMIN ROUTE
+  ========================= */
+  const ProtectedAdminRoute = ({ children }) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      return <Navigate to="/login" replace />;
+    }
+
+    return children;
+  };
 
   return (
     <>
-      {/* Show Navbar on all routes except admin routes */}
+      {/* Normal Navbar */}
       {!location.pathname.startsWith("/admin") && <Navbar />}
-      {/* Show Admin Navbar on admin routes */}
-      {location.pathname.startsWith("/admin") && <AdminTopbar />}
-      {/* Floating AI Assistant */}
+
+      {/* Admin Navbar (only when logged in) */}
+      {location.pathname.startsWith("/admin") && (
+      <AdminTopbar />
+      )}
+
       <Chatbot />
 
-      {/* Application Routes */}
       <Routes>
 
-        {/* ---------- ADMIN PANEL ---------- */}
-        <Route path="/admin/" element={<Admin />} />
-        <Route path="/admin/manage-users" element={<AdminManageUsers />} />
-        <Route path="/admin/send-bulk-email" element={<Sendbulkemail />} />
-        <Route path="/admin/create-unique-id" element={<CreateUniqueid />} />
+        {/* ---------- ADMIN PANEL (Protected) ---------- */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedAdminRoute>
+              <Admin />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedAdminRoute>
+              <AdminDashboard />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/manage-users"
+          element={
+            <ProtectedAdminRoute>
+              <AdminManageUsers />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/send-bulk-email"
+          element={
+            <ProtectedAdminRoute>
+              <Sendbulkemail />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/create-unique-id"
+          element={
+            <ProtectedAdminRoute>
+              <CreateUniqueid />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/payments"
+          element={
+            <ProtectedAdminRoute>
+              <AdminPayments />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        {/* ---------- ADMIN LOGIN (Public) ---------- */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/admin/payments" element={<AdminPayments />} />
         <Route path="/admin-2fa" element={<Admin2FAPage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
         {/* ---------- PUBLIC ROUTES ---------- */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />
@@ -124,17 +198,16 @@ const App = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify/:uid" element={<VerifyCard />} />
 
-        {/* ---------- DASHBOARD & CORE FEATURES ---------- */}
+        {/* ---------- USER DASHBOARD ---------- */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/energy-meter-dashboard" element={<EnergyMeterDashboard />} />
         <Route path="/device-control" element={<DeviceControl />} />
         <Route path="/settings" element={<SettingPage />} />
 
-        {/* ---------- PREMIUM FEATURES ---------- */}
+        {/* ---------- PREMIUM ---------- */}
         <Route path="/premium-benefits" element={<PremiumBenefitsPage />} />
         <Route path="/premium" element={<MyPlanPage />} />
         <Route path="/my-payments" element={<MyPayments />} />
-
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/fault-detection" element={<FaultDetectionPage />} />
         <Route path="/green-score" element={<GreenScorePage />} />
@@ -142,12 +215,12 @@ const App = () => {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/support" element={<SupportPage />} />
 
-        {/* ---------- PAYMENT & PRICING ---------- */}
+        {/* ---------- PAYMENT ---------- */}
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/premium-contact" element={<PremiumContact />} />
 
-        {/* ---------- FOOTER / RESOURCE PAGES ---------- */}
+        {/* ---------- FOOTER ---------- */}
         <Route path="/company-center" element={<CompanyCenter />} />
         <Route path="/resources-center" element={<ResourcesCenter />} />
         <Route path="/iot-devices" element={<IoTDevices />} />
