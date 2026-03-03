@@ -89,7 +89,7 @@ const Navbar = () => {
     fetchUserCard()
       .then((res) => setCardData(res.data))
       .catch(() => setCardData({ isGuest: true }));
-  }, [isAuth]);
+  }, []);
 
   /* =====================================================
      ❌ Close menu / card on outside click
