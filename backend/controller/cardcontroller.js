@@ -4,40 +4,58 @@ import Board from "../models/Board.js";
 export const getUserCard = async (req, res) => {
   try {
     if (req.user) {
+
       const user = await User.findById(req.user.id);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Get active board
+      // Active board (for displaying main board UID)
       const board = await Board.findOne({
         user: user._id,
         status: "active",
       });
 
-      const phone = user.phone;
+      // 🔥 Device Statistics
+      const totalDevices = await Board.countDocuments({
+        user: user._id,
+      });
+
+      const activeDevices = await Board.countDocuments({
+        user: user._id,
+        status: "active",
+      });
+
+      const inactiveDevices = await Board.countDocuments({
+        user: user._id,
+        status: "inactive",
+      });
 
       return res.status(200).json({
         isGuest: false,
         card: {
           userUID: user.userUID,
           boardUID: board ? board.boardUID : "NOT_ASSIGNED",
-          boardName: board ? board.boardName : user.board,
+          boardName: board ? board.boardName : "NOT_ASSIGNED",
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
-          phone,
+          phone: user.phone,
           state: user.state,
           gender: user.gender,
           role: user.role,
           joinDate: user.createdAt,
           cardType: user.cardType,
-          deviceCount: user.devices?.length || 0,
+
+          // 🔥 Device Data
+          totalDevices,
+          activeDevices,
+          inactiveDevices,
         },
       });
     }
 
-    // Guest user
+    // Guest fallback
     return res.status(200).json({
       isGuest: true,
       card: {
@@ -52,9 +70,12 @@ export const getUserCard = async (req, res) => {
         role: "guest",
         joinDate: "2024-01-01",
         cardType: "Silver",
-        deviceCount: 0,
+        totalDevices: 0,
+        activeDevices: 0,
+        inactiveDevices: 0,
       },
     });
+
   } catch (error) {
     console.error("[BACKEND] User Card Error:", error);
     res.status(500).json({ message: "Server error" });

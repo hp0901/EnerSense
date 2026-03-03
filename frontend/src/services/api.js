@@ -54,6 +54,7 @@ export const paymentEndpoints = {
 // User Card Verification API
 export const userCardEndpoints = {
   VERIFY_CARD: BASE_URL + "/user-card/verify",
+  GET_USER_CARD: BASE_URL + "/user-card",
 };
 
 // Invoice APIs

@@ -1,7 +1,10 @@
 import UserCard from "./UserCard";
 import GuestCard from "./GuestCard";
 
+
 const CardPopover = ({ cardData, close }) => {
+
+  console.log("CardPopover received:", cardData);
   return (
     <div
       className="

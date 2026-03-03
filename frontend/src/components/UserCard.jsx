@@ -101,7 +101,15 @@ const UserCard = ({ card }) => {
               <span className="opacity-50 text-[9px] md:text-[10px]">
                 Devices
               </span>
-              <span>{card.deviceCount} Units</span>
+              <p>{card.totalDevices ?? 0} UNITS</p>
+              
+              {/* <p className="text-xs text-green-600">
+                {card.activeDevices} Active
+              </p>
+
+              <p className="text-xs text-red-500">
+                {card.inactiveDevices} Inactive
+              </p> */}
             </div>
           </div>
         </div>

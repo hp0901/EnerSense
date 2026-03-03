@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { AiOutlineClose } from "react-icons/ai";
 import { useAuth } from "../context/AuthContex.js";
-import { fetchUserCard } from "../services/card.js";
+import { fetchUserCard } from "../services/operations/card.js";
 import CardPopover from "../components/CardPopover";
 import { useUser } from "../context/UserContext.js";
 import toast from "react-hot-toast";
