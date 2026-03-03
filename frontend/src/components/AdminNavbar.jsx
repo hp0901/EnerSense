@@ -38,7 +38,7 @@ const AdminTopbar = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     toast.success("Logged out successfully");
-    navigate("/admin/login");
+    navigate("/login");
   };
 
   // 🔥 Admin Menu Items

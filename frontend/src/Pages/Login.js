@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import loginimage from "../assets/loginpage.png";
 import logo from "../assets/EnerSence_logo.png";
@@ -12,7 +12,7 @@ import { useUser } from "../context/UserContext";
 const EnerSenseLogin = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { fetchUser , setUser } = useUser();
+  const { setUser } = useUser();
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,6 +21,15 @@ const EnerSenseLogin = () => {
     email: "",
     password: "",
   });
+
+  // ✅ Optional: If token exists, DO NOT auto redirect blindly
+  // Let dashboard verify token instead
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      console.log("Token exists. Waiting for verification in dashboard.");
+    }
+  }, []);
 
   // ===============================
   // INPUT CHANGE
@@ -37,9 +46,9 @@ const EnerSenseLogin = () => {
   // ===============================
   const redirectBasedOnRole = (user) => {
     if (user.role === "admin") {
-      navigate("/admin");
+      navigate("/admin", { replace: true });
     } else {
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     }
   };
 
@@ -59,29 +68,25 @@ const EnerSenseLogin = () => {
     try {
       setLoading(true);
 
-      const res = await loginApi(formData.email, formData.password);
+      // 🔥 Clear old invalid token before new login
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
 
-      console.log("LOGIN RESPONSE:", res);
+      const res = await loginApi(formData.email, formData.password);
 
       // 🔐 ADMIN REQUIRES 2FA
       if (res.require2FA === true) {
-
-        console.log("Storing admin2FAUserId:", res.userId);
-
         localStorage.setItem("admin2FAUserId", res.userId);
-
         toast.dismiss(toastId);
-        navigate("/admin-2fa");
-
-        return; // ⛔ STOP (do NOT store token yet)
+        navigate("/admin-2fa", { replace: true });
+        return;
       }
 
       // ✅ NORMAL LOGIN FLOW
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
-      // 🔥 Immediately update context
-      setUser(res.user);
 
+      setUser(res.user);
       login();
 
       toast.success("✅ Login successful! Welcome back 🚀", {
@@ -92,6 +97,10 @@ const EnerSenseLogin = () => {
 
     } catch (error) {
       console.error("LOGIN ERROR:", error);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
       toast.error("❌ Invalid email or password", {
         id: toastId,
       });
@@ -104,46 +113,48 @@ const EnerSenseLogin = () => {
   // GOOGLE LOGIN
   // ===============================
   const handleGoogleSuccess = async (credentialResponse) => {
-  const toastId = toast.loading("🔐 Signing in with Google...");
+    const toastId = toast.loading("🔐 Signing in with Google...");
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const res = await googleLoginApi(credentialResponse.credential);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
 
-    // 🔐 If admin requires 2FA
-    if (res.require2FA) {
-      localStorage.setItem("admin2FAUserId", res.userId);
+      const res = await googleLoginApi(credentialResponse.credential);
 
-      toast.dismiss(toastId);
+      if (res.require2FA) {
+        localStorage.setItem("admin2FAUserId", res.userId);
+        toast.dismiss(toastId);
+        navigate("/admin-2fa", { replace: true });
+        return;
+      }
 
-      navigate("/admin-2fa");
-      return; // ⛔ STOP here (do NOT store token)
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+
+      setUser(res.user);
+      login();
+
+      toast.success(`Welcome ${res.user.firstName || "User"} 🚀`, {
+        id: toastId,
+      });
+
+      redirectBasedOnRole(res.user);
+
+    } catch (error) {
+      console.error("GOOGLE LOGIN ERROR:", error);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      toast.error("❌ Google login failed", {
+        id: toastId,
+      });
+    } finally {
+      setLoading(false);
     }
-
-    // ✅ Normal login flow
-    localStorage.setItem("token", res.token);
-    localStorage.setItem("user", JSON.stringify(res.user));
-
-    setUser(res.user);  // 🔥 Important
-
-    login();
-
-    redirectBasedOnRole(res.user);
-
-    toast.success(`Welcome ${res.user.firstName || "User"} 🚀`, {
-      id: toastId,
-    });
-
-  } catch (error) {
-    console.error("GOOGLE LOGIN ERROR:", error);
-    toast.error("❌ Google login failed", {
-      id: toastId,
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleGoogleError = () => {
     toast.error("Google Sign-In Failed");
@@ -152,7 +163,6 @@ const EnerSenseLogin = () => {
   return (
     <div className="relative h-dvh w-full flex items-center justify-center bg-[#0f172a] overflow-hidden">
 
-      {/* MOBILE BACKGROUND */}
       <img
         src={loginimage}
         alt="EnerSense Background"
@@ -160,14 +170,11 @@ const EnerSenseLogin = () => {
       />
       <div className="absolute inset-0 bg-black/50 md:hidden" />
 
-      {/* MAIN CARD */}
       <div className="relative z-10 flex w-full max-w-6xl bg-[#0f172a]/90 md:bg-[#0f172a]
         backdrop-blur-xl rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5 mx-3 sm:mx-6">
 
-        {/* LEFT */}
         <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col justify-center px-6 py-8 sm:px-10 sm:py-12 lg:px-16">
 
-          {/* LOGO */}
           <div className="flex items-center gap-3 mb-8">
             <img src={logo} alt="EnerSense Logo" className="w-10 h-10 sm:w-12 sm:h-12" />
             <div>
@@ -178,7 +185,6 @@ const EnerSenseLogin = () => {
             </div>
           </div>
 
-          {/* FORM */}
           <div className="w-full max-w-sm">
             <h2 className="text-3xl font-bold text-green-500 mb-2">
               Welcome Back!
@@ -242,14 +248,11 @@ const EnerSenseLogin = () => {
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
                 useOneTap
-                theme="outline"
-                size="large"
               />
             </form>
           </div>
         </div>
 
-        {/* RIGHT IMAGE */}
         <div className="hidden md:block md:w-1/2 lg:w-7/12 relative">
           <img
             src={loginimage}

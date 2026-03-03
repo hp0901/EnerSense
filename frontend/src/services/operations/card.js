@@ -12,9 +12,10 @@ export const fetchUserCard = async () => {
       token ? { Authorization: `Bearer ${token}` } : {}
     );
 
-    return res;
+    return res.data;
 
   } catch (error) {
-    throw error?.response?.data?.message || "Failed to fetch user card";
+    console.error("FETCH USER CARD ERROR:", error);
+    throw error;   // ✅ Throw FULL error, not just message
   }
 };

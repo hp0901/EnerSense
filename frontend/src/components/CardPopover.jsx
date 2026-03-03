@@ -29,7 +29,7 @@ const CardPopover = ({ cardData, close }) => {
         {cardData.isGuest ? (
           <GuestCard />
         ) : (
-          <UserCard card={cardData.card} />
+          <UserCard card={cardData.card.card} />
         )}
       </div>
     </div>

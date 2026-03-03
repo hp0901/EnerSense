@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiZap,
   FiActivity,
@@ -32,6 +33,20 @@ const dailyEnergyData = [
 /* ================= DASHBOARD ================= */
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
+  // ✅ AUTH CHECK (Prevents redirect loop)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    // Optional: you can later verify token with backend here
+  }, [navigate]);
+
   return (
     <div className="min-h-screen bg-[#0f172a] text-white px-6 py-8 overflow-x-hidden">
 
@@ -71,12 +86,7 @@ const Dashboard = () => {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={dailyEnergyData}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 70,
-                bottom: 55,
-              }}
+              margin={{ top: 20, right: 30, left: 70, bottom: 55 }}
             >
               <CartesianGrid
                 stroke="#1e293b"
@@ -88,13 +98,6 @@ const Dashboard = () => {
                 dataKey="time"
                 stroke="#94a3b8"
                 tick={{ fill: "#cbd5f5", fontSize: 12 }}
-                label={{
-                  value: "Time of Day",
-                  position: "bottom",
-                  offset: 40,
-                  fill: "#cbd5f5",
-                  fontSize: 13,
-                }}
               />
 
               <YAxis
@@ -102,17 +105,6 @@ const Dashboard = () => {
                 stroke="#94a3b8"
                 tick={{ fill: "#cbd5f5", fontSize: 12 }}
                 tickMargin={8}
-                label={{
-                  value: "Energy Consumption (kWh)",
-                  angle: -90,
-                  position: "left",
-                  offset: 40,
-                  style: {
-                    fontSize: 13,
-                    fill: "#cbd5f5",
-                    fontWeight: 500,
-                  },
-                }}
               />
 
               <Tooltip
@@ -149,8 +141,7 @@ const Dashboard = () => {
         </div>
 
         <p className="mt-3 text-sm text-slate-400 text-center">
-          Electricity consumption throughout the day.  
-          X-axis represents time and Y-axis shows energy usage in kilowatt-hours (kWh).
+          Electricity consumption throughout the day.
         </p>
       </section>
 
@@ -165,7 +156,6 @@ const Dashboard = () => {
           <span>High energy usage detected during peak hours</span>
         </div>
       </section>
-
     </div>
   );
 };

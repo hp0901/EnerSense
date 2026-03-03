@@ -3,7 +3,7 @@ import axios from "axios";
 export const axiosInstance = axios.create({});
 
 /* =================================
-   ✅ REQUEST INTERCEPTOR
+   REQUEST INTERCEPTOR
    Add token automatically
 ================================= */
 axiosInstance.interceptors.request.use(
@@ -20,20 +20,17 @@ axiosInstance.interceptors.request.use(
 );
 
 /* =================================
-   ✅ RESPONSE INTERCEPTOR
-   Auto logout when token expired
+   RESPONSE INTERCEPTOR
+   Clear token ONLY (NO redirect)
 ================================= */
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401) {
-      console.log("Session expired");
+      console.log("Session expired. Clearing token...");
 
-      // remove token
       localStorage.removeItem("token");
-
-      // redirect to login
-      window.location.href = "/login";
+      localStorage.removeItem("user");
     }
 
     return Promise.reject(error);
@@ -46,7 +43,7 @@ axiosInstance.interceptors.response.use(
 export const apiConnector = (
   method,
   url,
-  bodyData,
+  bodyData = null,
   headers = {},
   params = {},
   responseType = "json"
@@ -54,12 +51,11 @@ export const apiConnector = (
   return axiosInstance({
     method,
     url,
-    data: bodyData ?? null,
+    data: bodyData,
     headers: {
       ...headers,
     },
     params,
-    responseType, // ✅ ADD THIS
+    responseType,
   });
 };
-
