@@ -28,7 +28,7 @@ import Dashboard from "./Pages/Dashboard";
 import EnergyMeterDashboard from "./Pages/EnergyMeterDashboard";
 import DeviceControl from "./Pages/DeviceControl";
 import SettingPage from "./Pages/SettingPage";
-
+import EnergyAnalytics from "./components/analytics/EnergyAnalytics.jsx";
 /* =========================
    PREMIUM FEATURE PAGES
 ========================= */
@@ -203,7 +203,7 @@ const App = () => {
         <Route path="/energy-meter-dashboard" element={<EnergyMeterDashboard />} />
         <Route path="/device-control" element={<DeviceControl />} />
         <Route path="/settings" element={<SettingPage />} />
-
+        <Route path="/energy-analytics" element={<EnergyAnalytics />} />
         {/* ---------- PREMIUM ---------- */}
         <Route path="/premium-benefits" element={<PremiumBenefitsPage />} />
         <Route path="/premium" element={<MyPlanPage />} />

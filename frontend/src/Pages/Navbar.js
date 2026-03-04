@@ -26,27 +26,31 @@ const Navbar = () => {
 
   /* ================= NAV LINKS ================= */
   const navLinks = [
-    { name: "Home", path: "/", auth: "all" },
-    { name: "About", path: "/about", auth: "all" },
-    { name: "Energy Awareness", path: "/energy-awareness", auth: "all" },
-    { name: "FAQs", path: "/faqs", auth: "all" },
-    { name: "Contact", path: "/contact", auth: "all" },
+  { name: "Home", path: "/", auth: "all" },
+  { name: "About", path: "/about", auth: "all" },
+  { name: "Energy Awareness", path: "/energy-awareness", auth: "all" },
+  { name: "FAQs", path: "/faqs", auth: "all" },
+  { name: "Contact", path: "/contact", auth: "all" },
 
-    { name: "Dashboard", path: "/dashboard", auth: "private" },
-    { name: "Energy Meter", path: "/energy-meter-dashboard", auth: "private" },
-    { name: "Device Control", path: "/device-control", auth: "private" },
-    { name: "Premium Benefits", path: "/premium-benefits", auth: "private" },
+  { name: "Dashboard", path: "/dashboard", auth: "private" },
 
-    isPremium
-      ? { name: "My Plan", path: "/premium", auth: "private" }
-      : { name: "Pricing", path: "/pricing", auth: "private" },
+  // NEW PAGE
+  { name: "Analytics", path: "/energy-analytics", auth: "private" },
 
-    { name: "Settings", path: "/settings", auth: "private" },
-    { name: "My Payments", path: "/my-payments", auth: "private" },
+  { name: "Energy Meter", path: "/energy-meter-dashboard", auth: "private" },
+  { name: "Device Control", path: "/device-control", auth: "private" },
+  { name: "Premium Benefits", path: "/premium-benefits", auth: "private" },
 
-    { name: "Login", path: "/login", auth: "guest" },
-    { name: "Signup", path: "/signup", auth: "guest" },
-  ];
+  isPremium
+    ? { name: "My Plan", path: "/premium", auth: "private" }
+    : { name: "Pricing", path: "/pricing", auth: "private" },
+
+  { name: "Settings", path: "/settings", auth: "private" },
+  { name: "My Payments", path: "/my-payments", auth: "private" },
+
+  { name: "Login", path: "/login", auth: "guest" },
+  { name: "Signup", path: "/signup", auth: "guest" },
+];
 
   const filteredLinks = navLinks.filter((link) => {
     if (link.auth === "all") return true;

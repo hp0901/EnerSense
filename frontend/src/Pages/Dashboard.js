@@ -18,6 +18,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Link } from "react-router-dom";
 
 /* ================= ENERGY DATA ================= */
 
@@ -88,11 +89,7 @@ const Dashboard = () => {
               data={dailyEnergyData}
               margin={{ top: 20, right: 30, left: 70, bottom: 55 }}
             >
-              <CartesianGrid
-                stroke="#1e293b"
-                strokeDasharray="4 6"
-                vertical={false}
-              />
+              <CartesianGrid stroke="#1e293b" strokeDasharray="4 6" vertical={false} />
 
               <XAxis
                 dataKey="time"
@@ -139,10 +136,19 @@ const Dashboard = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-
         <p className="mt-3 text-sm text-slate-400 text-center">
           Electricity consumption throughout the day.
         </p>
+
+        {/* Button Center */}
+        <div className="flex justify-center mt-6">
+          <Link
+            to="/energy-analytics"
+            className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-300"
+          >
+            Know More
+          </Link>
+        </div>
       </section>
 
       {/* ================= ALERTS ================= */}
