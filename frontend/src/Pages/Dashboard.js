@@ -8,28 +8,10 @@ import {
   FiAlertTriangle,
 } from "react-icons/fi";
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+
 import { Link } from "react-router-dom";
+import UsageEstimateChart from "../components/analytics/UsageEstimateChart.jsx";
 
-/* ================= ENERGY DATA ================= */
-
-const dailyEnergyData = [
-  { time: "6 AM", energy: 1.2 },
-  { time: "9 AM", energy: 2.4 },
-  { time: "12 PM", energy: 3.8 },
-  { time: "3 PM", energy: 3.2 },
-  { time: "6 PM", energy: 5.1 },
-  { time: "9 PM", energy: 4.6 },
-];
 
 /* ================= DASHBOARD ================= */
 
@@ -78,98 +60,115 @@ const Dashboard = () => {
       </section>
 
       {/* ================= ENERGY USAGE GRAPH ================= */}
-      <section className="bg-[#020617] p-6 rounded-xl mb-10">
-        <h2 className="text-xl font-semibold text-green-400 mb-4 text-center">
-          Energy Usage Analytics
-        </h2>
+      <section className="bg-[#020617] p-8 rounded-2xl mb-10 border border-white/5 shadow-xl">
 
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={dailyEnergyData}
-              margin={{ top: 20, right: 30, left: 70, bottom: 55 }}
-            >
-              <CartesianGrid stroke="#1e293b" strokeDasharray="4 6" vertical={false} />
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <h2 className="text-xl font-semibold text-green-400 flex items-center gap-2">
+            📊 Energy Usage Analytics
+          </h2>
 
-              <XAxis
-                dataKey="time"
-                stroke="#94a3b8"
-                tick={{ fill: "#cbd5f5", fontSize: 12 }}
-              />
-
-              <YAxis
-                width={60}
-                stroke="#94a3b8"
-                tick={{ fill: "#cbd5f5", fontSize: 12 }}
-                tickMargin={8}
-              />
-
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#020617",
-                  border: "1px solid #334155",
-                  borderRadius: "6px",
-                  color: "#e5e7eb",
-                  fontSize: "12px",
-                }}
-              />
-
-              <Legend
-                verticalAlign="bottom"
-                align="center"
-                wrapperStyle={{
-                  paddingTop: "18px",
-                  fontSize: "13px",
-                  color: "#22c55e",
-                }}
-              />
-
-              <Line
-                type="monotone"
-                dataKey="energy"
-                name="Energy Used (kWh)"
-                stroke="#22c55e"
-                strokeWidth={3}
-                dot={{ r: 4, fill: "#020617", strokeWidth: 2 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <span className="text-xs bg-green-500/10 text-green-400 px-3 py-1 rounded-full">
+            Live Data
+          </span>
         </div>
-        <p className="mt-3 text-sm text-slate-400 text-center">
-          Electricity consumption throughout the day.
+
+        {/* Chart */}
+        <div className="bg-[#0f172a] p-4 rounded-xl border border-white/5">
+          <div className="w-full h-64">
+            <UsageEstimateChart />
+          </div>
+        </div>
+
+        {/* Info Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 text-center">
+
+          <div className="bg-[#0f172a] p-4 rounded-lg border border-white/5">
+            <p className="text-sm text-slate-400">Peak Usage</p>
+            <p className="text-lg font-semibold text-green-400">3.9 kWh ⚡</p>
+          </div>
+
+          <div className="bg-[#0f172a] p-4 rounded-lg border border-white/5">
+            <p className="text-sm text-slate-400">Average Usage</p>
+            <p className="text-lg font-semibold text-blue-400">2.1 kWh 📊</p>
+          </div>
+
+          <div className="bg-[#0f172a] p-4 rounded-lg border border-white/5">
+            <p className="text-sm text-slate-400">Energy Saved</p>
+            <p className="text-lg font-semibold text-green-400">12% 🌱</p>
+          </div>
+
+        </div>
+
+        {/* Description */}
+        <p className="mt-5 text-sm text-slate-400 text-center">
+          Monitor electricity consumption trends and optimize energy usage in real time.
         </p>
 
-        {/* Button Center */}
+        {/* Button */}
         <div className="flex justify-center mt-6">
           <Link
             to="/energy-analytics"
-            className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-300"
+            className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-300 shadow-lg"
           >
-            Know More
+            ⚡ View Detailed Analytics
           </Link>
         </div>
+
       </section>
 
+     
       {/* ================= ALERTS ================= */}
-      <section className="bg-[#020617] p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-green-400 mb-4">
-          Alerts & Notifications
+    <section className="bg-[#020617] p-6 rounded-2xl border border-white/5 shadow-xl">
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-green-400 flex items-center gap-2">
+          🔔 Alerts & Notifications
         </h2>
 
-        <div className="flex items-center gap-3 text-yellow-400">
+        <span className="text-xs bg-yellow-400/10 text-yellow-400 px-3 py-1 rounded-full">
+          1 Active Alert
+        </span>
+      </div>
+
+      {/* Alert Card */}
+      <div className="flex items-start gap-4 bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl hover:bg-yellow-500/20 transition">
+
+        <div className="text-yellow-400 text-xl mt-1">
           <FiAlertTriangle />
-          <span>High energy usage detected during peak hours</span>
         </div>
-      </section>
-    </div>
-  );
-};
+
+        <div className="flex-1">
+          <p className="text-yellow-300 font-medium">
+            High energy usage detected during peak hours ⚡
+          </p>
+
+          <p className="text-sm text-slate-400 mt-1">
+            Energy consumption exceeded normal threshold between 6PM - 9PM.
+          </p>
+
+          <p className="text-xs text-slate-500 mt-2">
+            ⏱ Detected 5 minutes ago
+          </p>
+        </div>
+
+        {/* Status */}
+        <span className="text-xs bg-yellow-400/20 text-yellow-300 px-3 py-1 rounded-full">
+          Warning
+        </span>
+
+      </div>
+
+    </section>
+        </div>
+      );
+    };
 
 /* ================= REUSABLE COMPONENTS ================= */
 
 const StatCard = ({ icon, label, value }) => (
-  <div className="bg-[#020617] p-6 rounded-xl flex items-center gap-4">
+  <div className="bg-gray-700 p-6 rounded-xl flex items-center gap-4">
     <div className="text-green-400 text-2xl">{icon}</div>
     <div>
       <p className="text-slate-400 text-sm">{label}</p>
