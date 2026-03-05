@@ -12,7 +12,6 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContex";
 import Footer from "../Footer/Footer";
-import Logo from "../assets/EnerSence_logo.png";
 
 /* ================= FEATURE CARD ================= */
 
@@ -54,6 +53,48 @@ const FutureItem = ({ text }) => (
   </div>
 );
 
+/* ================= ENERGY PREVIEW ================= */
+
+const EnergyPreview = () => {
+  return (
+    <div className="bg-[#0f172a] border border-white/10 rounded-2xl p-6 shadow-xl w-full max-w-md">
+
+      <h3 className="text-green-400 font-semibold text-lg mb-4">
+        ⚡ Live Energy Overview
+      </h3>
+
+      <div className="grid grid-cols-2 gap-4 text-sm">
+
+        <div className="bg-[#020617] p-4 rounded-lg border border-white/10">
+          <p className="text-slate-400">Current Power</p>
+          <p className="text-green-400 text-xl font-bold">2.4 kW</p>
+        </div>
+
+        <div className="bg-[#020617] p-4 rounded-lg border border-white/10">
+          <p className="text-slate-400">Today's Cost</p>
+          <p className="text-green-400 text-xl font-bold">₹48</p>
+        </div>
+
+        <div className="bg-[#020617] p-4 rounded-lg border border-white/10">
+          <p className="text-slate-400">Active Devices</p>
+          <p className="text-green-400 text-xl font-bold">3</p>
+        </div>
+
+        <div className="bg-[#020617] p-4 rounded-lg border border-white/10">
+          <p className="text-slate-400">Carbon Saved</p>
+          <p className="text-green-400 text-xl font-bold">1.2kg</p>
+        </div>
+
+      </div>
+
+      <div className="mt-6 bg-[#020617] border border-white/10 rounded-lg p-4 text-center text-slate-400 text-sm">
+        📊 Energy usage graph preview
+      </div>
+
+    </div>
+  );
+};
+
 /* ================= MAIN PAGE ================= */
 
 const HomePage = () => {
@@ -66,12 +107,17 @@ const HomePage = () => {
       {/* ================= HERO ================= */}
 
       <section className="py-24 border-b border-white/10 bg-gradient-to-b from-[#020617] via-[#0b1220] to-[#020617]">
+
         <h1 className="mb-4 text-center font-semibold text-blue-400">
           <b className="text-4xl block">WELCOME TO ENERSENSE</b>
         </h1>
+
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
 
+          {/* LEFT CONTENT */}
+
           <div>
+
             <h1 className="text-4xl md:text-6xl font-bold text-green-400">
               ⚡ EnerSense
             </h1>
@@ -97,6 +143,7 @@ const HomePage = () => {
             {/* Buttons */}
 
             <div className="mt-10 flex gap-4 flex-wrap">
+
               {!isAuth ? (
                 <>
                   <button
@@ -121,11 +168,13 @@ const HomePage = () => {
                   🚀 Go to Dashboard
                 </button>
               )}
+
             </div>
 
             {/* Stats */}
 
             <div className="mt-10 flex gap-10 text-sm text-slate-400">
+
               <div>
                 <div className="text-green-400 text-xl font-bold">⚡ 24/7</div>
                 Monitoring
@@ -140,17 +189,15 @@ const HomePage = () => {
                 <div className="text-green-400 text-xl font-bold">🌱 Smart</div>
                 Energy
               </div>
+
             </div>
+
           </div>
 
-          {/* Logo */}
+          {/* RIGHT SIDE DASHBOARD PREVIEW */}
 
           <div className="flex justify-center">
-            <img
-              src={Logo}
-              alt="EnerSense"
-              className="rounded-xl shadow-xl border border-white/10"
-            />
+            <EnergyPreview />
           </div>
 
         </div>
@@ -265,13 +312,6 @@ const HomePage = () => {
 
         </div>
       </section>
-
-      {/* ================= FOOTER ================= */}
-
-      <footer className="py-10 bg-[#020617] border-t border-white/10 text-slate-300 text-sm">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-        </div>
-      </footer>
 
       <Footer />
 
