@@ -19,58 +19,73 @@ const data = [
 
 const UsageEstimateChart = () => {
   return (
-    <div className="bg-[#020617] p-6 rounded-xl">
+    <div className="p-3 rounded-xl">
 
-      <h2 className="text-center text-lg font-semibold text-green-400 mb-4">
+      <h2 className="text-center text-lg font-semibold text-yellow-300 mb-4">
         Usage Estimate
       </h2>
 
       <div className="h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
+
           <LineChart data={data}>
 
             <CartesianGrid
-              stroke="#1e293b"
+              stroke="#E3EDC2"
               strokeDasharray="4 6"
               vertical={false}
+              opacity={0.3}
             />
 
             <XAxis
               dataKey="day"
-              stroke="#94a3b8"
-              tick={{ fill: "#cbd5f5", fontSize: 12 }}
+              stroke="#E3EDC2"
+              tick={{ fill: "#ffffff", fontSize: 12 }}
             />
 
             <YAxis
-              stroke="#94a3b8"
-              tick={{ fill: "#cbd5f5", fontSize: 12 }}
+              stroke="#E3EDC2"
+              tick={{ fill: "#ffffff", fontSize: 12 }}
             />
 
             <Tooltip
               contentStyle={{
-                backgroundColor: "#020617",
-                border: "1px solid #334155",
-                borderRadius: "6px",
+                backgroundColor: "#3F5480",
+                border: "none",
+                borderRadius: "8px",
+                color: "#ffffff",
               }}
             />
 
             <Line
               type="monotone"
               dataKey="usage"
-              stroke="#ef4444"
+              stroke="#9FD487"
               strokeWidth={3}
-              dot={{ r: 4 }}
+              dot={{ r: 5, stroke: "#ffffff", strokeWidth: 2 }}
+              activeDot={{ r: 7 }}
               animationDuration={1500}
             />
 
           </LineChart>
+
         </ResponsiveContainer>
       </div>
 
-      <div className="text-center text-sm mt-3  text-slate-400">
-        Till Now: <span className="text-white font-semibold">164 kWh</span>
+      <div className="text-center text-sm mt-4 text-[#E3EDC2]">
+
+        Till Now:
+        <span className="text-white font-semibold ml-1">
+          164 kWh
+        </span>
+
         <br />
-        Predicted: <span className="text-white font-semibold">439 kWh</span>
+
+        Predicted:
+        <span className="text-white font-semibold ml-1">
+          439 kWh
+        </span>
+
       </div>
 
     </div>

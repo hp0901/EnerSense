@@ -12,135 +12,150 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContex";
 import Footer from "../Footer/Footer";
+import "../css/HomePage.css";
+import { TypeAnimation } from "react-type-animation";
 
-/* ================= FEATURE CARD ================= */
+/* FEATURE CARD */
 
 const Feature = ({ icon, title }) => (
-  <div className="p-6 bg-[#0f172a] border border-white/10 rounded-xl hover:border-green-400/40 hover:shadow-lg hover:shadow-green-500/10 transition duration-300">
-    <div className="text-green-400 text-3xl mb-4">{icon}</div>
-    <h3 className="text-lg font-semibold">{title}</h3>
-    <p className="mt-2 text-sm text-slate-400">
+  <div className="p-6 bg-[#3F5680] border border-white/10 rounded-xl hover:border-[#96C37C] transition duration-300">
+    <div className="text-[#96C37C] text-3xl mb-4">{icon}</div>
+    <h3 className="text-lg font-semibold text-[#F1F5F9]">{title}</h3>
+    <p className="mt-2 text-sm text-[#CBD5E1]">
       Efficient, secure and scalable monitoring.
     </p>
   </div>
 );
 
-/* ================= STEP ================= */
+/* STEP */
 
 const Step = ({ number, text }) => (
-  <div className="p-6 bg-[#0f172a] border border-white/10 rounded-xl">
-    <div className="text-2xl font-bold text-green-400">{number}</div>
-    <p className="mt-2 text-slate-300">{text}</p>
+  <div className="p-6 bg-[#3F5680] border border-white/10 rounded-xl">
+    <div className="text-2xl font-bold text-[#96C37C]">{number}</div>
+    <p className="mt-2 text-[#F1F5F9]">{text}</p>
   </div>
 );
 
-/* ================= SECURITY CARD ================= */
+/* SECURITY */
 
 const SecurityCard = ({ title }) => (
-  <div className="p-6 bg-[#0f172a] border border-white/10 rounded-xl text-center">
-    <h3 className="text-lg font-semibold text-green-400">{title}</h3>
-    <p className="mt-2 text-sm text-slate-400">
+  <div className="p-6 bg-[#3F5680] border border-white/10 rounded-xl text-center">
+    <h3 className="text-lg font-semibold text-[#96C37C]">{title}</h3>
+    <p className="mt-2 text-sm text-[#CBD5E1]">
       Enterprise-grade protection.
     </p>
   </div>
 );
 
-/* ================= FUTURE ITEM ================= */
+/* FUTURE ITEM */
 
 const FutureItem = ({ text }) => (
-  <div className="p-4 bg-[#0f172a] border border-white/10 rounded-xl text-center text-slate-300">
+  <div className="p-4 bg-[#3F5680] border border-white/10 rounded-xl text-center text-[#F1F5F9]">
     {text}
   </div>
 );
 
-/* ================= ENERGY PREVIEW ================= */
+/* HERO CARD */
 
 const EnergyPreview = () => {
   return (
-    <div className="bg-[#0f172a] border border-white/10 rounded-2xl p-6 shadow-xl w-full max-w-md">
+    <div className="bg-[#3F5680] border border-white/10 rounded-2xl p-10 shadow-xl w-full max-w-md flex items-center justify-center text-center">
 
-      <h3 className="text-green-400 font-semibold text-lg mb-4">
-        ⚡ Live Energy Overview
-      </h3>
+      <div className="space-y-6">
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="text-5xl">⚡</div>
 
-        <div className="bg-[#020617] p-4 rounded-lg border border-white/10">
-          <p className="text-slate-400">Current Power</p>
-          <p className="text-green-400 text-xl font-bold">2.4 kW</p>
-        </div>
+        <h2 className="text-3xl font-bold text-[#96C37C]">
+          EnerSense
+        </h2>
 
-        <div className="bg-[#020617] p-4 rounded-lg border border-white/10">
-          <p className="text-slate-400">Today's Cost</p>
-          <p className="text-green-400 text-xl font-bold">₹48</p>
-        </div>
+        <p className="text-[#CBD5E1]">
+          Intelligent Energy Monitoring Platform
+        </p>
 
-        <div className="bg-[#020617] p-4 rounded-lg border border-white/10">
-          <p className="text-slate-400">Active Devices</p>
-          <p className="text-green-400 text-xl font-bold">3</p>
-        </div>
+        <p className="text-lg text-[#F1F5F9] leading-relaxed">
 
-        <div className="bg-[#020617] p-4 rounded-lg border border-white/10">
-          <p className="text-slate-400">Carbon Saved</p>
-          <p className="text-green-400 text-xl font-bold">1.2kg</p>
-        </div>
+          Transform the way you interact with
+          <span className="text-[#96C37C] font-semibold"> electricity</span>.
+          Gain complete
+          <span className="text-[#CEDBA6] font-semibold"> visibility</span> into your
+          <span className="text-[#96C37C] font-semibold"> energy ecosystem </span>
+          and move toward a smarter, cleaner future.
 
-      </div>
+        </p>
 
-      <div className="mt-6 bg-[#020617] border border-white/10 rounded-lg p-4 text-center text-slate-400 text-sm">
-        📊 Energy usage graph preview
+        <p className="text-sm text-[#CBD5E1]">
+          🌱 Powering the next generation of intelligent energy systems
+        </p>
+
       </div>
 
     </div>
   );
 };
 
-/* ================= MAIN PAGE ================= */
+/* MAIN PAGE */
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { isAuth } = useAuth();
 
   return (
-    <div className="bg-[#020617] text-white w-full min-h-screen overflow-x-hidden">
+    <div className="bg-[#2E436E] text-[#F1F5F9] w-full min-h-screen overflow-x-hidden">
 
-      {/* ================= HERO ================= */}
+      {/* HERO */}
 
-      <section className="py-24 border-b border-white/10 bg-gradient-to-b from-[#020617] via-[#0b1220] to-[#020617]">
+      <section className="py-24 border-b border-white/10 bg-[#2E436E]">
 
-        <h1 className="mb-4 text-center font-semibold text-blue-400">
+        <h1 className="mb-4 text-center font-semibold text-[#CEDBA6]">
           <b className="text-4xl block">WELCOME TO ENERSENSE</b>
         </h1>
 
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
 
-          {/* LEFT CONTENT */}
+          {/* LEFT */}
 
           <div>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-green-400">
+            <h1 className="text-4xl md:text-6xl font-bold text-[#96C37C]">
               ⚡ EnerSense
             </h1>
 
-            <p className="mt-6 text-lg md:text-xl text-slate-300">
-              Smart Energy Monitoring System for Modern Homes & Industries
-            </p>
+            <div className="mt-6 text-lg md:text-xl text-[#F1F5F9] h-[40px]">
 
-            <p className="mt-4 text-slate-400">
+              <TypeAnimation
+                sequence={[
+                  "Smart Energy Monitoring for Homes",
+                  2000,
+                  "Real-Time Power Analytics",
+                  2000,
+                  "AI Powered Energy Insights",
+                  2000,
+                  "Reduce Electricity Costs Smartly",
+                  2000,
+                ]}
+                wrapper="span"
+                speed={50}
+                repeat={Infinity}
+              />
+
+            </div>
+
+            <p className="mt-4 text-[#CBD5E1]">
               Monitor electricity usage in real-time, analyze power consumption,
               reduce energy costs, and build a smarter sustainable future 🌍
             </p>
 
-            {/* Quick Features */}
+            {/* QUICK FEATURES */}
 
-            <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-slate-300">
+            <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-[#F1F5F9]">
               <div>⚡ Real-time Monitoring</div>
               <div>📊 Smart Analytics</div>
               <div>🔔 Energy Alerts</div>
               <div>☁️ Cloud Connected</div>
             </div>
 
-            {/* Buttons */}
+            {/* BUTTONS */}
 
             <div className="mt-10 flex gap-4 flex-wrap">
 
@@ -148,14 +163,14 @@ const HomePage = () => {
                 <>
                   <button
                     onClick={() => navigate("/login")}
-                    className="flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 rounded-xl font-semibold"
+                    className="flex items-center gap-2 px-6 py-3 bg-[#96C37C] text-[#1F2937] hover:bg-[#84b468] rounded-xl font-semibold"
                   >
                     <FiLogIn /> Login
                   </button>
 
                   <button
                     onClick={() => navigate("/signup")}
-                    className="flex items-center gap-2 px-6 py-3 border border-green-400 rounded-xl hover:bg-green-400/10"
+                    className="flex items-center gap-2 px-6 py-3 border border-[#96C37C] rounded-xl hover:bg-[#96C37C]/10"
                   >
                     <FiUserPlus /> Sign Up
                   </button>
@@ -163,7 +178,7 @@ const HomePage = () => {
               ) : (
                 <button
                   onClick={() => navigate("/dashboard")}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-semibold"
+                  className="flex items-center gap-2 px-6 py-3 bg-[#96C37C] text-[#1F2937] rounded-xl font-semibold"
                 >
                   🚀 Go to Dashboard
                 </button>
@@ -171,22 +186,22 @@ const HomePage = () => {
 
             </div>
 
-            {/* Stats */}
+            {/* STATS */}
 
-            <div className="mt-10 flex gap-10 text-sm text-slate-400">
+            <div className="mt-10 flex gap-10 text-sm text-[#CBD5E1]">
 
               <div>
-                <div className="text-green-400 text-xl font-bold">⚡ 24/7</div>
+                <div className="text-[#96C37C] text-xl font-bold">⚡ 24/7</div>
                 Monitoring
               </div>
 
               <div>
-                <div className="text-green-400 text-xl font-bold">📊 Live</div>
+                <div className="text-[#96C37C] text-xl font-bold">📊 Live</div>
                 Analytics
               </div>
 
               <div>
-                <div className="text-green-400 text-xl font-bold">🌱 Smart</div>
+                <div className="text-[#96C37C] text-xl font-bold">🌱 Smart</div>
                 Energy
               </div>
 
@@ -194,7 +209,7 @@ const HomePage = () => {
 
           </div>
 
-          {/* RIGHT SIDE DASHBOARD PREVIEW */}
+          {/* RIGHT */}
 
           <div className="flex justify-center">
             <EnergyPreview />
@@ -203,12 +218,12 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ================= FEATURES ================= */}
+      {/* FEATURES */}
 
-      <section className="py-20 bg-[#0b1220]">
+      <section className="py-20 bg-[#6F89A8]">
         <div className="max-w-7xl mx-auto px-6">
 
-          <h2 className="text-3xl font-semibold text-center text-green-400">
+          <h2 className="text-3xl font-semibold text-center text-[#CEDBA6]">
             Key Features
           </h2>
 
@@ -225,16 +240,16 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ================= WHY ================= */}
+      {/* WHY */}
 
-      <section className="py-20 bg-[#020617]">
+      <section className="py-20 bg-[#2E436E]">
         <div className="max-w-4xl mx-auto px-6 text-center">
 
-          <h2 className="text-3xl font-semibold text-green-400">
+          <h2 className="text-3xl font-semibold text-[#96C37C]">
             Why EnerSense?
           </h2>
 
-          <p className="mt-6 text-slate-300">
+          <p className="mt-6 text-[#CBD5E1]">
             Traditional energy systems lack real-time visibility, leading to
             power wastage and high bills. EnerSense enables intelligent,
             data-driven decisions with live monitoring and analytics.
@@ -243,12 +258,12 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ================= HOW IT WORKS ================= */}
+      {/* HOW */}
 
-      <section className="py-20 bg-[#0b1220]">
+      <section className="py-20 bg-[#6F89A8]">
         <div className="max-w-6xl mx-auto px-6">
 
-          <h2 className="text-3xl font-semibold text-center text-green-400">
+          <h2 className="text-3xl font-semibold text-center text-[#CEDBA6]">
             How EnerSense Works
           </h2>
 
@@ -263,12 +278,12 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ================= SECURITY ================= */}
+      {/* SECURITY */}
 
-      <section className="py-20 bg-[#020617]">
+      <section className="py-20 bg-[#2E436E]">
         <div className="max-w-6xl mx-auto px-6">
 
-          <h2 className="text-3xl font-semibold text-center text-green-400">
+          <h2 className="text-3xl font-semibold text-center text-[#96C37C]">
             Security & Privacy
           </h2>
 
@@ -282,12 +297,12 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ================= FUTURE ================= */}
+      {/* FUTURE */}
 
-      <section className="py-20 bg-[#0b1220]">
+      <section className="py-20 bg-[#6F89A8]">
         <div className="max-w-6xl mx-auto px-6">
 
-          <h2 className="text-3xl font-semibold text-center text-green-400">
+          <h2 className="text-3xl font-semibold text-center text-[#CEDBA6]">
             Future Scope
           </h2>
 
@@ -304,7 +319,7 @@ const HomePage = () => {
 
           <Link to="/faqs">
             <div className="mt-10 text-center">
-              <button className="px-6 py-3 bg-green-500 hover:bg-green-600 rounded-xl font-semibold">
+              <button className="px-6 py-3 bg-[#96C37C] text-[#1F2937] hover:bg-[#84b468] rounded-xl font-semibold">
                 View FAQs
               </button>
             </div>

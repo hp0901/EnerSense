@@ -176,108 +176,163 @@ const Signup = () => {
      UI
   ================================ */
   return (
-    <div className="relative min-h-dvh w-full flex items-center justify-center px-4">
-      {/* BACKGROUND */}
-      <img
-        src={signupBg}
-        className="absolute inset-0 w-full h-full object-cover"
-        alt="Signup background"
-      />
-      <div className="absolute inset-0" />
+  <div className="relative min-h-dvh w-full flex items-center justify-center px-4">
 
-      {/* CARD */}
-      <div className="relative z-10 w-full max-w-lg rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white">
-        <h2 className="text-3xl font-bold text-center text-green-400">
-          Create Account
-        </h2>
+    {/* BACKGROUND */}
+    <img
+      src={signupBg}
+      className="absolute inset-0 w-full h-full object-cover"
+      alt="Signup background"
+    />
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          {/* NAME */}
-          <input name="firstName" placeholder="First Name" className="input" onChange={handleChange} />
-          <input name="lastName" placeholder="Last Name" className="input" onChange={handleChange} />
+    {/* Dark overlay */}
+    <div className="absolute inset-0 bg-[#2E436E]/80" />
 
-          {/* EMAIL */}
-          <input name="email" placeholder="Email" className="input" onChange={handleChange} />
-          {emailError && <p className="text-xs text-red-400">{emailError}</p>}
+    {/* CARD */}
+    <div className="relative z-10 w-full max-w-lg rounded-3xl 
+    bg-[#3F5680]/80 backdrop-blur-2xl border border-white/10 
+    shadow-2xl p-6 sm:p-8 text-[#F1F5F9] m-5">
 
-          {/* PASSWORD (REUSABLE COMPONENT) */}
-          <PasswordInput
-            value={formData.password}
-            onChange={(val) =>
-              setFormData((prev) => ({ ...prev, password: val }))
-            }
-          />
+      <h2 className="text-3xl font-bold text-center text-green-400">
+        Create Account
+      </h2>
 
-          {/* PHONE */}
-          <input name="phone" placeholder="Phone Number" className="input" onChange={handleChange} />
-          {phoneError && <p className="text-xs text-red-400">{phoneError}</p>}
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
 
-          {/* STATE */}
-          <select name="state" className="input" onChange={handleChange}>
-            <option value="">Select State</option>
-            {statesOfIndia.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
+        {/* NAME */}
+        <input
+          name="firstName"
+          placeholder="First Name"
+          className="input"
+          onChange={handleChange}
+        />
 
-          {/* BOARD */}
-          <select
-            name="board"
-            className="input"
-            disabled={!formData.state}
-            onChange={handleChange}
-          >
-            <option value="">Select Electricity Board</option>
-            {(electricityBoards[formData.state] || []).map((b) => (
-              <option key={b}>{b}</option>
-            ))}
-          </select>
+        <input
+          name="lastName"
+          placeholder="Last Name"
+          className="input"
+          onChange={handleChange}
+        />
 
-          {/* GENDER */}
-          <div className="flex gap-6 text-sm">
-            {["Male", "Female", "Other"].map((g) => (
-              <label key={g} className="flex items-center gap-2">
-                <input type="radio" name="gender" value={g} onChange={handleChange} />
-                {g}
-              </label>
-            ))}
-          </div>
+        {/* EMAIL */}
+        <input
+          name="email"
+          placeholder="Email"
+          className="input"
+          onChange={handleChange}
+        />
+        {emailError && <p className="text-xs text-red-400">{emailError}</p>}
 
-          {/* BUTTON */}
-          <button
-            disabled={!isFormValid || loading}
-            className={`w-full mt-4 py-3 rounded-xl font-semibold ${
-              isFormValid
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-gray-500 cursor-not-allowed"
-            }`}
-          >
-            {loading ? "Sending OTP..." : "Sign Up"}
-          </button>
-        </form>
+        {/* PASSWORD */}
+        <PasswordInput
+          value={formData.password}
+          onChange={(val) =>
+            setFormData((prev) => ({ ...prev, password: val }))
+          }
+        />
 
-        <p className="text-sm text-center mt-6">
-          Already have an account?{" "}
-          <span
-            onClick={() => navigate("/login")}
-            className="text-green-400 cursor-pointer inline-flex items-center gap-1"
-          >
-            <FiLogIn /> Sign in
-          </span>
-        </p>
-      </div>
+        {/* PHONE */}
+        <input
+          name="phone"
+          placeholder="Phone Number"
+          className="input"
+          onChange={handleChange}
+        />
+        {phoneError && <p className="text-xs text-red-400">{phoneError}</p>}
 
-      <style jsx>{`
-        .input {
-          width: 100%;
-          padding: 0.7rem;
-          border-radius: 0.75rem;
-          background: rgba(255,255,255,0.9);
-          color: black;
-        }
-      `}</style>
+        {/* AGE (NEW FIELD) */}
+        <input
+          name="age"
+          type="number"
+          placeholder="Age"
+          className="input"
+          onChange={handleChange}
+        />
+
+        {/* STATE */}
+        <select name="state" className="input" onChange={handleChange}>
+          <option value="">Select State</option>
+          {statesOfIndia.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
+        </select>
+
+        {/* BOARD */}
+        <select
+          name="board"
+          className="input"
+          disabled={!formData.state}
+          onChange={handleChange}
+        >
+          <option value="">Select Electricity Board</option>
+          {(electricityBoards[formData.state] || []).map((b) => (
+            <option key={b}>{b}</option>
+          ))}
+        </select>
+
+        {/* GENDER */}
+        <div className="flex gap-6 text-sm text-[#CEDBA6]">
+          {["Male", "Female", "Other"].map((g) => (
+            <label key={g} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="gender"
+                value={g}
+                onChange={handleChange}
+              />
+              {g}
+            </label>
+          ))}
+        </div>
+
+        {/* BUTTON */}
+        <button
+          disabled={!isFormValid || loading}
+          className={`w-full mt-4 py-3 rounded-xl font-semibold transition ${
+            isFormValid
+              ? "bg-[#96C37C] hover:bg-[#85b96a] text-[#1F2937]"
+              : "bg-gray-500 cursor-not-allowed"
+          }`}
+        >
+          {loading ? "Sending OTP..." : "Sign Up"}
+        </button>
+      </form>
+
+      <p className="text-sm text-center mt-6 text-[#CBD5E1]">
+        Already have an account?{" "}
+        <span
+          onClick={() => navigate("/login")}
+          className="text-green-400 cursor-pointer inline-flex items-center gap-1"
+        >
+          <FiLogIn /> Sign in
+        </span>
+      </p>
     </div>
-  );
+
+    {/* INPUT STYLE */}
+    <style jsx>{`
+      .input {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        background: rgba(255,255,255,0.15);
+        color: #f1f5f9;
+        border: 1px solid rgba(255,255,255,0.2);
+        outline: none;
+      }
+
+      .input::placeholder {
+        color: #cbd5e1;
+      }
+
+      .input:focus {
+        border-color: #96c37c;
+        box-shadow: 0 0 0 2px rgba(150,195,124,0.3);
+      }
+    `}</style>
+
+  </div>
+);
 };
 
 export default Signup;
