@@ -3,7 +3,7 @@
 ========================= */
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-
+import { requestNotificationPermission, listenForMessages  } from "./utils/notification.js";
 /* =========================
    GLOBAL COMPONENTS
 ========================= */
@@ -96,6 +96,30 @@ const App = () => {
   useEffect(() => {
     setAdminToken(localStorage.getItem("token"));
   }, [location]);
+
+  useEffect(() => {
+
+  // request permission + get device token
+  requestNotificationPermission();
+
+  // listen for foreground messages
+  listenForMessages();
+
+  // register service worker
+  if ("serviceWorker" in navigator) {
+
+    navigator.serviceWorker
+      .register("/firebase-messaging-sw.js")
+      .then((registration) => {
+        console.log("Service Worker registered:", registration);
+      })
+      .catch((error) => {
+        console.error("Service Worker registration failed:", error);
+      });
+
+  }
+
+}, []);
 
   /* =========================
      PROTECTED ADMIN ROUTE

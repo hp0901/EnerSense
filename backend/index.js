@@ -17,6 +17,10 @@ import upload from "./routes/upload.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import adminRoutes from "./routes/adminDeviceRoutes.js";
 import twoFactorRoutes from "./routes/twoFactorRoutes.js";
+import whatsappRoutes from "./routes/whatsapp.js";
+import smsRoutes from "./routes/smsRoutes.js";
+import pushRoutes from "./routes/pushRoutes.js";
+
 
 dotenv.config();
  
@@ -82,6 +86,15 @@ app.use("/api/v1/admin", adminRoutes);
 
 // 2FA routes
 app.use("/api/v1/2fa", twoFactorRoutes);
+
+// WhatsApp routes
+app.use("/api/v1/whatsapp", whatsappRoutes);
+
+// SMS routes
+app.use("/api/v1/sms", smsRoutes);
+
+// Push notification routes
+app.use("/api/v1/push", pushRoutes);
 
  
 // Start server
