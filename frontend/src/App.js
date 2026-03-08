@@ -4,6 +4,9 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { requestNotificationPermission, listenForMessages  } from "./utils/notification.js";
+import axios from "axios";
+import { getToken } from "firebase/messaging";
+import { messaging } from "./context/firebase.js";
 /* =========================
    GLOBAL COMPONENTS
 ========================= */
@@ -99,11 +102,35 @@ const App = () => {
 
   useEffect(() => {
 
-  // request permission + get device token
-  requestNotificationPermission();
+  const setupNotifications = async () => {
+    try {
 
-  // listen for foreground messages
-  listenForMessages();
+      // request permission
+      await requestNotificationPermission();
+
+      // get FCM token
+      const token = await getToken(messaging);
+
+      if (token) {
+
+        console.log("FCM Token:", token);
+
+        // send token to backend
+        await axios.post("/api/save-token", {
+          token: token
+        });
+
+      }
+
+      // listen for foreground messages
+      listenForMessages();
+
+    } catch (error) {
+      console.error("Notification setup failed:", error);
+    }
+  };
+
+  setupNotifications();
 
   // register service worker
   if ("serviceWorker" in navigator) {
@@ -120,7 +147,6 @@ const App = () => {
   }
 
 }, []);
-
   /* =========================
      PROTECTED ADMIN ROUTE
   ========================= */

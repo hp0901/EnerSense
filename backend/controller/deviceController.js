@@ -3,6 +3,8 @@ import { nanoid } from "nanoid";
 import Device from "../models/Device.js";
 import User from "../models/User.js"; 
 import { maintenanceEmail } from "../Email/maintenanceTemplate.js";
+import { sendPushNotification } from "../services/pushNotificationService.js";
+import NotificationSettings from "../models/NotificationSettings.js";
 
 export const pairDevice = async (req, res) => {
   try {
@@ -212,4 +214,61 @@ export const sendBulkEmail = async (req, res) => {
       message: "Bulk email failed",
     });
   }
+};
+
+// Example of sending push notification based on device usage
+
+const threshold = 2000;
+
+export const updateDeviceUsage = async (req, res) => {
+
+  try {
+
+    const { deviceId, usage } = req.body;
+
+    const device = await Device.findOne({ deviceId });
+
+    if(!device){
+      return res.status(404).json({
+        success:false,
+        message:"Device not found"
+      });
+    }
+
+    device.usage = usage;
+    await device.save();
+
+    // ⚡ ALERT LOGIC
+    if(device.usage > threshold){
+
+      const settings = await NotificationSettings.findOne({ user: device.user });
+
+      if(settings?.pushAlerts){
+
+        await sendPushNotification(
+          device.user,
+          "EnerSense Alert ⚡",
+          "High energy consumption detected"
+        );
+
+      }
+
+    }
+
+    res.json({
+      success:true,
+      device
+    });
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:"Device update failed"
+    });
+
+  }
+
 };
