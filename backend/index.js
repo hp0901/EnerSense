@@ -12,7 +12,7 @@ import { startPremiumExpiryCron } from "./cron/premiumExpiryCron.js";
 import notificationSettingsRoutes from "./routes/notificationSettings.js";
 import downloadInvoice from "./routes/pdf.js";
 import getMyPayments from "./routes/payments.js";
-import path from "path";
+import path from "path"; 
 import upload from "./routes/upload.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import adminRoutes from "./routes/adminDeviceRoutes.js";
@@ -30,7 +30,7 @@ startPremiumExpiryCron();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middleware
+// Middleware 
 app.use(
   cors({
     origin: [

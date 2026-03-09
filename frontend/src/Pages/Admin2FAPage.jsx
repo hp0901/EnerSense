@@ -12,33 +12,52 @@ const Admin2FAPage = () => {
   const navigate = useNavigate();
   const { setUser } = useUser();
 
-  const userId = localStorage.getItem("admin2FAUserId");
+  // const userId = localStorage.getItem("admin2FAUserId");
 
   const handleVerify = async () => {
-    if (!otp || otp.length !== 6) {
-      toast.error("Please enter valid 6-digit OTP");
-      return;
-    }
 
-    try {
-      const toastId = toast.loading("Verifying OTP...");
+  const userId = localStorage.getItem("admin2FAUserId");
 
-      const res = await login2FAApi(userId, otp);
+  if (!userId) {
+    toast.error("Session expired. Please login again.");
+    navigate("/login");
+    return;
+  }
 
-      localStorage.setItem("token", res.token);
-      setUser(res.user);
-      localStorage.setItem("user", JSON.stringify(res.user));
-      localStorage.removeItem("admin2FAUserId");
+  if (!otp || otp.length !== 6) {
+    toast.error("Please enter valid 6-digit OTP");
+    return;
+  }
 
-      toast.success("2FA Verified Successfully", { id: toastId });
+  const toastId = toast.loading("Verifying OTP...");
 
-      navigate("/admin");
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Invalid OTP");
-      setOtp("");
-    }
-  };
+  try {
 
+    const res = await login2FAApi(userId, otp);
+
+    localStorage.setItem("token", res.token);
+    localStorage.setItem("user", JSON.stringify(res.user));
+
+    setUser(res.user);
+
+    localStorage.removeItem("admin2FAUserId");
+
+    toast.success("2FA Verified Successfully", { id: toastId });
+
+    navigate("/admin", { replace: true });
+
+  } catch (err) {
+
+    console.error("2FA VERIFY ERROR:", err);
+
+    toast.error(
+      err?.response?.data?.message || "Invalid OTP",
+      { id: toastId }
+    );
+
+    setOtp("");
+  }
+};
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 flex flex-col">
 

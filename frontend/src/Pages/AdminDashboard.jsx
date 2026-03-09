@@ -70,6 +70,27 @@ const AdminDashboard = () => {
               value: `₹${stats.totalRevenue}`,
               color: "from-yellow-500 to-orange-600",
             },
+            {
+              label: "Active Subscriptions",  
+              value: stats.activeSubscriptions,
+              color: "from-green-500 to-lime-600",
+            },
+            {
+              label : "Refunded Payments",
+              value : stats.refundedPayments,
+              color : "from-purple-500 to-violet-600"
+            },
+            {
+              label : "Active Devices",
+              value : stats.activeDevices,
+              color : "from-cyan-500 to-sky-600"
+            },
+            {
+              label : "Inactive Devices",
+              value : stats.inactiveDevices,
+              color : "from-gray-500 to-gray-700"
+            }
+
           ].map((card, index) => (
             <div
               key={index}

@@ -427,6 +427,7 @@ export const resetPassword = async (req, res) => {
 
 export const verifyLogin2FA = async (req, res) => {
   try {
+    console.log("LOGIN 2FA BODY:", req.body);
     const { userId, token } = req.body;
 
     if (!userId || !token) {

@@ -5,7 +5,7 @@ import User from "../models/User.js";
 export const generate2FA = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-
+    console.log(req.body);
     const secret = speakeasy.generateSecret({
       length: 20,
       name: `EnerSense (${user.email})`,
@@ -34,7 +34,7 @@ export const verify2FA = async (req, res) => {
     const { token } = req.body;
 
     const user = await User.findById(req.user.id);
-
+    console.log(req.body);
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: "base32",

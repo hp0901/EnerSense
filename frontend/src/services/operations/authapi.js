@@ -187,11 +187,21 @@ export const googleLoginApi = async (credential) => {
       { "Content-Type": "application/json" }
     );
 
+    // If 2FA required → redirect to OTP page
+    if (res.data?.require2FA) {
+      return {
+        require2FA: true,
+        userId: res.data.userId
+      };
+    }
+
+    // If token returned → save it
     if (res.data?.token) {
       localStorage.setItem("token", res.data.token);
     }
 
     return res.data;
+
   } catch (error) {
     throw error?.response?.data?.message || "Google login failed";
   }

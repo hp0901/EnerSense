@@ -93,34 +93,52 @@ const EnerSenseLogin = () => {
     }
   }
 
-  const handleGoogleSuccess = async(credentialResponse)=>{
+  const handleGoogleSuccess = async (credentialResponse) => {
 
-    const toastId = toast.loading("Signing in with Google...");
+  const toastId = toast.loading("Signing in with Google...");
 
-    try{
+  try {
 
-      setLoading(true);
+    setLoading(true);
 
-      const res = await googleLoginApi(credentialResponse.credential);
+    const res = await googleLoginApi(credentialResponse.credential);
 
-      localStorage.setItem("token",res.token);
-      localStorage.setItem("user",JSON.stringify(res.user));
+    // ✅ If 2FA required → redirect to OTP page
+    if(res.require2FA){
 
+  localStorage.setItem("admin2FAUserId", res.userId);
+
+  toast.success("OTP verification required",{id:toastId});
+
+  navigate("/admin-2fa",{replace:true});
+
+  return;
+}
+
+    // ✅ Normal login
+    if(res.token){
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+      console.log(res.user);
       setUser(res.user);
       login();
 
-      toast.success(`Welcome ${res.user.firstName}`,{id:toastId});
+      toast.success(`Welcome ${res.user.firstName}`, {id: toastId});
 
       redirectBasedOnRole(res.user);
-
-    }catch{
-      toast.error("Google login failed",{id:toastId});
-    }finally{
-      setLoading(false);
     }
-  }
 
-  return(
+  } catch (error) {
+
+    console.error(error);
+    toast.error("Google login failed",{id:toastId});
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+  return( 
 
 <div className="min-h-screen flex items-center justify-center bg-[#2E436E] px-4">
 

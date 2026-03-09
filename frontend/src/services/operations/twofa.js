@@ -1,5 +1,5 @@
-import { twoFactorEndpoints } from "../api.js" // Adjust the path as necessary
-import { apiConnector } from "../apiConnector.js"; // Adjust the path as necessary
+import { twoFactorEndpoints } from "../api.js";
+import { apiConnector } from "../apiConnector.js";
 
 const { LOGIN_API } = twoFactorEndpoints;
 
@@ -9,12 +9,13 @@ const { LOGIN_API } = twoFactorEndpoints;
 
 export const login2FAApi = async (userId, otp) => {
   try {
+
     const res = await apiConnector(
       "POST",
       LOGIN_API,
       {
         userId,
-        token: otp,
+        token: otp
       }
     );
 
@@ -25,6 +26,7 @@ export const login2FAApi = async (userId, otp) => {
     return res.data;
 
   } catch (err) {
+
     console.log("LOGIN_2FA_ERROR", err);
 
     throw (
