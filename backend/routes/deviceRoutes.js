@@ -7,6 +7,8 @@ import {
 } from "../controller/deviceController.js";
 import { auth } from "../middlewares/auth.js";
 
+
+
 const router = express.Router();
 
 router.post("/pair", auth, pairDevice);

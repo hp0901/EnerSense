@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { downloadInvoice , getMyPayments } from "../services/operations/payments";
+import { Link } from "react-router-dom";
 
 export default function MyPayments() {
   const [payments, setPayments] = useState([]);
@@ -43,7 +44,7 @@ export default function MyPayments() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-[60vh] text-gray-500">
+      <div className="flex justify-center items-center h-auto text-gray-500">
         Loading payment history...
       </div>
     );
@@ -52,15 +53,25 @@ export default function MyPayments() {
   // 🟡 Empty state
   if (payments.length === 0) {
     return (
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-semibold mb-2">
-          No payments found
-        </h2>
-        <p className="text-gray-600 mb-6">
-          You haven’t made any premium payments yet.
-        </p>
-      </div>
-    );
+  <div className="min-h-screen flex flex-col items-center justify-center text-center space-y-3">
+    <div className="text-5xl">💳</div>
+
+    <h2 className="text-2xl font-semibold">
+      No payments yet
+    </h2>
+
+    <p className="text-gray-600">
+      Upgrade to premium to unlock advanced energy analytics.
+    </p>
+
+    <Link
+      to="/pricing"
+      className="mt-3 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+    >
+      View Plans
+    </Link>
+  </div>
+);
   }
 
   return (

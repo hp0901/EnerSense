@@ -89,6 +89,16 @@ const AdminDashboard = () => {
               label : "Inactive Devices",
               value : stats.inactiveDevices,
               color : "from-gray-500 to-gray-700"
+            },
+            {
+              label : "Paired Devices",
+              value : stats.pairedDevices,
+              color : "from-indigo-500 to-blue-600"
+            },
+            {
+              label : "Unpaired Devices",
+              value : stats.unpairedDevices,
+              color : "from-red-500 to-rose-600"
             }
 
           ].map((card, index) => (

@@ -1,6 +1,6 @@
 import { apiConnector } from "../apiConnector";
 import { deviceEndpoints } from "../api"
-
+import { adminEndpoints } from "../api" 
 const {
   PAIR_DEVICE,
   GET_MY_DEVICES,
@@ -127,5 +127,30 @@ export const getAllDevicesApi = async () => {
     return res.data;
   } catch (error) {
     throw error?.response?.data?.message || "Failed to fetch devices";
+  }
+};
+
+// =============================
+// Delete Device (Admin Only)
+// =============================
+
+const { DELETE_DEVICE } = adminEndpoints;
+
+export const deleteDeviceApi = async (id) => {
+  try {
+
+    const res = await apiConnector(
+      "DELETE",
+      `${DELETE_DEVICE}/${id}`,
+      null,
+      {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      }
+    );
+
+    return res.data;
+
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to delete device";
   }
 };

@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import Device from "../models/Device.js";
 import mongoose from "mongoose";
 
+
 // ================= USER =================
 export const getMyPayments = async (req, res) => {
   try {
@@ -46,33 +47,73 @@ export const getAllPayments = async (req, res) => {
 };
 
 // ================= DASHBOARD STATS =================
-export const getDashboardStats = async (req, res) => {
+export const getDashboardStatus = async (req, res) => {
   try {
+
     const totalUsers = await User.countDocuments();
     const totalDevices = await Device.countDocuments();
     const totalPayments = await Payment.countDocuments();
 
-    const revenue = await Payment.aggregate([
-      { $match: { status: "success" } },
-      { $group: { _id: null, total: { $sum: "$amount" } } }
+    const activeDevices = await Device.countDocuments({
+      powerStatus: true
+    });
+
+    const inactiveDevices = await Device.countDocuments({
+      powerStatus: false
+    });
+
+    const pairedDevices = await Device.countDocuments({
+      user: { $ne: null }
+    });
+
+    const unpairedDevices = await Device.countDocuments({
+      user: null
+    });
+
+    const activeSubscriptions = await User.countDocuments({
+      isPremium: true
+    });
+
+    const refundedPayments = await Payment.countDocuments({
+      status: "refunded"
+    });
+
+    const revenueAgg = await Payment.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amount" }
+        }
+      }
     ]);
 
-    res.status(200).json({
+    const totalRevenue = revenueAgg[0]?.total || 0;
+
+    res.json({
       success: true,
       data: {
         totalUsers,
         totalDevices,
         totalPayments,
-        totalRevenue: revenue[0]?.total || 0
+        totalRevenue,
+        activeSubscriptions,
+        refundedPayments,
+        activeDevices,
+        inactiveDevices,
+        pairedDevices,
+        unpairedDevices
       }
     });
 
   } catch (error) {
+
     console.error(error);
+
     res.status(500).json({
       success: false,
-      message: "Failed to fetch dashboard stats"
+      message: "Failed to load dashboard stats"
     });
+
   }
 };
 

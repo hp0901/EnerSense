@@ -10,10 +10,15 @@ import {
 
 import { 
   getAllPayments,
-  getDashboardStats,
+  getDashboardStatus,
    getMonthlyRevenue
 } from "../controller/paymentHistory.controller.js";
+
 import {getAllUsers} from "../controller/userDetails.js"; 
+
+import { deleteDevice } from "../controller/deviceController.js";
+
+
 
 const router = express.Router();
 
@@ -26,11 +31,13 @@ router.post("/send-email", auth, isAdmin, sendBulkEmail);
 router.get("/payments/all", auth, isAdmin, getAllPayments);
 router.get("/monthly-revenue", auth, isAdmin, getMonthlyRevenue);
 // ================= DASHBOARD ROUTE =================
-router.get("/dashboard", auth, isAdmin, getDashboardStats);
+router.get("/dashboard", auth, isAdmin, getDashboardStatus);
 
 // ================= USER ROUTES =================
 router.get("/users", auth, isAdmin, getAllUsers);
 
+// ================= DELETE DEVICE ROUTE =================
+router.delete("/delete/:id", auth, isAdmin, deleteDevice);
 
 router.get("/test", (req, res) => {
   res.send("Device route working");

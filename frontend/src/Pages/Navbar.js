@@ -26,31 +26,30 @@ const Navbar = () => {
 
   /* ================= NAV LINKS ================= */
   const navLinks = [
-  { name: "Home", path: "/", auth: "all" },
-  { name: "About", path: "/about", auth: "all" },
-  { name: "Energy Awareness", path: "/energy-awareness", auth: "all" },
-  { name: "FAQs", path: "/faqs", auth: "all" },
-  { name: "Contact", path: "/contact", auth: "all" },
+    { name: "Home", path: "/", auth: "all" },
+    { name: "About", path: "/about", auth: "all" },
+    { name: "Energy Awareness", path: "/energy-awareness", auth: "all" },
+    { name: "FAQs", path: "/faqs", auth: "all" },
+    { name: "Contact", path: "/contact", auth: "all" },
 
-  { name: "Dashboard", path: "/dashboard", auth: "private" },
+    { name: "Dashboard", path: "/dashboard", auth: "private" },
 
-  // NEW PAGE
-  { name: "Analytics", path: "/energy-analytics", auth: "private" },
+    { name: "Analytics", path: "/energy-analytics", auth: "private" },
 
-  { name: "Energy Meter", path: "/energy-meter-dashboard", auth: "private" },
-  { name: "Device Control", path: "/device-control", auth: "private" },
-  { name: "Premium Benefits", path: "/premium-benefits", auth: "private" },
+    { name: "Energy Meter", path: "/energy-meter-dashboard", auth: "private" },
+    { name: "Device Control", path: "/device-control", auth: "private" },
+    { name: "Premium Benefits", path: "/premium-benefits", auth: "private" },
 
-  isPremium
-    ? { name: "My Plan", path: "/premium", auth: "private" }
-    : { name: "Pricing", path: "/pricing", auth: "private" },
+    isPremium
+      ? { name: "My Plan", path: "/premium", auth: "private" }
+      : { name: "Pricing", path: "/pricing", auth: "private" },
 
-  { name: "Settings", path: "/settings", auth: "private" },
-  { name: "My Payments", path: "/my-payments", auth: "private" },
+    { name: "Settings", path: "/settings", auth: "private" },
+    { name: "My Payments", path: "/my-payments", auth: "private" },
 
-  { name: "Login", path: "/login", auth: "guest" },
-  { name: "Signup", path: "/signup", auth: "guest" },
-];
+    { name: "Login", path: "/login", auth: "guest" },
+    { name: "Signup", path: "/signup", auth: "guest" },
+  ];
 
   const filteredLinks = navLinks.filter((link) => {
     if (link.auth === "all") return true;
@@ -70,6 +69,19 @@ const Navbar = () => {
     toast.success("Logged out successfully");
   };
 
+  /* ================= LOAD USER CARD ================= */
+  const loadUserCard = async () => {
+    try {
+      const res = await fetchUserCard();
+      setCardData({
+        isGuest: false,
+        card: res,
+      });
+    } catch {
+      setCardData({ isGuest: true });
+    }
+  };
+
   /* ================= FETCH USER CARD ================= */
   useEffect(() => {
     if (!isAuth) {
@@ -77,16 +89,7 @@ const Navbar = () => {
       return;
     }
 
-    fetchUserCard()
-      .then((res) => {
-        setCardData({
-          isGuest: false,
-          card: res, // res already contains card object
-        });
-      })
-      .catch(() => {
-        setCardData({ isGuest: true });
-      });
+    loadUserCard();
   }, [isAuth]);
 
   /* ================= OUTSIDE CLICK ================= */
@@ -120,14 +123,26 @@ const Navbar = () => {
 
         {/* Avatar */}
         <button
-          onClick={() => setCardOpen(!cardOpen)}
+          onClick={() => {
+            const nextState = !cardOpen;
+            setCardOpen(nextState);
+
+            // refresh card when opening
+            if (nextState) {
+              loadUserCard();
+            }
+          }}
           className="w-9 h-9 rounded-full border flex items-center justify-center hover:ring-2 hover:ring-blue-500"
         >
           <img
             src={
               isAuth && user?.profileImage
                 ? user.profileImage
-                : `https://ui-avatars.com/api/?name=${user?.firstName || "Guest"}&background=16a34a&color=fff`
+                : `https://ui-avatars.com/api/?name=${
+                    user?.firstName && user?.lastName
+                      ? `${user.firstName} ${user.lastName}`
+                      : "Guest"
+                  }&background=16a34a&color=fff`
             }
             alt="User Avatar"
             className="w-8 h-8 rounded-full object-cover"

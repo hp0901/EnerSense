@@ -8,7 +8,8 @@ import NotificationSettings from "../models/NotificationSettings.js";
 
 export const pairDevice = async (req, res) => {
   try {
-    const { deviceId } = req.body;
+
+    const { deviceId, name, deviceType } = req.body.deviceId || req.body;
     const userId = req.user.id;
 
     const device = await Device.findOne({ deviceId });
@@ -20,7 +21,7 @@ export const pairDevice = async (req, res) => {
       });
     }
 
-    if (device.user) {
+    if (device.user && device.user.toString() !== userId) {
       return res.status(400).json({
         success: false,
         message: "Device already paired"
@@ -28,6 +29,9 @@ export const pairDevice = async (req, res) => {
     }
 
     device.user = userId;
+    device.name = name || device.name;
+    device.deviceType = deviceType || device.deviceType;
+
     await device.save();
 
     return res.status(200).json({
@@ -37,6 +41,8 @@ export const pairDevice = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("[BACKEND]", error);
+
     return res.status(500).json({
       success: false,
       message: "Server error"
@@ -47,7 +53,7 @@ export const pairDevice = async (req, res) => {
 export const getMyDevices = async (req, res) => {
   try {
     const devices = await Device.find({ user: req.user.id });
-
+    console.log("Devices found:", devices.length);
     return res.status(200).json({
       success: true,
       devices
@@ -271,4 +277,48 @@ export const updateDeviceUsage = async (req, res) => {
 
   }
 
+};
+
+// =============================
+// Admin-only function to delete a device
+// =============================
+export const deleteDevice = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const device = await Device.findById(id);
+
+    if (!device) {
+      return res.status(404).json({
+        success: false,
+        message: "Device not found"
+      });
+    }
+
+    // Optional safety check
+    if (device.user) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete paired device"
+      });
+    }
+
+    await Device.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Device deleted successfully"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Device deletion failed"
+    });
+
+  }
 };

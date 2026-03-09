@@ -20,13 +20,18 @@ const DeviceControl = () => {
   }, []);
 
   const fetchDevices = async () => {
-    try {
-      const res = await getMyDevicesApi();
-      setDevices(res.devices || []);
-    } catch (error) {
-      toast.error(error);
+  try {
+    const res = await getMyDevicesApi();
+
+    console.log("Device is", res);
+
+    if (res.success) {
+      setDevices(res.devices);
     }
-  };
+  } catch (error) {
+    toast.error(error);
+  }
+};
 
   // ✅ Pair Device
   const addDevice = async () => {
@@ -36,7 +41,11 @@ const DeviceControl = () => {
     }
 
     try {
-      await pairDeviceApi(deviceCode);
+      await pairDeviceApi({
+        deviceId: deviceCode,
+        name: name,
+        deviceType: icon
+      });
       toast.success("Device paired successfully 🔥");
 
       setDeviceCode("");

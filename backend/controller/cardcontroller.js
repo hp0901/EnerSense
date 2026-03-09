@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import Board from "../models/Board.js";
+import Device from "../models/Device.js"; // ✅ ADD THIS
 
 export const getUserCard = async (req, res) => {
   try {
@@ -11,25 +12,24 @@ export const getUserCard = async (req, res) => {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Active board (for displaying main board UID)
       const board = await Board.findOne({
         user: user._id,
         status: "active",
       });
 
-      // 🔥 Device Statistics
-      const totalDevices = await Board.countDocuments({
+      // ✅ DEVICE STATS FROM DEVICE COLLECTION
+      const totalDevices = await Device.countDocuments({
         user: user._id,
       });
 
-      const activeDevices = await Board.countDocuments({
+      const activeDevices = await Device.countDocuments({
         user: user._id,
-        status: "active",
+        powerStatus: true,
       });
 
-      const inactiveDevices = await Board.countDocuments({
+      const inactiveDevices = await Device.countDocuments({
         user: user._id,
-        status: "inactive",
+        powerStatus: false,
       });
 
       return res.status(200).json({
@@ -47,7 +47,6 @@ export const getUserCard = async (req, res) => {
           joinDate: user.createdAt,
           cardType: user.cardType,
 
-          // 🔥 Device Data
           totalDevices,
           activeDevices,
           inactiveDevices,
@@ -55,7 +54,6 @@ export const getUserCard = async (req, res) => {
       });
     }
 
-    // Guest fallback
     return res.status(200).json({
       isGuest: true,
       card: {

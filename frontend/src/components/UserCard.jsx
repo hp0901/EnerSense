@@ -42,7 +42,7 @@ const UserCard = ({ card }) => {
       </div>
     );
   }
-
+  console.log("Card data is ", card)
   /* ===== PREMIUM CHECK ===== */
 
   const isPremium =
