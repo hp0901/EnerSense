@@ -11,6 +11,10 @@ const CreateUniqueid = () => {
   const [devices, setDevices] = useState([]);
   const [deviceType, setDeviceType] = useState("bulb");
 
+  // modal state
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDeviceId, setSelectedDeviceId] = useState(null);
+
   useEffect(() => {
     fetchDevices();
   }, []);
@@ -43,18 +47,20 @@ const CreateUniqueid = () => {
 
   /* ================= DELETE DEVICE ================= */
 
-  const deleteDevice = async (id) => {
+  const openDeleteModal = (id) => {
+    setSelectedDeviceId(id);
+    setShowModal(true);
+  };
+
+  const confirmDelete = async () => {
     try {
 
-      const confirmDelete = window.confirm(
-        "Are you sure you want to delete this device?"
-      );
-
-      if (!confirmDelete) return;
-
-      await deleteDeviceApi(id);
+      await deleteDeviceApi(selectedDeviceId);
 
       toast.success("Device deleted successfully 🗑");
+
+      setShowModal(false);
+      setSelectedDeviceId(null);
 
       fetchDevices();
 
@@ -143,7 +149,6 @@ const CreateUniqueid = () => {
 
                 <div className="flex items-center gap-4">
 
-                  {/* Status */}
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       device.user
@@ -154,9 +159,8 @@ const CreateUniqueid = () => {
                     {device.user ? "Paired" : "Unpaired"}
                   </span>
 
-                  {/* Delete Button */}
                   <button
-                    onClick={() => deleteDevice(device._id)}
+                    onClick={() => openDeleteModal(device._id)}
                     disabled={device.user}
                     className={`transition ${
                       device.user
@@ -176,6 +180,45 @@ const CreateUniqueid = () => {
         )}
 
       </div>
+
+      {/* ================= DELETE CONFIRM MODAL ================= */}
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+
+          <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-[320px] text-center shadow-xl">
+
+            <h2 className="text-lg font-semibold mb-3">
+              Delete Device
+            </h2>
+
+            <p className="text-sm text-slate-400 mb-6">
+              Are you sure you want to delete this device?
+            </p>
+
+            <div className="flex justify-center gap-4">
+
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500"
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
     </div>
   );
 };

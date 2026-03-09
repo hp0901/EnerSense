@@ -75,7 +75,7 @@ export default function MyPayments() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-16">
+    <div className="max-w-5xl min-h-screen mx-auto px-6 py-16">
       <h1 className="text-3xl font-bold mb-6">My Payments 💳</h1>
 
       <div className="overflow-x-auto bg-white border rounded-xl shadow-sm">
