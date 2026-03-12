@@ -7,6 +7,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+import { Receipt } from "lucide-react";
+
 const sections = [
   {
     id: "legal",
@@ -69,6 +71,27 @@ const sections = [
       </>
     ),
   },
+  {
+  id: "refund-policy",
+  title: "Refund Policy",
+  icon: Receipt,
+  content: (
+    <>
+      EnerSense provides digital energy monitoring and analytics services.
+      Since the platform delivers digital insights and software-based
+      features, payments made for subscriptions or services are generally
+      non-refundable once the transaction is successfully completed.
+
+      However, refunds may be considered in special cases such as duplicate
+      payments, technical transaction errors, or unauthorized transactions.
+      Users must contact support within 7 days of the transaction for review.
+
+      For refund or payment-related queries, please contact our support team
+      at enersense0@gmail.com.
+    </>
+  ),
+}
+
 ];
 
 const LegalCenter = () => {

@@ -36,6 +36,7 @@ const legalLinks = [
   { label: "Terms of Service", path: "/legal" },
   { label: "Security", path: "/legal" },
   { label: "Compliance", path: "/legal" },
+  { label: "Refund Policy", path: "/legal" },
 ];
 
 /* ================= FOOTER COMPONENT ================= */
@@ -63,7 +64,7 @@ const Footer = () => {
                 <FiMail /> support@enersense.com
               </p>
               <p className="flex items-center gap-2">
-                <FiPhone /> +91 9XXXXXXXXX
+                <FiPhone /> +91 9687788992
               </p>
               <p className="flex items-center gap-2">
                 <FiMapPin /> India

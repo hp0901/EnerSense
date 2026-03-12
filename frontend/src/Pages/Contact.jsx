@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ const Contact = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Later connect to backend / email service
-    alert("Thank you for contacting EnerSense!");
+    toast.success("Thank you for contacting EnerSense!");
     setFormData({ name: "", email: "", message: "" });
   };
 
