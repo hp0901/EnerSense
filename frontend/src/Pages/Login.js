@@ -208,11 +208,15 @@ className="w-full bg-green-500 text-white py-3 rounded-xl font-bold"
 <hr className="flex-1 border-white/20"/>
 </div>
 
-<GoogleLogin
-onSuccess={handleGoogleSuccess}
-/>
-<br/>
-<Link to="/signup" className="absolute bottom-5 text-sm text-[#CBD5E1]">  Don't have an account? <span className="text-green-400 font-bold">Sign Up</span></Link>
+<div className="flex flex-col items-center gap-4 mt-6">
+  {/* Google Login Button */}
+  <GoogleLogin onSuccess={handleGoogleSuccess} />
+
+  <Link to="/signup" className="text-sm text-[#CBD5E1] mt-2">
+    Don't have an account? <span className="text-green-400 font-bold">Sign Up</span>
+  </Link>
+</div>
+
 </form>
 
 </div>

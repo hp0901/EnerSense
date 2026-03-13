@@ -1,3 +1,4 @@
+/* ... existing imports ... */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLogIn } from "react-icons/fi";
@@ -7,9 +8,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-hot-toast";
 import PasswordInput from "../components/PasswordInput";
 
-/* ===============================
-   STATES & BOARDS
-================================ */
+// ... (statesOfIndia and electricityBoards arrays stay the same)
 const statesOfIndia = [
   "Andhra_Pradesh",
   "Arunachal_Pradesh",
@@ -85,10 +84,6 @@ const electricityBoards = {
   Lakshadweep: ["Electricity_Department_Lakshadweep"]
 };
 
-
-/* ===============================
-   SIGNUP COMPONENT
-================================ */
 const Signup = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -101,70 +96,44 @@ const Signup = () => {
     phone: "",
     state: "",
     board: "",
-    gender: ""
+    gender: "",
+    age: "" // Added age to state since you have the input
   });
 
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
 
-  /* ===============================
-     VALIDATION HELPERS
-  ================================ */
-  const validateEmail = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhone = (phone) => /^[0-9]{10}$/.test(phone);
 
-  const validatePhone = (phone) =>
-    /^[0-9]{10}$/.test(phone);
-
-  /* ===============================
-     HANDLE CHANGE
-  ================================ */
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: value,
       ...(name === "state" ? { board: "" } : {})
     }));
 
-    if (name === "email") {
-      setEmailError(validateEmail(value) ? "" : "Invalid email format");
-    }
-
-    if (name === "phone") {
-      setPhoneError(validatePhone(value) ? "" : "Enter valid 10-digit number");
-    }
+    if (name === "email") setEmailError(validateEmail(value) ? "" : "Invalid email format");
+    if (name === "phone") setPhoneError(validatePhone(value) ? "" : "Enter valid 10-digit number");
   };
 
-  /* ===============================
-     FORM VALIDITY
-     (password strength handled by PasswordInput)
-  ================================ */
   const isFormValid =
     Object.values(formData).every((v) => v !== "") &&
     !emailError &&
     !phoneError &&
     formData.password.length >= 8;
 
-  /* ===============================
-     HANDLE SUBMIT
-  ================================ */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid) return;
-
-    // const toastId = toast.loading("📩 Sending OTP...");
     try {
       setLoading(true);
       await sendOtp(formData.email, formData.firstName, navigate, dispatch);
       localStorage.setItem("signupData", JSON.stringify(formData));
       toast.success("✅ OTP sent!");
-
-      navigate("/otp", {
-        state: { flow: "signup", email: formData.email }
-      });
+      navigate("/otp", { state: { flow: "signup", email: formData.email } });
     } catch {
       toast.error("❌ Failed to send OTP");
     } finally {
@@ -172,167 +141,111 @@ const Signup = () => {
     }
   };
 
-  /* ===============================
-     UI
-  ================================ */
   return (
-  <div className="relative min-h-dvh w-full flex items-center justify-center px-4">
+    <div className="relative min-h-dvh w-full flex items-center justify-center px-4">
+      <img src={signupBg} className="absolute inset-0 w-full h-full object-cover" alt="Signup background" />
+      <div className="absolute inset-0 bg-[#2E436E]/80" />
 
-    {/* BACKGROUND */}
-    <img
-      src={signupBg}
-      className="absolute inset-0 w-full h-full object-cover"
-      alt="Signup background"
-    />
+      <div className="relative z-10 w-full max-w-lg rounded-3xl bg-[#3F5680]/80 backdrop-blur-2xl border border-white/10 shadow-2xl p-6 sm:p-8 text-[#F1F5F9] m-5">
+        <h2 className="text-3xl font-bold text-center text-green-400">Create Account</h2>
 
-    {/* Dark overlay */}
-    <div className="absolute inset-0 bg-[#2E436E]/80" />
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <input name="firstName" placeholder="First Name" className="input" onChange={handleChange} />
+          <input name="lastName" placeholder="Last Name" className="input" onChange={handleChange} />
+          
+          <input name="email" placeholder="Email" className="input" onChange={handleChange} />
+          {emailError && <p className="text-xs text-red-400">{emailError}</p>}
 
-    {/* CARD */}
-    <div className="relative z-10 w-full max-w-lg rounded-3xl 
-    bg-[#3F5680]/80 backdrop-blur-2xl border border-white/10 
-    shadow-2xl p-6 sm:p-8 text-[#F1F5F9] m-5">
+          <PasswordInput
+            value={formData.password}
+            onChange={(val) => setFormData((prev) => ({ ...prev, password: val }))}
+          />
 
-      <h2 className="text-3xl font-bold text-center text-green-400">
-        Create Account
-      </h2>
+          <input name="phone" placeholder="Phone Number" className="input" onChange={handleChange} />
+          {phoneError && <p className="text-xs text-red-400">{phoneError}</p>}
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <input name="age" type="number" placeholder="Age" className="input" onChange={handleChange} />
 
-        {/* NAME */}
-        <input
-          name="firstName"
-          placeholder="First Name"
-          className="input"
-          onChange={handleChange}
-        />
+          {/* STATE SELECT */}
+          <select name="state" className="input" onChange={handleChange} value={formData.state}>
+            <option value="" className="opt">Select State</option>
+            {statesOfIndia.map((s) => (
+              <option key={s} value={s} className="opt">{s.replace(/_/g, ' ')}</option>
+            ))}
+          </select>
 
-        <input
-          name="lastName"
-          placeholder="Last Name"
-          className="input"
-          onChange={handleChange}
-        />
+          {/* BOARD SELECT */}
+          <select
+            name="board"
+            className="input"
+            disabled={!formData.state}
+            onChange={handleChange}
+            value={formData.board}
+          >
+            <option value="" className="opt">Select Electricity Board</option>
+            {(electricityBoards[formData.state] || []).map((b) => (
+              <option key={b} value={b} className="opt">{b}</option>
+            ))}
+          </select>
 
-        {/* EMAIL */}
-        <input
-          name="email"
-          placeholder="Email"
-          className="input"
-          onChange={handleChange}
-        />
-        {emailError && <p className="text-xs text-red-400">{emailError}</p>}
+          <div className="flex gap-6 text-sm text-[#CEDBA6]">
+            {["Male", "Female", "Other"].map((g) => (
+              <label key={g} className="flex items-center gap-2">
+                <input type="radio" name="gender" value={g} onChange={handleChange} />
+                {g}
+              </label>
+            ))}
+          </div>
 
-        {/* PASSWORD */}
-        <PasswordInput
-          value={formData.password}
-          onChange={(val) =>
-            setFormData((prev) => ({ ...prev, password: val }))
-          }
-        />
+          <button
+            disabled={!isFormValid || loading}
+            className={`w-full mt-4 py-3 rounded-xl font-semibold transition ${
+              isFormValid ? "bg-[#96C37C] hover:bg-[#85b96a] text-[#1F2937]" : "bg-gray-500 cursor-not-allowed"
+            }`}
+          >
+            {loading ? "Sending OTP..." : "Sign Up"}
+          </button>
+        </form>
 
-        {/* PHONE */}
-        <input
-          name="phone"
-          placeholder="Phone Number"
-          className="input"
-          onChange={handleChange}
-        />
-        {phoneError && <p className="text-xs text-red-400">{phoneError}</p>}
+        <p className="text-sm text-center mt-6 text-[#CBD5E1]">
+          Already have an account?{" "}
+          <span onClick={() => navigate("/login")} className="text-green-400 cursor-pointer inline-flex items-center gap-1">
+            <FiLogIn /> Sign in
+          </span>
+        </p>
+      </div>
 
-        {/* AGE (NEW FIELD) */}
-        <input
-          name="age"
-          type="number"
-          placeholder="Age"
-          className="input"
-          onChange={handleChange}
-        />
+      <style jsx>{`
+        .input {
+          width: 100%;
+          padding: 0.75rem;
+          border-radius: 0.75rem;
+          background: rgba(255, 255, 255, 0.15);
+          color: #f1f5f9;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          outline: none;
+          appearance: none; /* Removes default OS arrow if desired */
+        }
 
-        {/* STATE */}
-        <select name="state" className="input" onChange={handleChange}>
-          <option value="">Select State</option>
-          {statesOfIndia.map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
+        /* This targets the dropdown options background */
+        .opt {
+          background-color: #3f5680; /* Matches your card color */
+          color: #f1f5f9;
+        }
 
-        {/* BOARD */}
-        <select
-          name="board"
-          className="input"
-          disabled={!formData.state}
-          onChange={handleChange}
-        >
-          <option value="">Select Electricity Board</option>
-          {(electricityBoards[formData.state] || []).map((b) => (
-            <option key={b}>{b}</option>
-          ))}
-        </select>
+        .input:focus {
+          border-color: #96c37c;
+          box-shadow: 0 0 0 2px rgba(150, 195, 124, 0.3);
+        }
 
-        {/* GENDER */}
-        <div className="flex gap-6 text-sm text-[#CEDBA6]">
-          {["Male", "Female", "Other"].map((g) => (
-            <label key={g} className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="gender"
-                value={g}
-                onChange={handleChange}
-              />
-              {g}
-            </label>
-          ))}
-        </div>
-
-        {/* BUTTON */}
-        <button
-          disabled={!isFormValid || loading}
-          className={`w-full mt-4 py-3 rounded-xl font-semibold transition ${
-            isFormValid
-              ? "bg-[#96C37C] hover:bg-[#85b96a] text-[#1F2937]"
-              : "bg-gray-500 cursor-not-allowed"
-          }`}
-        >
-          {loading ? "Sending OTP..." : "Sign Up"}
-        </button>
-      </form>
-
-      <p className="text-sm text-center mt-6 text-[#CBD5E1]">
-        Already have an account?{" "}
-        <span
-          onClick={() => navigate("/login")}
-          className="text-green-400 cursor-pointer inline-flex items-center gap-1"
-        >
-          <FiLogIn /> Sign in
-        </span>
-      </p>
+        /* Special fix for Chrome/Safari to ensure text is readable */
+        select option {
+          background: #3f5680 !important;
+          color: white !important;
+        }
+      `}</style>
     </div>
-
-    {/* INPUT STYLE */}
-    <style jsx>{`
-      .input {
-        width: 100%;
-        padding: 0.75rem;
-        border-radius: 0.75rem;
-        background: rgba(255,255,255,0.15);
-        color: #f1f5f9;
-        border: 1px solid rgba(255,255,255,0.2);
-        outline: none;
-      }
-
-      .input::placeholder {
-        color: #cbd5e1;
-      }
-
-      .input:focus {
-        border-color: #96c37c;
-        box-shadow: 0 0 0 2px rgba(150,195,124,0.3);
-      }
-    `}</style>
-
-  </div>
-);
+  );
 };
 
 export default Signup;
