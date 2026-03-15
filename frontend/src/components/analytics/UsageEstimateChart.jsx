@@ -19,48 +19,45 @@ const data = [
 
 const UsageEstimateChart = () => {
   return (
-    <div className="p-3 rounded-xl">
+    <div className="w-full ">
 
-      <h2 className="text-center text-lg font-semibold text-yellow-300 mb-4">
-        Usage Estimate
-      </h2>
+      {/* Chart */}
 
       <div className="h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
-
           <LineChart data={data}>
 
             <CartesianGrid
-              stroke="#E3EDC2"
+              stroke="#8b9cb3"
               strokeDasharray="4 6"
               vertical={false}
-              opacity={0.3}
+              opacity={0.4}
             />
 
             <XAxis
               dataKey="day"
-              stroke="#E3EDC2"
-              tick={{ fill: "#ffffff", fontSize: 12 }}
+              stroke="#94a3b8"
+              tick={{ fill: "#e2e8f0", fontSize: 12 }}
             />
 
             <YAxis
-              stroke="#E3EDC2"
-              tick={{ fill: "#ffffff", fontSize: 12 }}
+              stroke="#94a3b8"
+              tick={{ fill: "#e2e8f0", fontSize: 12 }}
             />
 
             <Tooltip
               contentStyle={{
-                backgroundColor: "#3F5480",
-                border: "none",
+                backgroundColor: "#304678",
+                border: "1px solid #334155",
                 borderRadius: "8px",
-                color: "#ffffff",
+                color: "#fff",
               }}
             />
 
             <Line
               type="monotone"
               dataKey="usage"
-              stroke="#9FD487"
+              stroke="#4ade80"
               strokeWidth={3}
               dot={{ r: 5, stroke: "#ffffff", strokeWidth: 2 }}
               activeDot={{ r: 7 }}
@@ -68,18 +65,19 @@ const UsageEstimateChart = () => {
             />
 
           </LineChart>
-
         </ResponsiveContainer>
       </div>
 
-      <div className="text-center text-sm mt-4 text-[#E3EDC2]">
+      {/* Prediction Info */}
+
+      <div className="mt-6 pt-4 border-t border-[#334155] text-center text-sm text-gray-300">
 
         Till Now:
         <span className="text-white font-semibold ml-1">
           164 kWh
         </span>
 
-        <br />
+        <span className="mx-3 text-gray-500">|</span>
 
         Predicted:
         <span className="text-white font-semibold ml-1">
