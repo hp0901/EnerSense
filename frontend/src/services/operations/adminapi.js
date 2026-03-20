@@ -173,3 +173,21 @@ export const getAllPaymentsApi = async () => {
     );
   }
 };
+
+///* ===============================
+//   GET USER BY EMAIL
+//================================ */
+export const getUserByEmail = async (email) => {
+  try {
+    const res = await apiConnector(
+      "POST",
+      adminEndpoints.GET_USER_BY_EMAIL,
+      { email }
+    );
+
+    return res.data;
+  } catch (error) {
+    console.error("GET USER ERROR:", error);
+    throw error;
+  }
+};

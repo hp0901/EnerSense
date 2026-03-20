@@ -2,6 +2,7 @@
 
 // const BASE_URL = 'http://localhost:4000/api/v1';
 
+// AWS Backend url Temp closed 
 // const BASE_URL = "https://enersense.duckdns.org/api/v1";
    
    const BASE_URL = "https://enersense-jges.onrender.com/api/v1";
@@ -20,7 +21,7 @@ export const userProfile = {
   GET_NOTIFICATION_SETTINGS_API: BASE_URL + "/settings/notifications",
   UPDATE_NOTIFICATION_SETTINGS_API: BASE_URL + "/settings/notifications",
 };
-
+ 
 // Chatbot API Service
 export const chatbotEndpoints = {
   SEND_MESSAGE_API: BASE_URL + "/chatbot/message",
@@ -82,6 +83,7 @@ export const adminEndpoints = {
   GET_ALL_USERS: BASE_URL + "/admin/users",
   GET_ALL_PAYMENTS: BASE_URL + "/admin/payments/all",
   DELETE_DEVICE: BASE_URL + "/admin/delete",
+  GET_USER_BY_EMAIL: BASE_URL + "/admin/user",
 };
 
 // 2FA APIs

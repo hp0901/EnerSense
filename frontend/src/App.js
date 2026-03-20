@@ -78,7 +78,7 @@ import AdminPayments from "./Pages/AdminPayments.jsx";
 import AdminDashboard from "./Pages/AdminDashboard.jsx";
 import Admin2FAPage from "./Pages/Admin2FAPage.jsx";
 import AdminTopbar from "./components/AdminNavbar.jsx";
-
+import AdminViewPage from "./Pages/AdminViewPage.jsx";
 /* =========================
    ERROR PAGE
 ========================= */
@@ -225,6 +225,15 @@ const App = () => {
           element={
             <ProtectedAdminRoute>
               <AdminPayments />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/view/page"
+          element={
+            <ProtectedAdminRoute>
+              <AdminViewPage />
             </ProtectedAdminRoute>
           }
         />
