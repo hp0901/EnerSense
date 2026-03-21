@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllUsersApi } from "../services/operations/adminapi";
 import { FiMoreVertical, FiX } from "react-icons/fi";
-
+import {Link} from "react-router-dom";
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
@@ -34,7 +34,7 @@ const ManageUsers = () => {
   );
 
   const userActions = [
-  { label: "View Details", link: "/admin/view/page" },
+  { label: "View Details", link: "/admin/view/page/:id" },
   { label: "Make Admin", link: "#" },
   { label: "Remove Premium", link: "#" },
   { label: "Delete User", link: "#" },
@@ -133,14 +133,18 @@ const ManageUsers = () => {
                         <div className="absolute right-6 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10 text-left">
 
                          {userActions.map((action, index) => (
-                          <a
-                            key={index}
-                            href={action.link}
-                            className="block px-4 py-2 text-sm hover:bg-gray-100"
-                            onClick={() => setOpenMenu(null)}
-                          >
-                            {action.label}
-                          </a>
+                            <Link
+                              key={index}
+                              to={
+                                action.label === "View Details"
+                                  ? `/admin/view/page/${user._id}`
+                                  : "#"
+                              }
+                              className="block px-4 py-2 text-sm hover:bg-gray-100"
+                              onClick={() => setOpenMenu(null)}
+                            >
+                              {action.label}
+                            </Link>
                           ))}
                         </div>
                       )}

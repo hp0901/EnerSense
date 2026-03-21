@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { getUserByEmail } from "../services/operations/adminapi";
+import { getUserById } from "../services/operations/adminapi";
+import { useParams } from "react-router-dom";
+import { getAvatar } from "../utils/getAvatar";
+const AdminViewPage = () => {
+  const { id } = useParams();
 
-const AdminViewPage = ({ email }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchUser();
-  }, [email]);
+  }, [id]);
 
   const fetchUser = async () => {
     try {
-      const data = await getUserByEmail(email);
-      setUser(data);
+      const data = await getUserById(id);
+      setUser(data.data || data);
+      console.log("Id data ", data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -20,9 +24,17 @@ const AdminViewPage = ({ email }) => {
     }
   };
 
+  // ✅ Safe Date Formatter (FIXES 1970 ISSUE)
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "N/A";
+    return d.toLocaleString();
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
+      <div className="min-h-screen flex items-center justify-center text-gray-400">
         Loading user details...
       </div>
     );
@@ -37,71 +49,94 @@ const AdminViewPage = ({ email }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white">
+      <div className="max-w-6xl mx-auto">
 
-      <div className="max-w-4xl mx-auto">
-
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">
-            👤 User Profile
-          </h1>
-          <p className="text-slate-400">
-            Detailed information about selected user
-          </p>
-        </div>
-
-        {/* Card */}
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-xl">
-
-          {/* Name */}
-          <div className="mb-6">
-            <p className="text-sm text-slate-400">Full Name</p>
-            <h2 className="text-xl font-semibold">
+        {/* HEADER */}
+        <div className="flex items-center gap-6 mb-8">
+          <img
+            src={getAvatar(user)}
+            alt="profile"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = `https://ui-avatars.com/api/?name=${user.firstName}`;
+            }}
+            className="w-20 h-20 rounded-full border-2 border-blue-500 object-cover"
+          />
+          <div>
+            <h1 className="text-2xl font-bold">
               {user.firstName} {user.lastName}
-            </h2>
+            </h1>
+            <p className="text-slate-400">{user.email}</p>
+
+            <div className="flex gap-3 mt-2">
+              <span className="px-3 py-1 text-xs rounded-full bg-blue-500/20 text-blue-400">
+                {user.role}
+              </span>
+
+              <span
+                className={`px-3 py-1 text-xs rounded-full ${
+                  user.isPremium
+                    ? "bg-yellow-500/20 text-yellow-400"
+                    : "bg-gray-500/20 text-gray-400"
+                }`}
+              >
+                {user.isPremium ? "Premium" : "Free"}
+              </span>
+
+              {user.isVerified && (
+                <span className="px-3 py-1 text-xs rounded-full bg-green-500/20 text-green-400">
+                  Verified
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* PERSONAL INFO */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+            <h2 className="text-lg font-semibold mb-4">👤 Personal Info</h2>
+            <p><span className="text-slate-400">User UID:</span> {user.userUID || "N/A"}</p>
+            <p><span className="text-slate-400">Phone:</span> {user.phone || "N/A"}</p>
+            <p><span className="text-slate-400">Gender:</span> {user.gender || "N/A"}</p>
+            <p><span className="text-slate-400">State:</span> {user.state || "N/A"}</p>
+            <p><span className="text-slate-400">Board:</span> {user.board || "N/A"}</p>
+            <p><span className="text-slate-400">Card Type:</span> {user.cardType || "N/A"}</p>
           </div>
 
-          {/* Email */}
-          <div className="mb-6">
-            <p className="text-sm text-slate-400">Email</p>
-            <p className="text-blue-400">{user.email}</p>
+          {/* ACCOUNT INFO */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+            <h2 className="text-lg font-semibold mb-4">🔐 Account Info</h2>
+
+            <p><span className="text-slate-400">Role:</span> {user.role}</p>
+            <p><span className="text-slate-400">2FA Enabled:</span> {user.twoFactorEnabled ? "Yes" : "No"}</p>
+            <p><span className="text-slate-400">Verified:</span> {user.isVerified ? "Yes" : "No"}</p>
+            <p><span className="text-slate-400">Devices:</span> { user?.deviceCount || 0}</p>
           </div>
 
-          {/* Role */}
-          <div className="mb-6">
-            <p className="text-sm text-slate-400">Role</p>
-            <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm">
-              {user.role}
-            </span>
+          {/* SUBSCRIPTION */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+            <h2 className="text-lg font-semibold mb-4">💎 Subscription</h2>
+
+            <p><span className="text-slate-400">Plan:</span> {user.premiumPlan || "N/A"}</p>
+            <p><span className="text-slate-400">Started:</span> {formatDate(user.premiumStartedAt)}</p>
+            <p><span className="text-slate-400">Expires:</span> {formatDate(user.premiumExpiresAt)}</p>
+            <p><span className="text-slate-400">Reminder Sent:</span> {user.premiumExpiryReminderSent ? "Yes" : "No"}</p>
           </div>
 
-          {/* Premium */}
-          <div className="mb-6">
-            <p className="text-sm text-slate-400">Subscription</p>
-            <span
-              className={`px-3 py-1 rounded-full text-sm ${
-                user.isPremium
-                  ? "bg-yellow-500/20 text-yellow-400"
-                  : "bg-gray-500/20 text-gray-400"
-              }`}
-            >
-              {user.isPremium ? "Premium User" : "Free User"}
-            </span>
-          </div>
+          {/* SYSTEM INFO */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+            <h2 className="text-lg font-semibold mb-4">📅 System Info</h2>
 
-          {/* Created */}
-          <div className="mb-6">
-            <p className="text-sm text-slate-400">Joined On</p>
-            <p>
-              {new Date(user.createdAt).toLocaleDateString()}
-            </p>
+            <p><span className="text-slate-400">Created At:</span> {formatDate(user.createdAt)}</p>
+            <p><span className="text-slate-400">Updated At:</span> {formatDate(user.updatedAt)}</p>
           </div>
 
         </div>
-
       </div>
-
     </div>
   );
 };

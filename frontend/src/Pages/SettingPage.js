@@ -8,7 +8,7 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
-
+import { getAvatar } from "../utils/getAvatar";
 import { maskEmail } from "../utils/maskEmail";
 import { maskPhone } from "../utils/maskPhone";
 
@@ -16,28 +16,23 @@ import {
   getNotificationSettings,
   updateNotificationSettings,
 } from "../services/operations/notificationAPI";
-import { updateProfile } from "../services/operations/profileapi";
+import { updateProfile, getMyProfile } from "../services/operations/profileapi";
 import { logout } from "../services/operations/authapi";
-import { getMyProfile } from "../services/operations/profileapi";
 import { useUser } from "../context/UserContext";
-
 
 const SettingPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useUser();
 
-  /* ================= PROFILE STATE ================= */
   const [profile, setProfile] = useState({
     firstName: "",
     lastName: "",
-    email:"",
+    email: "",
     phone: "",
     profileImage: "",
     imageFile: null,
   });
 
-  const { setUser } = useUser();
-
-  /* ================= NOTIFICATION STATE ================= */
   const [notifications, setNotifications] = useState({
     emailAlerts: false,
     smsAlerts: false,
@@ -45,8 +40,8 @@ const SettingPage = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [deletePhoto, setDeletePhoto] = useState(false);
-
 
   const NOTIFICATION_META = {
     emailAlerts: { number: 1, label: "Email Alerts" },
@@ -54,7 +49,32 @@ const SettingPage = () => {
     weeklyReports: { number: 3, label: "Weekly Reports" },
   };
 
-  /* ================= FETCH SETTINGS ================= */
+  /* ================= FETCH PROFILE ================= */
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const res = await getMyProfile();
+        const user = res.data;
+
+        setProfile({
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          email: user.email || "",
+          phone: user.phone || "",
+          profileImage: user.profileImage || "",
+          imageFile: null,
+        });
+      } catch (err) {
+        console.log("Failed to load profile");
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  /* ================= FETCH NOTIFICATIONS ================= */
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -67,32 +87,17 @@ const SettingPage = () => {
     fetchSettings();
   }, []);
 
+  /* ================= CLEANUP BLOB ================= */
   useEffect(() => {
-  const loadProfile = async () => {
-    try {
-      const res = await getMyProfile();
-
-      const user = res.data;
-
-      setProfile({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        profileImage: user.profileImage || "",
-        imageFile: null,
-      });
-
-    } catch (err) {
-      console.log("Failed to load profile");
-    }
-  };
-
-  loadProfile();
-}, []);
+    return () => {
+      if (profile.profileImage?.startsWith("blob:")) {
+        URL.revokeObjectURL(profile.profileImage);
+      }
+    };
+  }, [profile.profileImage]);
 
 
-  /* ================= PROFILE SAVE ================= */
+  /* ================= SAVE PROFILE ================= */
   const handleProfileSave = async () => {
     try {
       setLoading(true);
@@ -112,12 +117,10 @@ const SettingPage = () => {
 
       const res = await updateProfile(formData);
 
-      // ✅ THIS LINE IS THE KEY
-      setUser(res.user);
-
+      setUser(res.data || res.user); // safer
       setDeletePhoto(false);
-      toast.success("✅ Profile updated successfully");
 
+      toast.success("✅ Profile updated successfully");
     } catch (err) {
       toast.error(
         err?.response?.data?.message || "❌ Failed to update profile"
@@ -127,24 +130,23 @@ const SettingPage = () => {
     }
   };
 
-  /* ================= NOTIFICATION TOGGLE ================= */
+  /* ================= TOGGLE ================= */
   const handleToggle = async (key) => {
-    const previousState = { ...notifications };
-    const updatedState = { ...notifications, [key]: !notifications[key] };
+    const prev = { ...notifications };
+    const updated = { ...notifications, [key]: !notifications[key] };
     const { number, label } = NOTIFICATION_META[key];
 
-    setNotifications(updatedState);
+    setNotifications(updated);
     setLoading(true);
     toast.loading(`${number}. Updating ${label}...`, { id: key });
 
     try {
-      await updateNotificationSettings(updatedState);
-      toast.success(
-        `${label} ${updatedState[key] ? "Enabled" : "Disabled"}`,
-        { id: key }
-      );
-    } catch (err) {
-      setNotifications(previousState);
+      await updateNotificationSettings(updated);
+      toast.success(`${label} ${updated[key] ? "Enabled" : "Disabled"}`, {
+        id: key,
+      });
+    } catch {
+      setNotifications(prev);
       toast.error(`${number}. Failed to update ${label}`, { id: key });
     } finally {
       setLoading(false);
@@ -158,8 +160,13 @@ const SettingPage = () => {
     navigate("/login", { replace: true });
   };
 
-  
-
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-400">
+        Loading profile...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white px-6 py-10">
@@ -170,15 +177,15 @@ const SettingPage = () => {
         {/* PROFILE */}
         <Section icon={<FiUser />} title="Profile Settings">
 
-          {/* PROFILE IMAGE */}
+          {/* IMAGE */}
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-full overflow-hidden border border-white/20">
               <img
-                src={
-                  profile.profileImage ||
-                  "https://ui-avatars.com/api/?name=User&background=16a34a&color=fff"
-                }
+                src={getAvatar(profile)}
                 alt="profile"
+                onError={(e) => {
+                  e.target.src = "https://ui-avatars.com/api/?name=User";
+                }}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -195,6 +202,7 @@ const SettingPage = () => {
                     if (!file) return;
 
                     const preview = URL.createObjectURL(file);
+
                     setDeletePhoto(false);
                     setProfile({
                       ...profile,
@@ -207,16 +215,15 @@ const SettingPage = () => {
 
               {profile.profileImage && (
                 <button
-                  type="button"
                   onClick={() => {
                     setDeletePhoto(true);
                     setProfile({
                       ...profile,
                       profileImage: "",
                       imageFile: null,
-                    })
+                    });
                   }}
-                  className="text-red-400 text-sm hover:text-red-500"
+                  className="text-red-400 text-sm"
                 >
                   Delete Photo
                 </button>
@@ -240,19 +247,8 @@ const SettingPage = () => {
             }
           />
 
-          <div>
-            <Input
-              label="Email"
-              value={maskEmail(profile.email)}
-              disabled
-            />
-          </div>
-
-          <Input
-            label="Phone Number"
-            value={maskPhone(profile.phone)}
-            disabled
-          />
+          <Input label="Email" value={maskEmail(profile.email)} readOnly />
+          <Input label="Phone" value={maskPhone(profile.phone)} readOnly />
 
           <button
             onClick={handleProfileSave}
@@ -263,72 +259,43 @@ const SettingPage = () => {
           </button>
         </Section>
 
-        {/* ENERGY */}
-        <Section icon={<FiCpu />} title="Energy Preferences">
-          <Select
-            label="Tariff Type"
-            options={["Domestic", "Commercial", "Industrial"]}
-          />
-          <Toggle label="Peak Hour Alerts" value={true} disabled />
-        </Section>
-
         {/* NOTIFICATIONS */}
         <Section icon={<FiBell />} title="Notifications">
-          <Toggle
-            label="Email Alerts"
-            value={notifications.emailAlerts}
-            loading={loading}
-            onChange={() => handleToggle("emailAlerts")}
-          />
-          <Toggle
-            label="SMS Alerts"
-            value={notifications.smsAlerts}
-            loading={loading}
-            onChange={() => handleToggle("smsAlerts")}
-          />
-          <Toggle
-            label="Weekly Energy Reports"
-            value={notifications.weeklyReports}
-            loading={loading}
-            onChange={() => handleToggle("weeklyReports")}
-          />
+          {Object.keys(notifications).map((key) => (
+            <Toggle
+              key={key}
+              label={NOTIFICATION_META[key].label}
+              value={notifications[key]}
+              onChange={() => handleToggle(key)}
+            />
+          ))}
         </Section>
 
         {/* SECURITY */}
-        <Section icon={<FiShield />} title="Security & Privacy">
-          <button
-            className="btn-secondary"
-            onClick={() => navigate("/change-password")}
-          >
+        <Section icon={<FiShield />} title="Security">
+          <button onClick={() => navigate("/change-password")}>
             Change Password
           </button>
-          <button
-            className="btn-secondary"
-            onClick={() => navigate("/security/2fa")}
-          >
+          <button onClick={() => navigate("/security/2fa")}>
             Enable 2FA
           </button>
         </Section>
 
         {/* LOGOUT */}
-        <div className="pt-6 border-t border-white/10">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-red-400 hover:text-red-500"
-          >
-            <FiLogOut /> Logout
-          </button>
-        </div>
+        <button onClick={handleLogout} className="text-red-400">
+          Logout
+        </button>
+
       </div>
     </div>
   );
 };
 
-/* ================= REUSABLE COMPONENTS ================= */
+/* COMPONENTS */
 
 const Section = ({ icon, title, children }) => (
-  <div className="bg-[#020617] p-6 rounded-xl space-y-4 shadow-md">
-    <h2 className="flex items-center gap-2 text-xl font-semibold text-green-400">
+  <div className="bg-[#020617] p-6 rounded-xl space-y-4">
+    <h2 className="flex items-center gap-2 text-xl text-green-400">
       {icon} {title}
     </h2>
     {children}
@@ -337,41 +304,15 @@ const Section = ({ icon, title, children }) => (
 
 const Input = ({ label, ...props }) => (
   <div>
-    <label className="block text-sm text-slate-400 mb-1">{label}</label>
-    <input
-      {...props}
-      className="w-full p-3 rounded-lg bg-[#0f172a] border border-white/10
-      focus:outline-none focus:ring-2 focus:ring-green-500"
-    />
+    <label className="text-sm text-slate-400">{label}</label>
+    <input {...props} className="w-full p-2 bg-[#0f172a]" />
   </div>
 );
 
-const Select = ({ label, options }) => (
-  <div>
-    <label className="block text-sm text-slate-400 mb-1">{label}</label>
-    <select className="w-full p-3 rounded-lg bg-[#0f172a] border border-white/10">
-      {options.map((opt) => (
-        <option key={opt}>{opt}</option>
-      ))}
-    </select>
-  </div>
-);
-
-const Toggle = ({ label, value, onChange, loading, disabled }) => (
-  <div className="flex items-center justify-between">
-    <span className="text-slate-300">{label}</span>
-    <button
-      disabled={loading || disabled}
-      onClick={onChange}
-      className={`relative w-11 h-6 rounded-full ${
-        value ? "bg-green-500" : "bg-slate-600"
-      }`}
-    >
-      <span
-        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full
-        transition-transform ${value ? "translate-x-5" : ""}`}
-      />
-    </button>
+const Toggle = ({ label, value, onChange }) => (
+  <div className="flex justify-between">
+    <span>{label}</span>
+    <button onClick={onChange}>{value ? "ON" : "OFF"}</button>
   </div>
 );
 

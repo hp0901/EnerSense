@@ -177,17 +177,18 @@ export const getAllPaymentsApi = async () => {
 ///* ===============================
 //   GET USER BY EMAIL
 //================================ */
-export const getUserByEmail = async (email) => {
+export const getUserById = async (id) => {
   try {
     const res = await apiConnector(
       "POST",
-      adminEndpoints.GET_USER_BY_EMAIL,
-      { email }
+      adminEndpoints.GET_USER_BY_ID,
+      { id }
     );
 
     return res.data;
+
   } catch (error) {
-    console.error("GET USER ERROR:", error);
+    console.error("GET USER BY ID ERROR:", error);
     throw error;
   }
 };

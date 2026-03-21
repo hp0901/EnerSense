@@ -14,7 +14,7 @@ import {
    getMonthlyRevenue
 } from "../controller/paymentHistory.controller.js";
 
-import {getAllUsers} from "../controller/userDetails.js"; 
+import {getAllUsers ,  getUserById} from "../controller/userDetails.js"; 
 
 import { deleteDevice } from "../controller/deviceController.js";
 
@@ -36,8 +36,13 @@ router.get("/dashboard", auth, isAdmin, getDashboardStatus);
 // ================= USER ROUTES =================
 router.get("/users", auth, isAdmin, getAllUsers);
 
+// ================= GET USER BY ID ROUTE =================
+router.post("/view/user/id", auth, isAdmin, getUserById);
+
 // ================= DELETE DEVICE ROUTE =================
 router.delete("/delete/:id", auth, isAdmin, deleteDevice);
+
+
 
 router.get("/test", (req, res) => {
   res.send("Device route working");

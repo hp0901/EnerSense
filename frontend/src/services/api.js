@@ -83,7 +83,7 @@ export const adminEndpoints = {
   GET_ALL_USERS: BASE_URL + "/admin/users",
   GET_ALL_PAYMENTS: BASE_URL + "/admin/payments/all",
   DELETE_DEVICE: BASE_URL + "/admin/delete",
-  GET_USER_BY_EMAIL: BASE_URL + "/admin/user",
+  GET_USER_BY_ID: BASE_URL + "/admin/view/user/id",
 };
 
 // 2FA APIs

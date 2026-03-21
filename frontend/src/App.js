@@ -230,7 +230,7 @@ const App = () => {
         />
 
         <Route
-          path="/admin/view/page"
+          path="/admin/view/page/:id"
           element={
             <ProtectedAdminRoute>
               <AdminViewPage />
