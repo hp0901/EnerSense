@@ -146,7 +146,7 @@ const AdminPayments = () => {
                     </td>
 
                     <td className="px-6 py-4 text-gray-600">
-                      {new Date(payment.createdAt).toLocaleDateString()}
+                      {new Date(payment.createdAt).toLocaleDateString("en-GB")}
                     </td>
 
                   </tr>

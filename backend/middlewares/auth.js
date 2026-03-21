@@ -24,10 +24,25 @@ export const auth = async (req, res, next) => {
       });
     }
 
+    // 🔥 PREMIUM EXPIRY FIX (IMPORTANT)
+    if (
+      user.isPremium &&
+      user.premiumExpiresAt &&
+      user.premiumExpiresAt < new Date()
+    ) {
+      user.isPremium = false;
+      user.premiumPlan = null; // optional cleanup
+      user.cardType = null;    // optional cleanup
+      await user.save();
+    }
+
+    // ✅ Attach updated user info
     req.user = {
       id: user._id.toString(),
-      role: user.role,   // ✅ VERY IMPORTANT
+      role: user.role,
       email: user.email,
+      isPremium: user.isPremium,
+      premiumExpiresAt: user.premiumExpiresAt,
     };
 
     next();

@@ -101,7 +101,7 @@ export default function MyPayments() {
                   {p.razorpayPaymentId}
                 </td>
                 <td className="px-4 py-3">
-                  {new Date(p.paidAt || p.createdAt).toDateString()}
+                  {new Date(p.paidAt || p.createdAt).toDateString("en-GB")}
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button

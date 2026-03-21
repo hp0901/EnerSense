@@ -5,9 +5,9 @@ import { PREMIUM_PLANS } from "../utils/premiumPlans.js";
 export const activatePremium = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { plan } = req.body;
+    const { plan, autoRenew = false } = req.body;
 
-    // ✅ Validate plan (single source of truth)
+    // ✅ Validate plan
     const planConfig = PREMIUM_PLANS[plan];
 
     if (!planConfig) {
@@ -17,14 +17,33 @@ export const activatePremium = async (req, res) => {
       });
     }
 
-    // ✅ Calculate dates
-    const startDate = new Date();
-    const expiryDate = new Date();
+    // ✅ Get current user first (IMPORTANT for extension logic)
+    const existingUser = await User.findById(userId);
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // ✅ Decide start date (extend if already active)
+    const now = new Date();
+
+    const startDate =
+      existingUser.isPremium &&
+      existingUser.premiumExpiresAt &&
+      existingUser.premiumExpiresAt > now
+        ? existingUser.premiumExpiresAt
+        : now;
+
+    // ✅ Calculate expiry
+    const expiryDate = new Date(startDate);
     expiryDate.setDate(
-      startDate.getDate() + planConfig.durationDays
+      expiryDate.getDate() + planConfig.durationDays
     );
 
-    // ✅ Update user atomically
+    // ✅ Update user
     const user = await User.findByIdAndUpdate(
       userId,
       {
@@ -33,19 +52,12 @@ export const activatePremium = async (req, res) => {
         premiumStartedAt: startDate,
         premiumExpiresAt: expiryDate,
         cardType: planConfig.cardType,
+        autoRenew: autoRenew, // 🔥 NEW (optional control)
       },
       { new: true }
     ).select("-password");
 
-    // ✅ Safety check
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // ✅ Send confirmation email (non-blocking)
+    // ✅ Send email (non-blocking)
     try {
       await premiumActivatedTemplate(
         user.email,
@@ -55,7 +67,6 @@ export const activatePremium = async (req, res) => {
       );
     } catch (emailError) {
       console.error("Premium email failed:", emailError.message);
-      // ❗ Do NOT fail API if email fails
     }
 
     return res.status(200).json({

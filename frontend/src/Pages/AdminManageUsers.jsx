@@ -102,7 +102,7 @@ const ManageUsers = () => {
                     </td>
 
                     <td className="px-6 py-4">
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {new Date(user.createdAt).toLocaleDateString("en-GB")}
                     </td>
 
                     {/* Actions */}

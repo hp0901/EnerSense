@@ -31,7 +31,7 @@ export const downloadInvoice = async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=EnerSense-Invoice.pdf"
+      `attachment; filename=EnerSense-Invoice.pdf`
     );
 
     res.send(pdfBuffer);
