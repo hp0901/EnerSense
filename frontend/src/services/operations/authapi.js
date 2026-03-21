@@ -61,19 +61,25 @@ export const signup = async (payload) => {
 /* ===============================
    LOGIN
 ================================ */
-export const login = async (email, password, setUser) => {
+export const login = async (email, password, turnstileToken, setUser) => {
   try {
     const res = await apiConnector(
       "POST",
       userProfile.LOGIN_API,
-      { email, password },
-      { "Content-Type": "application/json" }
+      {
+        email,
+        password,
+        turnstileToken, // 🔥 REQUIRED
+      },
+      {
+        "Content-Type": "application/json",
+      }
     );
 
     if (res.data?.token) {
       localStorage.setItem("token", res.data.token);
+
       try {
-        // ✅ fetch profile separately
         const profileRes = await getMyProfile();
         setUser(profileRes.data);
       } catch (profileError) {

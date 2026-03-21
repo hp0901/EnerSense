@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import loginimage from "../assets/loginpage.png";
 import logo from "../assets/EnerSence_logo.png";
-import { login as loginApi, googleLoginApi } from "../services/operations/authapi";
+import { login as loginApi } from "../services/operations/authapi";
 import toast from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useAuth } from "../context/AuthContex";
 import { useUser } from "../context/UserContext";
+import { useRef } from "react";
+import { googleLoginApi } from "../services/operations/authapi";
 
 const EnerSenseLogin = () => {
 
@@ -17,18 +19,59 @@ const EnerSenseLogin = () => {
 
   const [showPassword,setShowPassword] = useState(false);
   const [loading,setLoading] = useState(false);
-
+  const [turnstileToken,setTurnstileToken] = useState("");
   const [formData,setFormData] = useState({
     email:"",
     password:""
   });
+  
 
-  useEffect(()=>{
-    const token = localStorage.getItem("token");
-    if(token){
-      console.log("Token exists. Waiting verification.");
+  // 🔥 AUTO LOAD TURNSTILE (NO POPUP)
+
+const turnstileRendered = useRef(false);
+const widgetIdRef = useRef(null);
+
+useEffect(() => {
+  const renderWidget = () => {
+    if (!window.turnstile) return;
+    if (turnstileRendered.current) return;
+
+    const container = document.getElementById("turnstile-container");
+    if (!container) return;
+
+    try {
+      widgetIdRef.current = window.turnstile.render("#turnstile-container", {
+        sitekey: "0x4AAAAAACuB8uTkFGmRpL5v",
+
+        callback: (token) => {
+          setTurnstileToken(token);
+        },
+
+        "expired-callback": () => {
+          setTurnstileToken("");
+          window.turnstile.reset(widgetIdRef.current); // 🔥 auto refresh
+        },
+
+        "error-callback": (err) => {
+          console.error("Turnstile Error:", err);
+        },
+      });
+
+      turnstileRendered.current = true;
+
+    } catch (err) {
+      console.error("Render error:", err);
     }
-  },[])
+  };
+
+  // 🔥 INSTANT LOAD (no interval)
+  if (window.turnstile) {
+    renderWidget();
+  } else {
+    window.onloadTurnstileCallback = renderWidget;
+  }
+
+}, []);
 
   const handleChange = (e)=>{
     setFormData(prev=>({
@@ -53,16 +96,22 @@ const EnerSenseLogin = () => {
       return;
     }
 
+    if(!turnstileToken){
+      toast.error("Verifying... Please wait");
+      return;
+    }
+
     const toastId = toast.loading("Logging in...");
 
     try{
-
       setLoading(true);
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
-      const res = await loginApi(formData.email,formData.password);
+      const res = await loginApi(
+        formData.email,
+        formData.password,
+        turnstileToken,
+        setUser
+      );
 
       if(res.require2FA){
         localStorage.setItem("admin2FAUserId",res.userId);
@@ -78,61 +127,44 @@ const EnerSenseLogin = () => {
       login();
 
       toast.success("Login successful 🚀",{id:toastId});
-
       redirectBasedOnRole(res.user);
 
     }catch(error){
-
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
+      setTurnstileToken(""); // reset
       toast.error("Invalid credentials",{id:toastId});
-
     }finally{
       setLoading(false);
     }
   }
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-
-  const toastId = toast.loading("Signing in with Google...");
-
+  const handleGoogleLogin = async (credentialResponse) => {
   try {
-
     setLoading(true);
 
     const res = await googleLoginApi(credentialResponse.credential);
 
-    // ✅ If 2FA required → redirect to OTP page
-    if(res.require2FA){
-
-  localStorage.setItem("admin2FAUserId", res.userId);
-
-  toast.success("OTP verification required",{id:toastId});
-
-  navigate("/admin-2fa",{replace:true});
-
-  return;
-}
-
-    // ✅ Normal login
-    if(res.token){
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("user", JSON.stringify(res.user));
-      console.log(res.user);
-      setUser(res.user);
-      login();
-
-      toast.success(`Welcome ${res.user.firstName}`, {id: toastId});
-
-      redirectBasedOnRole(res.user);
+    // 🔐 2FA flow
+    if (res.require2FA) {
+      localStorage.setItem("admin2FAUserId", res.userId);
+      navigate("/admin-2fa");
+      return;
     }
 
+    // ✅ Save token
+    if (res.token) {
+      localStorage.setItem("token", res.token);
+    }
+
+    // ✅ Set user + login
+    setUser(res.user);
+    login();
+
+    toast.success("Google login successful 🚀");
+    redirectBasedOnRole(res.user);
+
   } catch (error) {
-
-    console.error(error);
-    toast.error("Google login failed",{id:toastId});
-
+    console.error("Google Login Error:", error);
+    toast.error(error || "Google login failed");
   } finally {
     setLoading(false);
   }
@@ -145,14 +177,11 @@ const EnerSenseLogin = () => {
 <div className="flex w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl bg-[#3F5680]">
 
 {/* LEFT SIDE */}
-
 <div className="w-full md:w-1/2 p-10 text-[#F1F5F9]">
 
 <div className="flex items-center gap-3 mb-10">
-
 <img src={logo} className="w-10"/>
 <h1 className="text-xl font-bold text-green-400">EnerSense</h1>
-
 </div>
 
 <h2 className="text-3xl font-bold text-green-400 mb-2">
@@ -171,18 +200,17 @@ name="email"
 placeholder="Email"
 value={formData.email}
 onChange={handleChange}
-className="w-full p-4 rounded-xl bg-[#6F89A8] text-white placeholder-[#CBD5E1]"
+className="w-full p-4 rounded-xl bg-[#6F89A8] text-white"
 />
 
 <div className="relative">
-
 <input
 type={showPassword?"text":"password"}
 name="password"
 placeholder="Password"
 value={formData.password}
 onChange={handleChange}
-className="w-full p-4 rounded-xl bg-[#6F89A8] text-gray-200 placeholder-[#CBD5E1]"
+className="w-full p-4 rounded-xl bg-[#6F89A8] text-white"
 />
 
 <span
@@ -191,12 +219,14 @@ className="absolute right-4 top-4 cursor-pointer"
 >
 {showPassword ? <FiEyeOff/> : <FiEye/>}
 </span>
-
 </div>
+
+{/* 🔥 TURNSTILE CONTAINER */}
+<div id="turnstile-container" className="flex justify-center"></div>
 
 <button
 type="submit"
-disabled={loading}
+disabled={loading || !turnstileToken}
 className="w-full bg-green-500 text-white py-3 rounded-xl font-bold"
 >
 {loading ? "Logging in..." : "Login"}
@@ -209,31 +239,23 @@ className="w-full bg-green-500 text-white py-3 rounded-xl font-bold"
 </div>
 
 <div className="flex flex-col items-center gap-4 mt-6">
-  {/* Google Login Button */}
-  <GoogleLogin onSuccess={handleGoogleSuccess} />
-
-  <Link to="/signup" className="text-sm text-[#CBD5E1] mt-2">
+<GoogleLogin
+  onSuccess={handleGoogleLogin}
+  onError={() => toast.error("Google Login Failed ❌")}
+/>  <Link to="/signup" className="text-sm text-[#CBD5E1] mt-2">
     Don't have an account? <span className="text-green-400 font-bold">Sign Up</span>
   </Link>
 </div>
 
 </form>
-
 </div>
 
 {/* RIGHT IMAGE */}
-
 <div className="hidden md:block md:w-1/2 relative">
-
-<img
-src={loginimage}
-className="absolute inset-0 w-full h-full object-cover"
-/>
-
+<img src={loginimage} className="absolute inset-0 w-full h-full object-cover"/>
 </div>
 
 </div>
-
 
 </div>
   )

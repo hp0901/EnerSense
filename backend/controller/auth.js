@@ -12,7 +12,7 @@ import {forgotOtpTemplate} from "../Email/forgotOtpTemplate.js";
 import { passwordResetSuccessTemplate } from "../Email/passwordResetSuccessTemplate.js";
 import { isStrongPassword } from "../utils/passwordValidator.js";
 import speakeasy from "speakeasy";
-
+import axios from "axios";
 dotenv.config();
 
  console.log("Here in Signup")
@@ -127,18 +127,44 @@ export const signup = async (req, res) => {
 // ===============================
 // LOGIN CONTROLLER
 // ===============================
-
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, turnstileToken } = req.body;
 
+    // ✅ 1. BASIC VALIDATION
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: "Email and password required",
       });
     }
+    console.log("REQ BODY:", req.body);
 
+    // ✅ 2. VERIFY BOT (TURNSTILE)
+    if (!turnstileToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Bot verification required",
+      });
+    }
+
+    const verifyRes = await axios.post(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        secret: process.env.TURNSTILE_SECRET, // 🔐 store in .env
+        response: turnstileToken,
+        remoteip: req.ip, // optional but recommended
+      }
+    ); 
+
+    if (!verifyRes.data.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Bot verification failed",
+      });
+    }
+
+    // ✅ 3. FIND USER
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -148,6 +174,7 @@ export const login = async (req, res) => {
       });
     }
 
+    // ✅ 4. PASSWORD CHECK
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -157,14 +184,13 @@ export const login = async (req, res) => {
       });
     }
 
-    // 🔐 ADMIN CHECK MUST COME BEFORE TOKEN GENERATION
+    // 🔐 5. ADMIN → 2FA REQUIRED
     if (user.role === "admin") {
-
       if (!user.twoFactorEnabled) {
         return res.status(403).json({
           success: false,
           message: "Admin must enable 2FA",
-        });
+        }); 
       }
 
       return res.status(200).json({
@@ -174,7 +200,7 @@ export const login = async (req, res) => {
       });
     }
 
-    // ✅ NORMAL USER TOKEN
+    // ✅ 6. NORMAL USER LOGIN
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
