@@ -19,7 +19,7 @@ const data = [
 
 const ActiveAppliancesChart = () => {
   return (
-    <div className="bg-[#020617] p-6 rounded-xl">
+    <div className="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
 
       <h2 className="text-center text-lg font-semibold text-green-400 mb-4">
         Active Appliances
@@ -34,15 +34,15 @@ const ActiveAppliancesChart = () => {
           >
 
             <CartesianGrid
-              stroke="#1e293b"
-              strokeDasharray="4 6"
-              horizontal={false}
+              stroke="#94a3b8"
+              strokeDasharray="3 3"
+              vertical={false}
             />
 
             <XAxis
               type="number"
               stroke="#94a3b8"
-              tick={{ fill: "#cbd5f5", fontSize: 12 }}
+              tick={{ fill: "#e2e8f0", fontSize: 12 }}
             />
 
             <YAxis
@@ -54,7 +54,8 @@ const ActiveAppliancesChart = () => {
 
             <Tooltip
               contentStyle={{
-                backgroundColor: "#020617",
+                backgroundColor: "#304678",
+                color: "#fff",
                 border: "1px solid #334155",
                 borderRadius: "6px",
               }}

@@ -5,7 +5,7 @@ const CarbonFootprintChart = () => {
   const progress = 68; // percent progress
 
   return (
-    <div className="bg-[#020617] p-6 rounded-xl">
+    <div className="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
 
       <h2 className="text-center text-lg font-semibold text-green-400 mb-4">
         Carbon Footprint

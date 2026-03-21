@@ -10,7 +10,7 @@ const COLORS = ["#22c55e", "#eab308"];
 
 const CostPredictionChart = () => {
   return (
-    <div className="bg-[#020617] p-6 rounded-xl">
+    <div className="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
 
       <h2 className="text-center text-lg font-semibold text-green-400 mb-4">
         Cost Predicted

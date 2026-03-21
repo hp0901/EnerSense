@@ -19,10 +19,12 @@ const data = [
 
 const UsageEstimateChart = () => {
   return (
-    <div className="w-full ">
+    <div className="bg-white/5 backdrop-blur-sm p-6 rounded-xl ">
 
       {/* Chart */}
-
+      <h3 className="text-center text-yellow-400 font-semibold mb-4">
+      Usage Estimate
+    </h3>
       <div className="h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>

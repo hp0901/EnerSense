@@ -113,11 +113,7 @@ return (
 
   {/* Graph */}
 
-  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-6">
-
-    <h3 className="text-center text-yellow-400 font-semibold mb-4">
-      Usage Estimate
-    </h3>
+  <div className="bg-white/5 mb-6">
 
     <div className="w-full h-70">
       <UsageEstimateChart />

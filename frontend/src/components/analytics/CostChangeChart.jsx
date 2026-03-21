@@ -16,7 +16,7 @@ const data = [
 
 const CostChangeChart = () => {
   return (
-    <div className="bg-[#020617] p-6 rounded-xl">
+    <div className="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
 
       <h2 className="text-center text-lg font-semibold text-green-400 mb-4">
         Change in Cost
@@ -27,7 +27,7 @@ const CostChangeChart = () => {
           <BarChart data={data}>
 
             <CartesianGrid
-              stroke="#1e293b"
+              stroke="#94a3b8"
               strokeDasharray="4 6"
               vertical={false}
             />
