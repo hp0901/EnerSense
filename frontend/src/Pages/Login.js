@@ -41,7 +41,7 @@ useEffect(() => {
 
     try {
       widgetIdRef.current = window.turnstile.render("#turnstile-container", {
-        sitekey: "0x4AAAAAACuB8uTkFGmRpL5v",
+        sitekey: "0x4AAAAAACuBTrjH-DttfUj8",
 
         callback: (token) => {
           setTurnstileToken(token);
@@ -131,7 +131,11 @@ useEffect(() => {
 
     }catch(error){
       setTurnstileToken(""); // reset
+      // 🔥 RESET TURNSTILE WIDGET
+      if (window.turnstile && widgetIdRef.current) {
+      window.turnstile.reset(widgetIdRef.current);
       toast.error("Invalid credentials",{id:toastId});
+      }
     }finally{
       setLoading(false);
     }
@@ -224,6 +228,12 @@ className="absolute right-4 top-4 cursor-pointer"
 {/* 🔥 TURNSTILE CONTAINER */}
 <div id="turnstile-container" className="flex justify-center"></div>
 
+
+<div className="text-right">
+<Link to="/forget-password" className="text-sm text-[#CBD5E1]">
+Forgot Password?
+</Link>
+</div>
 <button
 type="submit"
 disabled={loading || !turnstileToken}

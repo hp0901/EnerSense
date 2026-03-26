@@ -181,7 +181,7 @@ export const login = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Invalid password",
-      });
+      }); 
     }
 
     // 🔐 5. ADMIN → 2FA REQUIRED
