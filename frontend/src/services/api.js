@@ -4,7 +4,7 @@
 // const BASE_URL = 'http://localhost:4000/api/v1';
 
 // For production, use the secure API endpoint
-const BASE_URL = "https://api.enersense.in";
+const BASE_URL = "https://api.enersense.in/api/v1";
 
 export const userProfile = {
   // auth (already there)
