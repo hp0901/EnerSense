@@ -37,7 +37,9 @@ app.use(
       "http://localhost:3000",
       "https://enersense.in"
     ],
-    credentials: true
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 
