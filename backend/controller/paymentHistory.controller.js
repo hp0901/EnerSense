@@ -1,0 +1,162 @@
+import Payment from "../models/Payment.js";
+import User from "../models/User.js";
+import Device from "../models/Device.js";
+import mongoose from "mongoose";
+
+
+// ================= USER =================
+export const getMyPayments = async (req, res) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
+    const payments = await Payment.find({ user: userId })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: payments,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch payment history",
+    });
+  }
+};
+
+// ================= ADMIN =================
+export const getAllPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find()
+      .populate("user", "firstName lastName email")  // 🔥 THIS LINE IS IMPORTANT
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: payments,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch payments",
+    });
+  }
+};
+
+// ================= DASHBOARD STATS =================
+export const getDashboardStatus = async (req, res) => {
+  try {
+
+    const totalUsers = await User.countDocuments();
+    const totalDevices = await Device.countDocuments();
+    const totalPayments = await Payment.countDocuments();
+
+    const activeDevices = await Device.countDocuments({
+      powerStatus: true
+    });
+
+    const inactiveDevices = await Device.countDocuments({
+      powerStatus: false
+    });
+
+    const pairedDevices = await Device.countDocuments({
+      user: { $ne: null }
+    });
+
+    const unpairedDevices = await Device.countDocuments({
+      user: null
+    });
+
+    const activeSubscriptions = await User.countDocuments({
+      isPremium: true
+    });
+
+    const refundedPayments = await Payment.countDocuments({
+      status: "refunded"
+    });
+
+    const revenueAgg = await Payment.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amount" }
+        }
+      }
+    ]);
+
+    const totalRevenue = revenueAgg[0]?.total || 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        totalDevices,
+        totalPayments,
+        totalRevenue,
+        activeSubscriptions,
+        refundedPayments,
+        activeDevices,
+        inactiveDevices,
+        pairedDevices,
+        unpairedDevices
+      }
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load dashboard stats"
+    });
+
+  }
+};
+
+
+// ================= MONTHLY REVENUE =================
+export const getMonthlyRevenue = async (req, res) => {
+  try {
+    const monthlyRevenue = await Payment.aggregate([
+      {
+        $match: { status: "success" } // only successful payments
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          totalRevenue: { $sum: "$amount" }
+        }
+      },
+      {
+        $sort: { "_id": 1 }
+      }
+    ]);
+
+    // Convert month number → month name
+    const monthNames = [
+      "", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    const formattedData = monthlyRevenue.map(item => ({
+      month: monthNames[item._id],
+      revenue: item.totalRevenue
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: formattedData
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch monthly revenue"
+    });
+  }
+};
