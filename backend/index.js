@@ -35,8 +35,6 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://enersense.netlify.app",
-      "https://enersense.duckdns.org",
       "https://enersense.in"
     ],
     credentials: true
