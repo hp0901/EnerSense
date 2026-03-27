@@ -44,10 +44,9 @@ app.use(
 );
 
 // VERY IMPORTANT 👇
-app.options("*", cors());
+app.use(cors());
 
 app.use(express.json());
- 
 // Database
 connectDB();
 
