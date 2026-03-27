@@ -32,14 +32,12 @@ const turnstileRendered = useRef(false);
 const widgetIdRef = useRef(null);
 
 useEffect(() => {
-  const renderWidget = () => {
-    if (!window.turnstile) return;
-    if (turnstileRendered.current) return;
+  const interval = setInterval(() => {
+    if (window.turnstile) {
+      clearInterval(interval);
 
-    const container = document.getElementById("turnstile-container");
-    if (!container) return;
+      if (widgetIdRef.current) return;
 
-    try {
       widgetIdRef.current = window.turnstile.render("#turnstile-container", {
         sitekey: "0x4AAAAAACuBTrjH-DttfUj8",
 
@@ -49,28 +47,17 @@ useEffect(() => {
 
         "expired-callback": () => {
           setTurnstileToken("");
-          window.turnstile.reset(widgetIdRef.current); // 🔥 auto refresh
+          window.turnstile.reset(widgetIdRef.current);
         },
 
         "error-callback": (err) => {
           console.error("Turnstile Error:", err);
         },
       });
-
-      turnstileRendered.current = true;
-
-    } catch (err) {
-      console.error("Render error:", err);
     }
-  };
+  }, 500);
 
-  // 🔥 INSTANT LOAD (no interval)
-  if (window.turnstile) {
-    renderWidget();
-  } else {
-    window.onloadTurnstileCallback = renderWidget;
-  }
-
+  return () => clearInterval(interval);
 }, []);
 
   const handleChange = (e)=>{
