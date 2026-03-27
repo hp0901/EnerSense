@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   FiUser,
   FiBell,
-  FiCpu,
   FiShield,
-  FiLogOut,
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { getAvatar } from "../utils/getAvatar";
@@ -23,6 +21,7 @@ import { useUser } from "../context/UserContext";
 const SettingPage = () => {
   const navigate = useNavigate();
   const { setUser } = useUser();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [profile, setProfile] = useState({
     firstName: "",
@@ -131,32 +130,29 @@ const SettingPage = () => {
   };
 
   /* ================= TOGGLE ================= */
-  const handleToggle = async (key) => {
-    const prev = { ...notifications };
-    const updated = { ...notifications, [key]: !notifications[key] };
-    const { number, label } = NOTIFICATION_META[key];
+  const Toggle = ({ label, value, onChange }) => (
+  <div className="flex justify-between items-center py-2">
+    <span className="text-gray-300">{label}</span>
 
-    setNotifications(updated);
-    setLoading(true);
-    toast.loading(`${number}. Updating ${label}...`, { id: key });
-
-    try {
-      await updateNotificationSettings(updated);
-      toast.success(`${label} ${updated[key] ? "Enabled" : "Disabled"}`, {
-        id: key,
-      });
-    } catch {
-      setNotifications(prev);
-      toast.error(`${number}. Failed to update ${label}`, { id: key });
-    } finally {
-      setLoading(false);
-    }
-  };
+    <button
+      onClick={onChange}
+      className={`relative w-12 h-6 flex items-center rounded-full transition-colors duration-300 ${
+        value ? "bg-green-500" : "bg-gray-600"
+      }`}
+    >
+      <span
+        className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+          value ? "translate-x-6" : "translate-x-1"
+        }`}
+      />
+    </button>
+  </div>
+  );
 
   /* ================= LOGOUT ================= */
   const handleLogout = () => {
     logout();
-    toast.success("Logout Successfully.");
+    // toast.success("Logout Successfully.");
     navigate("/login", { replace: true });
   };
 
@@ -259,14 +255,35 @@ const SettingPage = () => {
           </button>
         </Section>
 
-        {/* NOTIFICATIONS */}
+        {/* NOTIFICATIONS SECTION */}
         <Section icon={<FiBell />} title="Notifications">
           {Object.keys(notifications).map((key) => (
             <Toggle
               key={key}
               label={NOTIFICATION_META[key].label}
               value={notifications[key]}
-              onChange={() => handleToggle(key)}
+              onChange={async () => {
+                // 1. Calculate the new state
+                const newValue = !notifications[key];
+                const updatedSettings = { ...notifications, [key]: newValue };
+                
+                // 2. Update UI immediately
+                setNotifications(updatedSettings);
+
+                try {
+                  // 3. Call your API service
+                  await updateNotificationSettings(updatedSettings);
+                  
+                  // 4. Trigger the Toast
+                  toast.success(
+                    `${NOTIFICATION_META[key].label} ${newValue ? "Enabled" : "Disabled"}`
+                  );
+                } catch (err) {
+                  // Rollback UI if the API fails
+                  setNotifications(notifications);
+                  toast.error("Failed to update notification settings");
+                }
+              }}
             />
           ))}
         </Section>
@@ -282,11 +299,50 @@ const SettingPage = () => {
         </Section>
 
         {/* LOGOUT */}
-        <button onClick={handleLogout} className="text-red-400">
+        <button
+          onClick={() => setShowLogoutModal(true)}
+          className="flex items-center justify-center gap-2 w-full bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all duration-300 px-4 py-2 rounded-lg shadow-md hover:shadow-[0_0_15px_#ef4444]"
+        >
+          🚪 Logout
+        </button>
+
+      </div>
+      {showLogoutModal && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+    
+    <div className="bg-[#020617] p-6 rounded-xl w-[350px] shadow-lg border border-white/10 animate-fadeIn">
+      
+      <h2 className="text-lg font-semibold text-white mb-3">
+        Confirm Logout
+      </h2>
+
+      <p className="text-gray-400 mb-6">
+        Are you sure you want to logout?
+      </p>
+
+      <div className="flex justify-end gap-3">
+        
+        <button
+          onClick={() => setShowLogoutModal(false)}
+          className="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+            setShowLogoutModal(false);
+            handleLogout();
+          }}
+          className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 transition text-white shadow-md"
+        >
           Logout
         </button>
 
       </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
