@@ -35,17 +35,14 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://enersense.in"
+      "https://enersense.in",
+      "https://www.enersense.in"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
-
-// VERY IMPORTANT 👇
-app.use(cors());
-
 app.use(express.json());
 // Database
 connectDB();
