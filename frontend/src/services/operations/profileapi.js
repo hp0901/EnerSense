@@ -25,9 +25,7 @@ export const updateProfile = async (data) => {
       profileEndpoints.UPDATE_PROFILE,
       data,
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        "Content-Type": "multipart/form-data",
       }
     );
 
