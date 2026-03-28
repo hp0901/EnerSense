@@ -22,7 +22,7 @@ export const premiumExpiryTemplate = ({
       <li>Monthly reports</li>
     </ul>
 
-    <a href="https://enersense.netlify.app/pricing"
+    <a href="https://enersense.in/pricing"
        style="display:inline-block; margin-top:20px; padding:10px 18px;
               background:#4f46e5; color:#fff; text-decoration:none; border-radius:6px;">
       Renew Premium

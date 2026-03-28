@@ -60,9 +60,9 @@ const Footer = () => {
             </p>
 
             <div className="mt-4 space-y-2 text-sm">
-              <p className="flex items-center gap-2">
-                <FiMail /> support@enersense.com
-              </p>
+              <Link to="mailto:enersense01@gmail.com" className="flex items-center gap-2">
+                <FiMail /> enersense01@gmail.com
+              </Link>
               <p className="flex items-center gap-2">
                 <FiPhone /> +91 9687788992
               </p>

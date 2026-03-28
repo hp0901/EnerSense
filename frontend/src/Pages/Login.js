@@ -71,7 +71,7 @@ useEffect(() => {
     if(user.role==="admin"){
       navigate("/admin",{replace:true});
     }else{
-      navigate("/dashboard",{replace:true});
+      navigate("/",{replace:true});
     }
   }
 
@@ -113,7 +113,7 @@ useEffect(() => {
       setUser(res.user);
       login();
 
-      toast.success("Login successful 🚀",{id:toastId});
+      toast.success("Welcome, " + res.user.firstName + " " + res.user.lastName + " 👋",{ id: toastId });
       redirectBasedOnRole(res.user);
 
     }catch(error){
@@ -129,6 +129,8 @@ useEffect(() => {
   }
 
   const handleGoogleLogin = async (credentialResponse) => {
+        const toastId = toast.loading("Logging in...");
+
   try {
     setLoading(true);
 
@@ -150,7 +152,7 @@ useEffect(() => {
     setUser(res.user);
     login();
 
-    toast.success("Google login successful 🚀");
+    toast.success("Welcome, " + res.user.firstName + " " + res.user.lastName + " 👋",{ id: toastId });
     redirectBasedOnRole(res.user);
 
   } catch (error) {
@@ -194,22 +196,26 @@ onChange={handleChange}
 className="w-full p-4 rounded-xl bg-[#6F89A8] text-white"
 />
 
-<div className="relative">
-<input
-type={showPassword?"text":"password"}
-name="password"
-placeholder="Password"
-value={formData.password}
-onChange={handleChange}
-className="w-full p-4 rounded-xl bg-[#6F89A8] text-white"
-/>
+<div className="relative w-full group">
+  <input
+    type={showPassword ? "text" : "password"}
+    name="password"
+    placeholder="Password"
+    value={formData.password}
+    onChange={handleChange}
+    // pr-12 ensures text doesn't hide under the icon
+    // focus:ring-1 adds a subtle border when typing
+    className="w-full p-4 pr-12 rounded-xl bg-[#6F89A8] text-white placeholder-white/50 outline-none focus:ring-1 focus:ring-green-400 transition-all"
+  />
 
-<span
-onClick={()=>setShowPassword(!showPassword)}
-className="absolute right-4 top-4 cursor-pointer"
->
-{showPassword ? <FiEyeOff/> : <FiEye/>}
-</span>
+  <button
+    type="button" // Prevents form submission when clicking the eye
+    onClick={() => setShowPassword(!showPassword)}
+    // inset-y-0 + flex items-center keeps it perfectly centered regardless of height
+    className="absolute inset-y-0 right-4 flex items-center text-white/70 hover:text-green-400 transition-colors z-10"
+  >
+    {showPassword ? <FiEyeOff className="text-slate-700" size={20} /> : <FiEye className="text-slate-700" size={20} />}
+  </button>
 </div>
 
 {/* 🔥 TURNSTILE CONTAINER */}

@@ -44,6 +44,7 @@ app.use(
   })
 );
 app.use(express.json());
+
 // Database
 connectDB();
 
@@ -101,4 +102,3 @@ app.use("/api/v1/push", pushRoutes);
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
- 

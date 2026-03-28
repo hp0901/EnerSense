@@ -56,7 +56,7 @@ export const sendWelcomeEmail = async (email, firstName) => {
 
         <!-- BIG CTA BUTTON -->
         <a 
-          href="https://enersense.netlify.app/dashboard"
+          href="https://enersense.in/dashboard"
           style="
             display:inline-block;
             padding:20px 48px;

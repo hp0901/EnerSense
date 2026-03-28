@@ -35,7 +35,7 @@ export const baseTemplate = (content) => {
       <!-- CTA Section -->
       <div style="text-align:center; padding:25px;">
         <a 
-          href="https://enersense.netlify.app" 
+          href="https://enersense.in/dashboard" 
           style="display:inline-block; padding:12px 22px; background:#4f46e5; color:#ffffff; text-decoration:none; border-radius:8px; font-weight:bold; font-size:14px;">
           Visit EnerSense Dashboard
         </a>
@@ -55,8 +55,8 @@ export const baseTemplate = (content) => {
         </p>
 
         <p style="margin:6px 0;">
-          <a href="https://enersense.netlify.app" style="color:#4f46e5; text-decoration:none;">
-            www.enersense.netlify.app
+          <a href="https://enersense.in" style="color:#4f46e5; text-decoration:none;">
+            www.enersense.in
           </a>
         </p>
 

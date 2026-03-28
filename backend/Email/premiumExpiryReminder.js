@@ -30,7 +30,7 @@ export const premiumExpiryReminderTemplate = ({
         </ul>
 
         <p>
-          <a href="https://enersense.netlify.app/pricing"
+          <a href="https://enersense.in/pricing"
              style="display:inline-block; margin-top:16px; padding:10px 16px;
                     background:#4f46e5; color:#fff; text-decoration:none; border-radius:6px;">
             Renew Premium
