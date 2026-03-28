@@ -79,6 +79,7 @@ import AdminDashboard from "./Pages/AdminDashboard.jsx";
 import Admin2FAPage from "./Pages/Admin2FAPage.jsx";
 import AdminTopbar from "./components/AdminNavbar.jsx";
 import AdminViewPage from "./Pages/AdminViewPage.jsx";
+import PushNotification from "./Pages/PushNotification.jsx";
 /* =========================
    ERROR PAGE
 ========================= */
@@ -103,34 +104,41 @@ const App = () => {
   useEffect(() => {
 
   const setupNotifications = async () => {
-    try {
+  try {
 
-      // request permission
-      await requestNotificationPermission();
+    // ✅ Step 1: Request permission + get token
+    const fcmToken = await requestNotificationPermission();
 
-      // get FCM token
-      const token = await getToken(messaging);
+    if (fcmToken) {
 
-      if (token) {
+      console.log("FCM Token:", fcmToken);
 
-        console.log("FCM Token:", token);
+      const authToken = localStorage.getItem("token");
 
-        // send token to backend
-        await axios.post("/api/save-token", {
-          token: token
-        });
+      // ✅ Step 2: Send token to backend (CORRECT API)
+      await axios.post(
+        "http://localhost:4000/api/v1/push/save-token",
+        { token: fcmToken },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}` // 🔥 IMPORTANT
+          }
+        }
+      );
 
-      }
+      console.log("✅ Token saved in DB");
 
-      // listen for foreground messages
-      listenForMessages();
-
-    } catch (error) {
-      console.error("Notification setup failed:", error);
     }
-  };
 
-  setupNotifications();
+    // ✅ Step 3: Listen for messages
+    listenForMessages();
+
+  } catch (error) {
+    console.error("Notification setup failed:", error);
+  }
+};
+
+setupNotifications();
 
   // register service worker
   if ("serviceWorker" in navigator) {
@@ -207,6 +215,15 @@ const App = () => {
           element={
             <ProtectedAdminRoute>
               <Sendbulkemail />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/push-notifications"
+          element={
+            <ProtectedAdminRoute>
+              <PushNotification />
             </ProtectedAdminRoute>
           }
         />

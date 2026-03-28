@@ -5,7 +5,8 @@ import {
   FiUsers,
   FiMail,
   FiCpu,
-  FiCreditCard
+  FiCreditCard,
+  FiBell
 } from "react-icons/fi";
 
 const Admin = () => {
@@ -32,6 +33,13 @@ const Admin = () => {
       link: "/admin/send-bulk-email",
       button: "Send Bulk Email →",
       icon: <FiMail size={28} className="text-purple-500" />
+    },
+    {
+      title: "Push Notifications",
+      description: "Send real-time alerts and updates to all users.",
+      link: "/admin/push-notifications",
+      button: "Send Notification →",
+      icon: <FiBell size={28} className="text-indigo-500" />
     },
     {
       title: "Devices",

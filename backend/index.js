@@ -77,7 +77,7 @@ app.use("/api/v1/premium", premiumRoutes);
 //Download invoice route
 app.use("/api/v1/invoice", downloadInvoice);
 app.use("/api/v1/payments",  getMyPayments);
-
+ 
 //Server upload static files
 app.use("/api/v1/uploads", upload);
 

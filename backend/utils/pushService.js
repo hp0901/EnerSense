@@ -1,34 +1,31 @@
 import admin from "../config/firebase.js";
 
-export const sendPushNotification = async (token, title, body) => {
-
+export const sendPushNotification = async (tokens, title, body, link) => {
   try {
+    if (!tokens || tokens.length === 0) return;
 
     const message = {
       notification: {
-        title: title,
-        body: body
+        title,
+        body,
       },
-      token: token
+      data: {
+        link: link || "",
+      },
+      tokens, // 🔥 multiple tokens
     };
 
-    const response = await admin.messaging().send(message);
+    const response = await admin
+      .messaging()
+      .sendEachForMulticast(message);
 
-    console.log("Push sent:", response);
+    console.log("✅ Push sent:", response.successCount);
 
     return response;
 
   } catch (error) {
-
     console.error("Push error:", error);
 
-    // Handle invalid token
-    if (error.code === "messaging/registration-token-not-registered") {
-      console.log("Device token expired. Remove it from database.");
-    }
-
     throw error;
-
   }
-
 };

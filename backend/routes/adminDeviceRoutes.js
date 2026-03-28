@@ -2,7 +2,6 @@ import { isAdmin } from "../middlewares/isAdmin.js";
 import { auth } from "../middlewares/auth.js";
 import { sendBulkEmail } from "../controller/deviceController.js";
 import express from "express";
-
 import {
   createDevice,
   getAllDevices
@@ -41,7 +40,6 @@ router.post("/view/user/id", auth, isAdmin, getUserById);
 
 // ================= DELETE DEVICE ROUTE =================
 router.delete("/delete/:id", auth, isAdmin, deleteDevice);
-
 
 
 router.get("/test", (req, res) => {

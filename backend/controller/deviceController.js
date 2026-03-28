@@ -204,6 +204,7 @@ export const sendBulkEmail = async (req, res) => {
         await new Promise(resolve => setTimeout(resolve, 150));
 
       } catch (err) {
+        console.log(err.message);
         console.log("Failed for:", user.email);
       }
     }

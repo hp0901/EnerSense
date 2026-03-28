@@ -95,6 +95,12 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    // 🔐 DEVICE TOKEN FOR PUSH NOTIFICATIONS
+    deviceToken: {
+      type: String,
+      default: null,
+    },
+
     // 🔐 GOOGLE AUTHENTICATOR (2FA) FIELDS
     twoFactorEnabled: {
       type: Boolean,

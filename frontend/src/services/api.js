@@ -77,6 +77,7 @@ export const deviceEndpoints = {
 // Admin APIs
 export const adminEndpoints = {
   SEND_BULK_EMAIL: BASE_URL + "/admin/send-email",
+   SEND_PUSH_NOTIFICATION: BASE_URL + "/push/send-notification",
   GET_DASHBOARD: BASE_URL + "/admin/dashboard",
   GET_MONTHLY_REVENUE: BASE_URL + "/admin/monthly-revenue",
   GET_ALL_USERS: BASE_URL + "/admin/users",
@@ -90,4 +91,9 @@ export const twoFactorEndpoints = {
   GENERATE_2FA: BASE_URL + "/2fa/generate",
   VERIFY_2FA: BASE_URL + "/2fa/verify",
   LOGIN_API: BASE_URL + "/auth/login-2fa",
+};
+
+// Notification APIs
+export const notificationEndpoints = {
+  SAVE_DEVICE_TOKEN: BASE_URL + "/push/save-token",
 };

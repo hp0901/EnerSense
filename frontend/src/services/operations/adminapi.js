@@ -36,6 +36,45 @@ export const sendBulkEmailApi = async (subject, content) => {
   }
 };
 
+export const sendPushNotificationApi = async ({
+  title,
+  message,
+  audience,
+  link,
+}) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await apiConnector(
+      "POST",
+      adminEndpoints.SEND_PUSH_NOTIFICATION,
+      {
+        title,
+        message,
+        audience, // all | premium | non-premium | new
+        link,
+      },
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    if (!res.data.success) {
+      throw new Error(res.data.message);
+    }
+
+    return res.data.message;
+
+  } catch (err) {
+    console.log("SEND_PUSH_NOTIFICATION ERROR", err);
+
+    throw (
+      err?.response?.data?.message ||
+      err?.message ||
+      "Failed to send push notification"
+    );
+  }
+};
 
 
 const { GET_DASHBOARD, GET_MONTHLY_REVENUE } = adminEndpoints;
