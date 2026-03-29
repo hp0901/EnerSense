@@ -117,10 +117,10 @@ export default function PremiumBenefitsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-16">
+    <div className=" x-auto px-6 py-16 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600">
       {/* HEADER */}
-      <h1 className="text-3xl font-bold mb-4">Premium Benefits 💎</h1>
-      <p className="text-gray-600 mb-10">
+      <h1 className="text-3xl font-bold mb-4 text-gray-400 text-center align-center">Premium Benefits 💎</h1>
+      <p className="text-gray-400 mb-10 text-center align-center">
         {isPremium
           ? "You have full access to all premium features."
           : "Explore premium features with live previews. Upgrade to unlock full access."}

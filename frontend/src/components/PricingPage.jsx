@@ -14,20 +14,19 @@ export default function PricingPage() {
   return (
     <div
       className="
-        max-w-7xl mx-auto
         px-4 sm:px-6 lg:px-8
         py-10 sm:py-14 lg:py-16
-        bg-gradient-to-br from-indigo-50 via-white to-emerald-50
+        bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600
         rounded-2xl sm:rounded-3xl
         shadow-sm border border-indigo-100
       "
     >
       {/* Heading */}
       <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
           EnerSense Plans
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-2 max-w-xl mx-auto">
+        <p className="text-sm sm:text-base text-gray-400 mt-2 max-w-xl mx-auto">
           Choose the plan that fits your energy monitoring needs
         </p>
       </div>
@@ -45,7 +44,7 @@ export default function PricingPage() {
           <h3 className="text-lg sm:text-xl font-semibold mb-2">
             Unlock Advanced Energy Insights 🚀
           </h3>
-          <p className="text-sm sm:text-base text-gray-600 mb-5 max-w-md mx-auto">
+          <p className="text-sm sm:text-base text-gray-400 mb-5 max-w-md mx-auto">
             Get unlimited alerts, detailed reports, and smarter predictions.
           </p>
 

@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { getMyProfile } from "../services/operations/profileapi";
+import { Link } from "react-router-dom";
 
 const EnergyMeterDashboard = () => {
   const [user, setUser] = useState(null);
@@ -71,54 +72,80 @@ const EnergyMeterDashboard = () => {
     return () => clearInterval(interval);
   }, [totalPoints]);
 
-  // ================= SOUND SETUP =================
-  
-
   // ================= ALERT SOUND =================
-useEffect(() => {
-  if (isHighVoltage || isLowVoltage) {
-    let isCancelled = false;
+  useEffect(() => {
+    if (isHighVoltage || isLowVoltage) {
+      let isCancelled = false;
 
-    const playBeepAndVibrate = async () => {
-      for (let i = 0; i < 10; i++) {
-        if (isCancelled) break;
+      const playBeepAndVibrate = async () => {
+        const repeatCount = Math.floor(Math.random() * 6) + 5;
 
-        try {
-          // 🔊 SOUND
-          const beep = new Audio(
-            "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
-          );
+        const audioContext =
+          new (window.AudioContext || window.webkitAudioContext)();
 
-          beep.volume = 1;
-          beep.playbackRate = 1.8;
+        for (let i = 0; i < repeatCount; i++) {
+          if (isCancelled) break;
 
-          await beep.play();
+          try {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
 
-          // 📳 VIBRATION (if supported)
-          if ("vibrate" in navigator) {
-            navigator.vibrate([200, 100, 200]);  // vibrate 200ms
+            oscillator.type = "square";
+            oscillator.frequency.value = 1300;
+            gainNode.gain.value = 5;
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 120);
+
+            if ("vibrate" in navigator) {
+              navigator.vibrate([400, 200, 400]);
+            }
+
+            await new Promise((res) => setTimeout(res, 250));
+          } catch (err) {
+            console.log("Retrying beep...");
           }
-
-          // wait before next beep
-          await new Promise((res) => setTimeout(res, 400));
-        } catch (err) {
-          console.log("Audio blocked once, retrying...");
         }
-      }
-    };
+      };
 
-    playBeepAndVibrate();
+      playBeepAndVibrate();
 
-    return () => {
-      isCancelled = true;
-      if ("vibrate" in navigator) {
-        navigator.vibrate(0); // stop vibration
-      }
-    };
-  }
-}, [voltage]);
+      return () => {
+        isCancelled = true;
+        if ("vibrate" in navigator) navigator.vibrate(0);
+      };
+    }
+  }, [voltage]);
 
-  return (
+  // ================= PREVIOUS BILLS =================
+  const [previousBills, setPreviousBills] = useState([]);
+
+  useEffect(() => {
+    const now = new Date();
+    const bills = [];
+
+    for (let i = 1; i <= 3; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+
+      const base = 2000 - i * 300;
+      const variation = Math.random() * 150;
+
+      bills.push({
+        month: d.toLocaleString("default", {
+          month: "long",
+          year: "numeric",
+        }),
+        amount: (base + variation).toFixed(2),
+      });
+    }
+
+    setPreviousBills(bills);
+  }, []);
+
+ return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black p-6 text-white">
 
       {/* HEADER */}
@@ -126,11 +153,12 @@ useEffect(() => {
         <h1 className="text-3xl font-bold">⚡ EnerSense Live Meter</h1>
       </div>
 
-      {/* MAIN GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* ================= LIVE METER ================= */}
+      {/* MAIN GRID - Now handles 1 col on mobile and 2 cols on laptop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {/* 1. LIVE METER CARD */}
         <div
-          className={`p-6 rounded-2xl col-span-2 transition-all duration-300 border-2 ${
+          className={`p-6 rounded-2xl border-2 ${
             isHighVoltage
               ? "border-red-600 shadow-[0_0_25px_red]"
               : isLowVoltage
@@ -142,80 +170,105 @@ useEffect(() => {
             Live Power Usage ({voltageStatus})
           </h2>
 
-          {/* BUTTONS */}
           <div className="flex gap-3 mb-4 flex-wrap">
-            <button
-              onClick={() => setVoltage(270)}
-              className="bg-red-600 px-4 py-2 rounded-lg"
-            >
-              High ⚠️
-            </button>
-
-            <button
-              onClick={() => setVoltage(120)}
-              className="bg-orange-500 px-4 py-2 rounded-lg"
-            >
-              Low ⚡
-            </button>
-
-            <button
-              onClick={() => setVoltage(230)}
-              className="bg-green-600 px-4 py-2 rounded-lg"
-            >
-              Normal ✅
-            </button>
+            <button onClick={() => setVoltage(270)} className="bg-red-600 px-4 py-2 rounded-lg text-sm">High ⚠️</button>
+            <button onClick={() => setVoltage(120)} className="bg-orange-500 px-4 py-2 rounded-lg text-sm">Low ⚡</button>
+            <button onClick={() => setVoltage(230)} className="bg-green-600 px-4 py-2 rounded-lg text-sm">Normal ✅</button>
           </div>
 
-          {/* BAR */}
           <div className="w-full bg-slate-800 rounded-full h-5 mb-4">
             <div
-              className="bg-green-500 h-full"
+              className="bg-green-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.min(power / 6, 100)}%` }}
             />
           </div>
 
-          {/* STATS */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <Stat label="Power" value={`${power} W`} />
-            <Stat
-              label="Voltage"
-              value={`${voltage} V`}
-              red={isHighVoltage || isLowVoltage}
-            />
+            <Stat label="Voltage" value={`${voltage} V`} red={isHighVoltage || isLowVoltage} />
             <Stat label="Current" value={`${current} A`} />
-
             <Stat label="Peak Units" value={`${peakUnits} kWh`} green />
             <Stat label="Non-Peak Units" value={`${nonPeakUnits} kWh`} />
             <Stat label="Total Units" value={`${totalUnits} kWh`} />
           </div>
         </div>
 
-        {/* STATUS */}
-        <div className="bg-slate-900 p-6 rounded-2xl h-full flex flex-col justify-between">
-          <h2 className="text-xl font-semibold mb-4">Connection Status</h2>
-          <Stat label="Total Points" value={totalPoints} />
-          <Stat label="Active" value={activePoints} green />
-          <Stat label="Offline" value={offlinePoints} red />
+        {/* 2. CONNECTION STATUS CARD */}
+        <div className="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700 flex flex-col justify-between">
+          <div className="flex justify-between items-baseline mb-4">
+            <h2 className="text-xl font-semibold mb-4">Connection Status</h2>
+            <Link to="/device-control" className="text-sm text-blue-500 mb-4 inline-block border-blue-400/30 bg-blue-400/10 p-3 rounded-xl">Manage Devices</Link>
+          </div>
+          <div className="space-y-4">
+            <Stat label="Total Points" value={totalPoints} />
+            <Stat label="Active" value={activePoints} green />
+            <Stat label="Offline" value={offlinePoints} red />
+          </div>
         </div>
 
-        {/* BILLING */}
-        <div className="bg-slate-900 p-6 rounded-2xl col-span-2">
+        {/* 3. BILLING ESTIMATION CARD */}
+        <div className="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700">
           <h2 className="text-xl font-semibold mb-4">Billing Estimation</h2>
           <Input label="Peak Rate" value={peakRate} setValue={setPeakRate} />
           <Input label="Non-Peak Rate" value={nonPeakRate} setValue={setNonPeakRate} />
-
-          <div className="mt-4 text-2xl text-green-400">
-            ₹ {expectedBill.toFixed(2)}
+          <div className="mt-4 p-4 bg-slate-800 rounded-xl border border-slate-700">
+            <p className="text-gray-400 text-sm">Estimated Total</p>
+            <div className="text-3xl font-bold text-green-400">
+              ₹ {expectedBill.toFixed(2)}
+            </div>
           </div>
         </div>
+
+        {/* 4. PREVIOUS BILLS CARD */}
+        <div className="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700 pb-4">
+          <div className="flex justify-between items-baseline mb-4 ">
+          <h2 className="text-xl font-semibold mb-4">Previous Bills</h2>
+          <Link to="/billing-history" className="text-sm text-blue-500 mb-4 inline-block border-blue-400/30 bg-blue-400/10 p-3 rounded-xl">View Full History</Link>
+          </div>
+          <div className="flex flex-col gap-3">
+            {previousBills.map((bill, index) => (
+              <div
+                key={index}
+                className="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700"
+              >
+                <span className="text-gray-300">{bill.month}</span>
+                <span className="text-green-400 font-semibold">
+                  ₹ {bill.amount}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="md:col-span-2 flex flex-col items-center justify-center p-8 text-center">
+        {/* Subtle Branding */}
+        <div className="flex items-center gap-2 mb-1">
+          <div className="h-1 w-8 bg-blue-500 rounded-full" />
+          <span className="text-blue-500 text-xs font-bold tracking-widest uppercase">
+            EnerSense
+          </span>
+          <div className="h-1 w-8 bg-blue-500 rounded-full" />
+        </div>
+
+        {/* Main Title */}
+        <h2 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+          Smart Energy Meter
+        </h2>
+
+        {/* Subtitle */}
+        <p className="text-slate-400 text-sm md:text-base font-medium mt-1 tracking-tight">
+          Advanced Real-Time Monitoring System
+        </p>
       </div>
-    </div>
-  );
-};
+
+            </div>
+          </div>
+        );
+      };
 
 // COMPONENTS
 const Stat = ({ label, value, green, red }) => (
-  <div className="bg-slate-800 p-4 rounded-xl">
+  <div className="bg-slate-800 p-4 rounded-xl border-2 border-slate-700">
     <p className="text-gray-400 text-sm">{label}</p>
     <p className={`text-xl ${green ? "text-green-400" : red ? "text-red-400" : ""}`}>
       {value}
@@ -224,7 +277,7 @@ const Stat = ({ label, value, green, red }) => (
 );
 
 const Input = ({ label, value, setValue }) => (
-  <div className="bg-slate-800 p-4 rounded-xl mb-2">
+  <div className="bg-slate-800 p-4 rounded-xl mb-2 border-2 border-slate-700">
     <label className="text-gray-400 text-sm">{label}</label>
     <input
       type="number"

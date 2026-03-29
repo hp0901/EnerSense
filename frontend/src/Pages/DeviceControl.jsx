@@ -7,6 +7,7 @@ import {
   getMyDevicesApi,
   unpairDeviceApi,
 } from "../services/operations/deviceApi";
+import { Link } from "react-router-dom";
 
 const DeviceControl = () => {
   const [devices, setDevices] = useState([]);
@@ -120,14 +121,25 @@ const DeviceControl = () => {
       </div>
 
       {/* Devices Section */}
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        {/* Left Side: Title */}
         <h2 className="text-2xl font-semibold text-white">
           🔌 Your Devices
         </h2>
 
-        <span className="text-sm text-slate-400">
-          {devices.length} device{devices.length !== 1 && "s"} connected
-        </span>
+        {/* Right Side: Stats and Link */}
+        <div className="flex items-center gap-6">
+          <span className="text-sm text-slate-400">
+            {devices.length} device{devices.length !== 1 && "s"} connected
+          </span>
+          
+          <Link 
+            to="/energy-meter-dashboard" 
+            className="text-sm font-medium text-blue-400 border border-blue-400/30 bg-blue-400/10 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-all duration-300"
+          >
+            Go to Live Energy Meter
+          </Link>
+        </div>
       </div>
 
       {devices.length === 0 ? (

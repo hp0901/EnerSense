@@ -53,14 +53,14 @@ export default function MyPayments() {
   // 🟡 Empty state
   if (payments.length === 0) {
     return (
-  <div className="min-h-screen flex flex-col items-center justify-center text-center space-y-3">
+  <div className="min-h-screen flex flex-col items-center justify-center text-center space-y-3 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600">
     <div className="text-5xl">💳</div>
 
-    <h2 className="text-2xl font-semibold">
+    <h2 className="text-2xl font-semibold text-white">
       No payments yet
     </h2>
 
-    <p className="text-gray-600">
+    <p className="text-gray-400">
       Upgrade to premium to unlock advanced energy analytics.
     </p>
 
@@ -75,7 +75,7 @@ export default function MyPayments() {
   }
 
   return (
-    <div className="max-w-5xl min-h-screen mx-auto px-6 py-16">
+    <div className="max-w-5xl min-h-screen mx-auto px-6 py-16 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600">
       <h1 className="text-3xl font-bold mb-6">My Payments 💳</h1>
 
       <div className="overflow-x-auto bg-white border rounded-xl shadow-sm">

@@ -51,7 +51,7 @@ const features = [
 
 export default function FeatureComparison() {
   return (
-    <div className="overflow-x-auto mt-10">
+    <div className="overflow-x-auto mt-10 bg-slate-400 rounded-2xl">
       <table className="w-full border border-gray-200 rounded-3xl">
         <thead className="bg-gray-300">
           <tr>
@@ -77,7 +77,7 @@ export default function FeatureComparison() {
               <td className="p-4 text-center">
                 {typeof f.free === "boolean" ? (
                   f.free ? (
-                    <CheckCircle className="text-green-500 mx-auto" />
+                    <CheckCircle className="text-yellow-400 mx-auto" />
                   ) : (
                     <XCircle className="text-red-500 mx-auto" />
                   )
@@ -96,7 +96,7 @@ export default function FeatureComparison() {
               {/* PREMIUM */}
               <td className="p-4 text-center">
                 {typeof f.premium === "boolean" ? (
-                  <CheckCircle className="text-green-500 mx-auto" />
+                  <CheckCircle className="text-green-700 mx-auto" />
                 ) : (
                 <span className="
                   inline-flex items-center justify-center
