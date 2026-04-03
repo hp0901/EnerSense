@@ -68,7 +68,7 @@ useEffect(() => {
   }
 
   const redirectBasedOnRole = (user)=>{
-    if(user.role==="admin"){
+    if(user.role==="admin" || user.role==="MainAdmin"){
       navigate("/admin",{replace:true});
     }else{
       navigate("/",{replace:true});
