@@ -20,6 +20,7 @@ export const googleLogin = async (req, res) => {
 
     let user = await User.findOne({ email });
 
+    // ✅ Create user if not exists
     if (!user) {
       user = await User.create({
         firstName: given_name,
@@ -44,22 +45,11 @@ export const googleLogin = async (req, res) => {
       });
     }
 
-    // 🔐 IMPORTANT: ADMIN 2FA CHECK BEFORE JWT
-    if (user.role === "admin") {
-      if (user.twoFactorEnabled) {
-        return res.status(200).json({
-          success: true,
-          require2FA: true,
-          userId: user._id,
-        });
-      }
-    }
+    /* ================= 🔐 ADMIN LOGIN FLOW ================= */
+    if (user.role === "admin" || user.role === "MainAdmin") {
 
-    // 🔐 ADMIN 2FA LOGIC (FIXED)
-    if (user.role === "admin") {
-
-      // 🔥 NEW ADMIN → FORCE SETUP
-      if (!user.twoFactorEnabled) {
+      // 🚀 NEW ADMIN → FORCE SETUP
+      if (user.mustSetup2FA || !user.twoFactorEnabled) {
         return res.status(200).json({
           success: true,
           requires2FASetup: true,
@@ -77,7 +67,7 @@ export const googleLogin = async (req, res) => {
       }
     }
 
-    // ✅ NORMAL USER OR ADMIN WITHOUT 2FA
+    /* ================= NORMAL USER LOGIN ================= */
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,

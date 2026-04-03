@@ -182,59 +182,60 @@ export const login = async (req, res) => {
         message: "Invalid password",
       });
     }
-
+    
     /* ================= 🔐 ADMIN LOGIN FLOW ================= */
-    if (user.role === "admin") {
+  if (user.role === "admin" || user.role === "MainAdmin") {
 
-      // 🚀 NEW ADMIN → FORCE SETUP
-      if (user.mustSetup2FA) {
-        return res.status(200).json({
-          success: true,
-          requires2FASetup: true,
-          userId: user._id,
-          message: "Please setup 2FA to continue",
-        });
-      }
-
-      // 🔐 EXISTING ADMIN → ASK OTP
-      if (user.twoFactorEnabled) {
-        return res.status(200).json({
-          success: true,
-          require2FA: true,
-          userId: user._id,
-        });
-      }
-
+    // 🚀 NEW ADMIN → FORCE SETUP
+    if (user.mustSetup2FA) {
       return res.status(200).json({
         success: true,
         requires2FASetup: true,
         userId: user._id,
+        message: "Please setup 2FA to continue",
       });
     }
 
-    /* ================= NORMAL USER LOGIN ================= */
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    // 🔐 EXISTING ADMIN → ASK OTP
+    if (user.twoFactorEnabled) {
+      return res.status(200).json({
+        success: true,
+        require2FA: true,
+        userId: user._id,
+      });
+    }
 
-    user.password = undefined;
-
+    // ⚠️ If admin but no 2FA at all → force setup
     return res.status(200).json({
       success: true,
-      token,
-      user,
-    });
-
-  } catch (error) {
-    console.error("LOGIN ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Login failed",
+      requires2FASetup: true,
+      userId: user._id,
     });
   }
-};
+
+      /* ================= NORMAL USER LOGIN ================= */
+      const token = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+
+      user.password = undefined;
+
+      return res.status(200).json({
+        success: true,
+        token,
+        user,
+      });
+
+    } catch (error) {
+      console.error("LOGIN ERROR:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Login failed",
+      });
+    }
+  };
 
 // const otpGenerator = require("otp-generator");
 
