@@ -138,9 +138,8 @@ export const login = async (req, res) => {
         message: "Email and password required",
       });
     }
-    console.log("REQ BODY:", req.body);
 
-    // ✅ 2. VERIFY BOT (TURNSTILE)
+    // ✅ 2. VERIFY BOT
     if (!turnstileToken) {
       return res.status(400).json({
         success: false,
@@ -151,11 +150,11 @@ export const login = async (req, res) => {
     const verifyRes = await axios.post(
       "https://challenges.cloudflare.com/turnstile/v0/siteverify",
       {
-        secret: process.env.TURNSTILE_SECRET, // 🔐 store in .env
+        secret: process.env.TURNSTILE_SECRET,
         response: turnstileToken,
-        remoteip: req.ip, // optional but recommended
+        remoteip: req.ip,
       }
-    ); 
+    );
 
     if (!verifyRes.data.success) {
       return res.status(400).json({
@@ -181,26 +180,39 @@ export const login = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Invalid password",
-      }); 
+      });
     }
 
-    // 🔐 5. ADMIN → 2FA REQUIRED
+    /* ================= 🔐 ADMIN LOGIN FLOW ================= */
     if (user.role === "admin") {
-      if (!user.twoFactorEnabled) {
-        return res.status(403).json({
-          success: false,
-          message: "Admin must enable 2FA",
-        }); 
+
+      // 🚀 NEW ADMIN → FORCE SETUP
+      if (user.mustSetup2FA) {
+        return res.status(200).json({
+          success: true,
+          requires2FASetup: true,
+          userId: user._id,
+          message: "Please setup 2FA to continue",
+        });
+      }
+
+      // 🔐 EXISTING ADMIN → ASK OTP
+      if (user.twoFactorEnabled) {
+        return res.status(200).json({
+          success: true,
+          require2FA: true,
+          userId: user._id,
+        });
       }
 
       return res.status(200).json({
         success: true,
-        require2FA: true,
+        requires2FASetup: true,
         userId: user._id,
       });
     }
 
-    // ✅ 6. NORMAL USER LOGIN
+    /* ================= NORMAL USER LOGIN ================= */
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -451,63 +463,94 @@ export const resetPassword = async (req, res) => {
 // ===============================
 // controllers/auth.js
 
+
 export const verifyLogin2FA = async (req, res) => {
   try {
-    console.log("LOGIN 2FA BODY:", req.body);
     const { userId, token } = req.body;
 
+    // 🔹 1. Validate input
     if (!userId || !token) {
       return res.status(400).json({
         success: false,
-        message: "UserId and OTP required",
+        message: "UserId and OTP are required",
       });
     }
 
+    // 🔹 2. Find user
     const user = await User.findById(userId);
 
-    if (!user || !user.twoFactorEnabled) {
-      return res.status(400).json({
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: "2FA not enabled",
+        message: "User not found",
       });
     }
 
-    const verified = speakeasy.totp.verify({
+    if (!user.twoFactorSecret) {
+      return res.status(400).json({
+        success: false,
+        message: "2FA not enabled for this user",
+      });
+    }
+
+    // 🧪 DEBUG (remove later)
+    console.log("SECRET:", user.twoFactorSecret);
+    console.log("USER OTP:", token);
+
+    const expected = speakeasy.totp({
       secret: user.twoFactorSecret,
       encoding: "base32",
-      token,
-      window: 1,
     });
 
-    if (!verified) {
-      return res.status(401).json({
+    console.log("EXPECTED OTP:", expected);
+    console.log("USER OTP:", token);
+
+    // 🔐 3. Verify TOTP (Google Authenticator)
+    const isValid = speakeasy.totp.verify({
+      secret: user.twoFactorSecret, // must be base32
+      encoding: "base32",
+      token: token.trim(),          // remove spaces
+      window: 2,                    // allow slight time drift
+    });
+
+    console.log("EXPECTED OTP:", expected);
+    console.log("USER OTP:", token);
+    // 🔴 4. If invalid OTP
+    if (!isValid) {
+      return res.status(400).json({
         success: false,
         message: "Invalid OTP",
       });
     }
 
-    // 🔐 NOW ISSUE TOKEN
+    // 🔐 5. Generate JWT after successful 2FA
     const jwtToken = jwt.sign(
-      { id: user._id, role: user.role },
+      {
+        id: user._id,
+        role: user.role,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
 
-    user.password = undefined;
+    // 🔹 6. Remove sensitive data
+    const safeUser = user.toObject();
+    delete safeUser.password;
 
+    // ✅ 7. Success response
     return res.status(200).json({
       success: true,
       token: jwtToken,
-      user,
-      message: "Admin login successful",
+      user: safeUser,
+      message: "2FA verification successful",
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("2FA VERIFY ERROR:", error);
+
     return res.status(500).json({
       success: false,
-      message: "2FA verification failed",
+      message: "Internal server error",
     });
   }
 };
-

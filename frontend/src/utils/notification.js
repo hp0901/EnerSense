@@ -8,28 +8,32 @@ import { saveDeviceTokenApi } from "../services/operations/PushnotificationAPI";
 
 export const requestNotificationPermission = async () => {
   try {
+    const existingToken = localStorage.getItem("fcmToken");
+
+    if (existingToken) {
+      console.log("✅ Token already exists");
+      return existingToken;
+    }
+
     const permission = await Notification.requestPermission();
 
     if (permission === "granted") {
 
       const fcmToken = await getToken(messaging, {
-        vapidKey: "BNsKfqJgEGE9vGtteba5wf5KdRtloF2pjffpFNQUoCVPkz7smlXul2vse-aOXtUKvnu9fJCpwhY5h9j1ZASKH1g"
+        vapidKey: "BNsKfqJgEGE9vGtteba5wf5KdRtloF2pjffpFNQUoCVPkz7smlXul2vse-aOXtUKvnu9fJCpwhY5h9j1ZASKH1g",
       });
 
-      if (!fcmToken) {
-        console.log("❌ No FCM token generated");
-        return;
-      }
+      if (!fcmToken) return;
 
-      console.log("🔥 Device Token:", fcmToken);
+      console.log("🔥 New Token:", fcmToken);
 
-      // ✅ Save using API service
+      // ✅ Save once
       await saveDeviceTokenApi(fcmToken);
 
-      return fcmToken;
+      // ✅ Store locally
+      localStorage.setItem("fcmToken", fcmToken);
 
-    } else {
-      console.log("❌ Notification permission denied");
+      return fcmToken;
     }
 
   } catch (error) {

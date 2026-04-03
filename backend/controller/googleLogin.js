@@ -55,6 +55,28 @@ export const googleLogin = async (req, res) => {
       }
     }
 
+    // 🔐 ADMIN 2FA LOGIC (FIXED)
+    if (user.role === "admin") {
+
+      // 🔥 NEW ADMIN → FORCE SETUP
+      if (!user.twoFactorEnabled) {
+        return res.status(200).json({
+          success: true,
+          requires2FASetup: true,
+          userId: user._id,
+        });
+      }
+
+      // 🔐 EXISTING ADMIN → VERIFY OTP
+      if (user.twoFactorEnabled) {
+        return res.status(200).json({
+          success: true,
+          require2FA: true,
+          userId: user._id,
+        });
+      }
+    }
+
     // ✅ NORMAL USER OR ADMIN WITHOUT 2FA
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },

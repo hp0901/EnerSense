@@ -80,6 +80,8 @@ import Admin2FAPage from "./Pages/Admin2FAPage.jsx";
 import AdminTopbar from "./components/AdminNavbar.jsx";
 import AdminViewPage from "./Pages/AdminViewPage.jsx";
 import PushNotification from "./Pages/PushNotification.jsx";
+import Setup2FA from "./Pages/Setup2fa.js";
+import TwoFASetup from "./Pages/TwoFASetup.jsx";
 /* =========================
    ERROR PAGE
 ========================= */
@@ -258,7 +260,8 @@ setupNotifications();
         {/* ---------- ADMIN LOGIN (Public) ---------- */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin-2fa" element={<Admin2FAPage />} />
-
+        <Route path="/admin/setup-2fa" element={<Setup2FA />} />
+        <Route path="/admin/setup-2fa-new" element={<TwoFASetup />} />
         {/* ---------- PUBLIC ROUTES ---------- */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />

@@ -10,12 +10,17 @@ const { LOGIN_API } = twoFactorEndpoints;
 export const login2FAApi = async (userId, otp) => {
   try {
 
+    const token = localStorage.getItem("token"); // or wherever you store it
+
     const res = await apiConnector(
       "POST",
       LOGIN_API,
       {
         userId,
         token: otp
+      },
+      {
+        Authorization: `Bearer ${token}` // ✅ FIX
       }
     );
 

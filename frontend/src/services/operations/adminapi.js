@@ -231,3 +231,116 @@ export const getUserById = async (id) => {
     throw error;
   }
 };
+
+const { MAKE_ADMIN } = adminEndpoints;
+
+/* ================= MAKE ADMIN ================= */
+export const makeAdminApi  = async (userId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await apiConnector(
+      "POST",
+      MAKE_ADMIN,
+      { userId }, // 🔥 body
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    if (!res.data.success) {
+      throw new Error(res.data.message);
+    }
+
+    return res.data;
+  } catch (err) {
+    console.log("MAKE_ADMIN ERROR", err);
+    throw (
+      err?.response?.data?.message ||
+      err?.message ||
+      "Failed to make admin"
+    );
+  }
+};
+
+const { REMOVE_ADMIN } = adminEndpoints;
+
+//* ================= REMOVE ADMIN ================= */
+export const removeAdminApi  = async (userId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await apiConnector(
+      "POST",
+      REMOVE_ADMIN,
+      { userId }, // 🔥 body
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    if (!res.data.success) {
+      throw new Error(res.data.message);
+    }
+
+    return res.data;
+  } catch (err) {
+    console.log("REMOVE_ADMIN ERROR", err);
+    throw (
+      err?.response?.data?.message ||
+      err?.message ||
+      "Failed to remove admin"
+    );
+  }
+}
+
+const { SEND_OTP, VERIFY_OTP } = adminEndpoints;
+//* ================= SEND OTP (2FA) ================= */
+export const sendOtpApi = async (email) => {
+  try {
+    const res = await apiConnector(
+      "POST",
+      SEND_OTP,
+      { email } // body
+    );
+
+    if (!res.data.success) {
+      throw new Error(res.data.message);
+    }
+
+    return res.data;
+
+  } catch (err) {
+    console.log("SEND OTP ERROR", err);
+    throw (
+      err?.response?.data?.message ||
+      err?.message ||
+      "Failed to send OTP"
+    );
+  }
+};
+
+//* ================= VERIFY OTP (2FA) ================= */
+export const verifyOtpApi = async (email, otp) => {
+  try {
+    const res = await apiConnector(
+      "POST",
+      VERIFY_OTP,
+      { email, otp } // body
+    );
+
+    if (!res.data.success) {
+      throw new Error(res.data.message);
+    }
+
+    return res.data;
+
+  } catch (err) {
+    console.log("VERIFY OTP ERROR", err);
+    throw (
+      err?.response?.data?.message ||
+      err?.message ||
+      "OTP verification failed"
+    );
+  }
+};

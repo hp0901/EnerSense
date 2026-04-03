@@ -77,13 +77,17 @@ export const deviceEndpoints = {
 // Admin APIs
 export const adminEndpoints = {
   SEND_BULK_EMAIL: BASE_URL + "/admin/send-email",
-   SEND_PUSH_NOTIFICATION: BASE_URL + "/push/send-notification",
+  SEND_PUSH_NOTIFICATION: BASE_URL + "/push/send-notification",
   GET_DASHBOARD: BASE_URL + "/admin/dashboard",
   GET_MONTHLY_REVENUE: BASE_URL + "/admin/monthly-revenue",
   GET_ALL_USERS: BASE_URL + "/admin/users",
   GET_ALL_PAYMENTS: BASE_URL + "/admin/payments/all",
   DELETE_DEVICE: BASE_URL + "/admin/delete",
   GET_USER_BY_ID: BASE_URL + "/admin/view/user/id",
+  MAKE_ADMIN: BASE_URL + "/admin/make-admin",
+  REMOVE_ADMIN: BASE_URL + "/admin/remove-admin",
+  SEND_OTP: BASE_URL + "/2fa/send-otp",
+  VERIFY_OTP: BASE_URL + "/2fa/verify-otp"
 };
 
 // 2FA APIs

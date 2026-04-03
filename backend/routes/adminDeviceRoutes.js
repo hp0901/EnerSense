@@ -17,6 +17,7 @@ import {getAllUsers ,  getUserById} from "../controller/userDetails.js";
 
 import { deleteDevice } from "../controller/deviceController.js";
 
+import { toggleAdminRole,removeAdminRole  } from "../controller/adminmake.js";
 
 
 const router = express.Router();
@@ -41,6 +42,11 @@ router.post("/view/user/id", auth, isAdmin, getUserById);
 // ================= DELETE DEVICE ROUTE =================
 router.delete("/delete/:id", auth, isAdmin, deleteDevice);
 
+// ================= ADMIN ROLE TOGGLE ROUTES =================
+router.post("/make-admin", auth, isAdmin, toggleAdminRole);
+
+// ================= REMOVE ADMIN ROLE ROUTE =================
+router.post("/remove-admin", auth, isAdmin, removeAdminRole);
 
 router.get("/test", (req, res) => {
   res.send("Device route working");

@@ -75,85 +75,130 @@ useEffect(() => {
     }
   }
 
-  const handleSubmit = async(e)=>{
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if(!formData.email || !formData.password){
-      toast.error("Please fill all fields");
-      return;
-    }
-
-    if(!turnstileToken){
-      toast.error("Verifying... Please wait");
-      return;
-    }
-
-    const toastId = toast.loading("Logging in...");
-
-    try{
-      setLoading(true);
-
-      const res = await loginApi(
-        formData.email,
-        formData.password,
-        turnstileToken,
-        setUser
-      );
-
-      if(res.require2FA){
-        localStorage.setItem("admin2FAUserId",res.userId);
-        toast.dismiss(toastId);
-        navigate("/admin-2fa",{replace:true});
-        return;
-      }
-
-      localStorage.setItem("token",res.token);
-      localStorage.setItem("user",JSON.stringify(res.user));
-
-      setUser(res.user);
-      login();
-
-      toast.success("Welcome, " + res.user.firstName + " " + res.user.lastName + " 👋",{ id: toastId });
-      redirectBasedOnRole(res.user);
-
-    }catch(error){
-      setTurnstileToken(""); // reset
-      // 🔥 RESET TURNSTILE WIDGET
-      if (window.turnstile && widgetIdRef.current) {
-      window.turnstile.reset(widgetIdRef.current);
-      toast.error("Invalid credentials",{id:toastId});
-      }
-    }finally{
-      setLoading(false);
-    }
+  if (!formData.email || !formData.password) {
+    toast.error("Please fill all fields");
+    return;
   }
 
+  if (!turnstileToken) {
+    toast.error("Verifying... Please wait");
+    return;
+  }
+
+  const toastId = toast.loading("Logging in...");
+
+  try {
+    setLoading(true);
+
+    const res = await loginApi(
+      formData.email,
+      formData.password,
+      turnstileToken,
+      setUser
+    );
+
+    console.log("LOGIN RESPONSE:", res);
+
+    // 🔥 FIX: normalize response
+    const response = res?.data || res;
+
+    // 🔥 NEW ADMIN → FORCE 2FA SETUP
+    if (response.requires2FASetup) {
+      localStorage.setItem("admin2FAUserId", response.userId);
+      toast.dismiss(toastId);
+      navigate("/admin/setup-2fa", { replace: true });
+      return;
+    }
+
+    // 🔐 EXISTING ADMIN → VERIFY OTP
+    if (response.require2FA) {
+      localStorage.setItem("admin2FAUserId", response.userId);
+      toast.dismiss(toastId);
+      navigate("/admin-2fa", { replace: true });
+      return;
+    }
+
+    // ✅ NORMAL LOGIN
+    localStorage.setItem("token", response.token);
+    localStorage.setItem("user", JSON.stringify(response.user));
+
+    setUser(response.user);
+    login();
+
+    toast.success(
+      "Welcome, " +
+        response.user.firstName +
+        " " +
+        response.user.lastName +
+        " 👋",
+      { id: toastId }
+    );
+
+    redirectBasedOnRole(response.user);
+
+  } catch (error) {
+    setTurnstileToken("");
+
+    if (window.turnstile && widgetIdRef.current) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+
+    toast.error("Invalid credentials", { id: toastId });
+
+  } finally {
+    setLoading(false);
+  }
+};
+
   const handleGoogleLogin = async (credentialResponse) => {
-        const toastId = toast.loading("Logging in...");
+  const toastId = toast.loading("Logging in...");
 
   try {
     setLoading(true);
 
     const res = await googleLoginApi(credentialResponse.credential);
 
-    // 🔐 2FA flow
-    if (res.require2FA) {
-      localStorage.setItem("admin2FAUserId", res.userId);
+    console.log("GOOGLE LOGIN RESPONSE:", res);
+
+    const response = res?.data || res;
+
+    // 🔥 NEW ADMIN → FORCE 2FA SETUP
+    if (response.requires2FASetup) {
+      localStorage.setItem("admin2FAUserId", response.userId);
+      toast.dismiss(toastId);
+      navigate("/admin/setup-2fa");
+      return;
+    }
+
+    // 🔐 EXISTING ADMIN → VERIFY OTP
+    if (response.require2FA) {
+      localStorage.setItem("admin2FAUserId", response.userId);
+      toast.dismiss(toastId);
       navigate("/admin-2fa");
       return;
     }
 
-    // ✅ Save token
-    if (res.token) {
-      localStorage.setItem("token", res.token);
+    // ✅ NORMAL LOGIN
+    if (response.token) {
+      localStorage.setItem("token", response.token);
     }
 
-    // ✅ Set user + login
-    setUser(res.user);
+    setUser(response.user);
     login();
 
-    toast.success("Welcome, " + res.user.firstName + " " + res.user.lastName + " 👋",{ id: toastId });
-    redirectBasedOnRole(res.user);
+    toast.success(
+      "Welcome, " +
+        response.user.firstName +
+        " " +
+        response.user.lastName +
+        " 👋",
+      { id: toastId }
+    );
+
+    redirectBasedOnRole(response.user);
 
   } catch (error) {
     console.error("Google Login Error:", error);

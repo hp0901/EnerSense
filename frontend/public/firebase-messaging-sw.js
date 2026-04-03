@@ -15,9 +15,9 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// ✅ SINGLE BACKGROUND HANDLER (IMPORTANT)
 messaging.onBackgroundMessage((payload) => {
-
-  console.log("Background message received:", payload);
+  console.log("🔥 Background message received:", payload);
 
   const title = payload?.notification?.title || "EnerSense Alert ⚡";
   const body = payload?.notification?.body || "Energy usage alert";
@@ -29,5 +29,13 @@ messaging.onBackgroundMessage((payload) => {
     tag: "enersense-alert",
     renotify: true
   });
+});
 
+// ✅ CLICK HANDLER (OUTSIDE)
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.openWindow("https://enersense.in")
+  );
 });

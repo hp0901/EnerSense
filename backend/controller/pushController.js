@@ -128,6 +128,10 @@ export const sendNotificationToUsers = async (req, res) => {
       link
     );
 
+    console.log("SUCCESS:", response.successCount);
+    console.log("FAIL:", response.failureCount);
+    console.log("RESPONSES:", response.responses);
+
     return res.json({
       success: true,
       message: `Notification sent to ${tokens.length} users 🚀`,

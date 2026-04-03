@@ -37,8 +37,13 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "admin","MainAdmin"],
       default: "user",
+    },
+
+    isSuperAdmin: {
+      type: Boolean,
+      default: false,
     },
 
     devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }],
@@ -53,6 +58,16 @@ const userSchema = new mongoose.Schema(
     profileImageId: {
       type: String,
       default: "",
+    },
+
+    otp: {
+      type: String,
+      default: null,
+    },
+
+    otpExpiry: {
+      type: Date,
+      default: null,
     },
 
     cardType: {
