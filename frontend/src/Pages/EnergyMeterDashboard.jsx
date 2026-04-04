@@ -45,8 +45,60 @@ const EnergyMeterDashboard = () => {
   const totalUnits = (peakUnits + nonPeakUnits).toFixed(3);
 
   // ================= BILLING =================
-  const [peakRate, setPeakRate] = useState(10);
-  const [nonPeakRate, setNonPeakRate] = useState(8);
+  const [peakRate, setPeakRate] = useState(8);
+  const [nonPeakRate, setNonPeakRate] = useState(5);
+
+  const expectedBill =
+    peakUnits * peakRate + nonPeakUnits * nonPeakRate;
+
+  // ================= REALTIME =================
+  useEffect(() => {
+  const interval = setInterval(() => {
+    // ⚡ POWER
+    const newPower = Math.floor(Math.random() * 200 + 300);
+    setPower(newPower);
+
+    // 🔌 VOLTAGE (REALISTIC FLUCTUATION)
+    setVoltage((prev) => {
+      let changeType = Math.random();
+      let newVoltage = prev;
+
+      if (changeType < 0.7) {
+        // ✅ Normal fluctuation (±3V)
+        newVoltage = prev + (Math.random() * 6 - 3);
+      } else if (changeType < 0.9) {
+        // ⚠️ Medium fluctuation (±10V)
+        newVoltage = prev + (Math.random() * 20 - 10);
+      } else {
+        // 🚨 Rare extreme case
+        newVoltage = Math.random() > 0.5 ? 270 : 120;
+      }
+
+      // 🔒 Clamp safe range
+      newVoltage = Math.max(110, Math.min(280, newVoltage));
+
+      return Math.round(newVoltage);
+    });
+
+    // 🔌 ACTIVE POINTS
+    setActivePoints(Math.floor(Math.random() * totalPoints));
+
+    // ⚡ UNIT CALCULATION
+    const unitIncrement = +(newPower / 360000).toFixed(3);
+
+    const hour = new Date().getHours();
+    const isPeakHour = hour >= 18 || hour < 6; // ✅ your updated logic
+
+    if (isPeakHour) {
+      setPeakUnits((prev) => +(prev + unitIncrement).toFixed(3));
+    } else {
+      setNonPeakUnits((prev) => +(prev + unitIncrement).toFixed(3));
+    }
+
+  }, 2000);
+
+  return () => clearInterval(interval);
+}, [totalPoints]);
 
   // ================= ALERT SOUND =================
   useEffect(() => {
