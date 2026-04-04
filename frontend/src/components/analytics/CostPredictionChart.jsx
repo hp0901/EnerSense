@@ -41,7 +41,7 @@ const CostPredictionChart = () => {
 
       <div className="text-center mt-3">
         <p className="text-slate-400 text-sm">Total Cost</p>
-        <p className="text-xl font-bold text-slate-400 ">$214</p>
+        <p className="text-xl font-bold text-slate-400 ">₹ 214</p>
       </div>
 
     </div>

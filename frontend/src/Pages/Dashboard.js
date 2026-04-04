@@ -97,7 +97,7 @@ return (
 
     {/* Live Readings */}
 
-    <section className="bg-white/5 backdrop-blur-lg border border-white/10 p-8 rounded-2xl mb-10 shadow-xl ">
+    <section className="bg-white/5 backdrop-blur-lg border border-white/10 p-4 rounded-2xl mb-10 shadow-xl ">
 
   <div className="flex items-center justify-between mb-6">
 
@@ -105,7 +105,7 @@ return (
       ⚡ Energy Usage Analytics
     </h2>
 
-    <span className="text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full">
+    <span className="text-xs bg-green-500/20 text-green-400 px-3 text-center py-1 rounded-full">
       Live Data
     </span>
 

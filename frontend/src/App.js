@@ -42,10 +42,11 @@ import MyPayments from "./Pages/MyPayments";
 import AlertsPage from "./Pages/AlertsPage";
 import FaultDetectionPage from "./Pages/FaultDetectionPage";
 import GreenScorePage from "./Pages/GreenScorePage";
-import BillPredictionPage from "./Pages/BillPredictionPage";
+import PreviousBillsCard from "./components/PreviousBillsCard.jsx";
 import ReportsPage from "./Pages/ReportsPage";
 import SupportPage from "./Pages/SupportPage";
-
+import ExpectedBillSummary from "./components/ExpectedBillSummary.jsx";
+import ExpectedBillsCard from "./components/ExpectedBillsCard.jsx";
 /* =========================
    PAYMENT & PRICING
 ========================= */
@@ -280,6 +281,9 @@ setupNotifications();
         {/* ---------- USER DASHBOARD ---------- */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/energy-meter-dashboard" element={<EnergyMeterDashboard />} />
+        <Route path="/previous-bills" element={<PreviousBillsCard />} />
+        <Route path="/expected-bill-summary" element={<ExpectedBillSummary />} />
+        <Route path="/expected-bills" element={<ExpectedBillsCard />} />
         <Route path="/device-control" element={<DeviceControl />} />
         <Route path="/settings" element={<SettingPage />} />
         <Route path="/energy-analytics" element={<EnergyAnalytics />} />
@@ -290,7 +294,6 @@ setupNotifications();
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/fault-detection" element={<FaultDetectionPage />} />
         <Route path="/green-score" element={<GreenScorePage />} />
-        <Route path="/bill-prediction" element={<BillPredictionPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/support" element={<SupportPage />} />
 

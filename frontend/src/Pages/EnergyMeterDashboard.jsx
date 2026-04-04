@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { getMyProfile } from "../services/operations/profileapi";
 import { Link } from "react-router-dom";
+import PreviousBillsCard from "../components/PreviousBillsCard";
+import ExpectedBillsCard from "../components/ExpectedBillsCard";
+import ExpectedBillSummary from "../components/ExpectedBillSummary";
 
 const EnergyMeterDashboard = () => {
   const [user, setUser] = useState(null);
@@ -42,35 +45,8 @@ const EnergyMeterDashboard = () => {
   const totalUnits = (peakUnits + nonPeakUnits).toFixed(3);
 
   // ================= BILLING =================
-  const [peakRate, setPeakRate] = useState(8);
-  const [nonPeakRate, setNonPeakRate] = useState(5);
-
-  const expectedBill =
-    peakUnits * peakRate + nonPeakUnits * nonPeakRate;
-
-  // ================= REALTIME =================
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newPower = Math.floor(Math.random() * 200 + 300);
-
-      setPower(newPower);
-      setVoltage(Math.floor(Math.random() * 6 + 225));
-      setActivePoints(Math.floor(Math.random() * totalPoints));
-
-      const unitIncrement = +(newPower / 360000).toFixed(3);
-
-      const hour = new Date().getHours();
-      const isPeakHour = hour >= 18 && hour <= 23;
-
-      if (isPeakHour) {
-        setPeakUnits((prev) => +(prev + unitIncrement).toFixed(3));
-      } else {
-        setNonPeakUnits((prev) => +(prev + unitIncrement).toFixed(3));
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [totalPoints]);
+  const [peakRate, setPeakRate] = useState(10);
+  const [nonPeakRate, setNonPeakRate] = useState(8);
 
   // ================= ALERT SOUND =================
   useEffect(() => {
@@ -206,38 +182,23 @@ const EnergyMeterDashboard = () => {
           </div>
         </div>
 
+        <div className="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700">  
+          <ExpectedBillSummary 
+            peakUnits={peakUnits}
+            nonPeakUnits={nonPeakUnits}
+            peakRate={peakRate}
+            nonPeakRate={nonPeakRate}
+          />
+        </div>
+
         {/* 3. BILLING ESTIMATION CARD */}
         <div className="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700">
-          <h2 className="text-xl font-semibold mb-4">Billing Estimation</h2>
-          <Input label="Peak Rate" value={peakRate} setValue={setPeakRate} />
-          <Input label="Non-Peak Rate" value={nonPeakRate} setValue={setNonPeakRate} />
-          <div className="mt-4 p-4 bg-slate-800 rounded-xl border border-slate-700">
-            <p className="text-gray-400 text-sm">Estimated Total</p>
-            <div className="text-3xl font-bold text-green-400">
-              ₹ {expectedBill.toFixed(2)}
-            </div>
-          </div>
+          <ExpectedBillsCard link="/expected-bills" />
         </div>
 
         {/* 4. PREVIOUS BILLS CARD */}
         <div className="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700 pb-4">
-          <div className="flex justify-between items-baseline mb-4 ">
-          <h2 className="text-xl font-semibold mb-4">Previous Bills</h2>
-          <Link to="/billing-history" className="text-sm text-blue-500 mb-4 inline-block border-blue-400/30 bg-blue-400/10 p-3 rounded-xl">View Full History</Link>
-          </div>
-          <div className="flex flex-col gap-3">
-            {previousBills.map((bill, index) => (
-              <div
-                key={index}
-                className="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700"
-              >
-                <span className="text-gray-300">{bill.month}</span>
-                <span className="text-green-400 font-semibold">
-                  ₹ {bill.amount}
-                </span>
-              </div>
-            ))}
-          </div>
+          <PreviousBillsCard link="/previous-bills" />
         </div>
 
         <div className="md:col-span-2 flex flex-col items-center justify-center p-8 text-center">
