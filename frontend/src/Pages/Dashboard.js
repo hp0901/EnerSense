@@ -8,6 +8,8 @@ import {
   FiAlertTriangle,
 } from "react-icons/fi";
 
+import Footer from "../Footer/Footer.js";
+
 import UsageEstimateChart from "../components/analytics/UsageEstimateChart.jsx";
 
 const Dashboard = () => {
@@ -207,6 +209,10 @@ return (
 
     </section>
 
+      <div className="mt-10 border-2 rounded-md border-slate-900 ">
+        <Footer />
+      </div>
+    
   </div>
 );
 };

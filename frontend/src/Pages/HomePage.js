@@ -14,6 +14,7 @@ import { useAuth } from "../context/AuthContex";
 import Footer from "../Footer/Footer";
 import "../css/HomePage.css";
 import { TypeAnimation } from "react-type-animation";
+import WhyEnersense from "../components/WhyEnersense";
 
 /* FEATURE CARD */
 
@@ -247,11 +248,13 @@ return (
           Why EnerSense?
         </h2>
 
-        <p className="mt-6 text-[#CBD5E1]">
+        {/* <p className="mt-6 text-[#CBD5E1]">
           Traditional energy systems lack real-time visibility, leading to
           power wastage and high bills. EnerSense enables intelligent,
           data-driven decisions with live monitoring and analytics.
-        </p>
+        </p> */}
+
+        <WhyEnersense />
 
       </div>
     </section>

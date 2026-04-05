@@ -61,7 +61,7 @@ import About from "./Pages/about";
 import Contact from "./Pages/Contact";
 import EnergyAwareness from "./Pages/EnergyAwareness";
 import EnerSenseFAQ from "./Pages/EnerSenseFAQ";
-
+import WhyEnersense from "./components/WhyEnersense.jsx"; 
 import CompanyCenter from "./Footer/CompanyCenter";
 import ResourcesCenter from "./Footer/ResourcesCenter";
 import IoTDevices from "./Footer/IoTDevices";
@@ -269,7 +269,7 @@ setupNotifications();
         <Route path="/contact" element={<Contact />} />
         <Route path="/faqs" element={<EnerSenseFAQ />} />
         <Route path="/energy-awareness" element={<EnergyAwareness />} />
-
+        <Route path="/why-enersense" element={<WhyEnersense />} />
         {/* ---------- AUTH ROUTES ---------- */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
