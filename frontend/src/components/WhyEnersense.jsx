@@ -4,231 +4,102 @@ export default function WhyEnersense() {
   const [enabled, setEnabled] = useState(false);
 
   const beforeData = [
-    [
-      "Energy data scattered across systems",
-      "No centralized visibility",
-      "Hard to track consumption trends",
-    ],
-    [
-      "Manual tracking & inefficiency",
-      "Time-consuming processes",
-      "High chance of human error",
-    ],
-    [
-      "No real-time insights",
-      "Delayed decision making",
-      "Reactive instead of proactive",
-    ],
-    [
-      "Difficult reporting & analysis",
-      "Fragmented reports",
-      "No automation available",
-    ],
+    ["Energy data scattered across systems", "No centralized visibility", "Hard to track trends"],
+    ["Manual tracking & inefficiency", "Time-consuming processes", "High human error"],
+    ["No real-time insights", "Delayed decision making", "Reactive instead of proactive"],
+    ["Difficult reporting & analysis", "Fragmented reports", "No automation available"],
   ];
 
   const afterData = [
-    {
-      title: "Centralized Dashboard",
-      points: [
-        "All data in one place",
-        "Unified energy visibility",
-        "Easy monitoring",
-      ],
-    },
-    {
-      title: "Real-time Monitoring",
-      points: [
-        "Live energy tracking",
-        "Instant alerts",
-        "Better control",
-      ],
-    },
-    {
-      title: "Smart Insights",
-      points: [
-        "AI-driven analytics",
-        "Predictive insights",
-        "Cost optimization",
-      ],
-    },
-    {
-      title: "Automated Reports",
-      points: [
-        "Auto-generated reports",
-        "Time saving",
-        "Accurate data",
-      ],
-    },
+    { title: "Centralized Dashboard", points: ["All data in one place", "Unified energy visibility", "Easy monitoring"] },
+    { title: "Real-time Monitoring", points: ["Live energy tracking", "Instant alerts", "Better control"] },
+    { title: "Smart Insights", points: ["AI-driven analytics", "Predictive insights", "Cost optimization"] },
+    { title: "Automated Reports", points: ["Auto-generated reports", "Time saving", "Accurate data"] },
   ];
 
   const positions = [
-  "top-2 right-2 sm:left-2 sm:right-auto rotate-[-6deg]",
-
-  "top-[180px] left-2 sm:top-28 sm:right-2 sm:left-auto rotate-[6deg]",
-  "top-[320px] right-2 sm:bottom-28 sm:left-6 sm:right-auto rotate-[-4deg]",
-
-  "top-[450px] left-2 sm:bottom-2 sm:right-4 sm:left-auto rotate-[4deg]",
-];
+    "top-4 left-4 sm:left-8 rotate-[-6deg]",
+    "top-32 right-4 sm:right-8 rotate-[6deg]",
+    "bottom-36 left-4 sm:left-8 rotate-[-4deg]",
+    "bottom-10 right-4 sm:right-8 rotate-[4deg]",
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-6 w-full max-w-md shadow-2xl overflow-hidden border border-white/10">
-
-        {/* Glow */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-400/30 via-yellow-300/20 to-yellow-500/30 blur-3xl animate-pulse" />
-
-        {/* Lightning */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 200 200">
-          <path
-            d="M95 0 L130 75 L105 75 L120 160 L70 85 L95 85 Z"
-            fill="none"
-            stroke="url(#lightningGradient)"
-            strokeWidth="2.5"
-            strokeDasharray="200"
-            strokeDashoffset="200"
-          >
-
-        <animate
-              attributeName="stroke-dashoffset"
-              values="200;0;200"
-              keyTimes="0;0.2;1"
-              dur="6s"
-              repeatCount="indefinite"
-            />
-
-          <animate
-              attributeName="opacity"
-              values="0;1;0;0"
-              keyTimes="0;0.2;0.25;1"
-              dur="6s"
-              repeatCount="indefinite"
-            />
-            </path>
-
-                <defs>
-                  <linearGradient id="lightningGradient">
-                    <stop offset="0%" stopColor="#22c55e" />
-                    <stop offset="50%" stopColor="#eab308" />
-                    <stop offset="100%" stopColor="#fde047" />
-                  </linearGradient>
-                  </defs>
-        </svg>
+      <div className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-6 w-full max-w-md shadow-2xl overflow-hidden border border-white/10">
+        
+        {/* Animated Glow */}
+        <div className={`absolute inset-0 transition-colors duration-500 blur-3xl ${enabled ? "bg-green-500/20" : "bg-red-500/10"}`} />
 
         {/* Header */}
         <div className="flex flex-col items-center mb-6 relative z-10">
           <img
             src="https://res.cloudinary.com/harshpatel0901/image/upload/v1768970755/EnerSence_logo_oarobg.png"
             alt="EnerSense Logo"
-            className="w-14 sm:w-16 mb-2 animate-bounce"
+            className="w-14 mb-2"
           />
           <h1 className="text-white font-semibold text-lg">EnerSense</h1>
-          <p className="text-green-400 text-xs">
-            Smart Energy. Smarter Living.
-          </p>
+          <p className="text-green-400 text-[10px] tracking-widest uppercase">Smart Energy. Smarter Living.</p>
         </div>
 
         {/* Toggle */}
-        <div className="flex items-center justify-center mb-6 gap-4 relative z-10">
-          <span className={`${!enabled ? "text-white" : "text-gray-500"}`}>
-            Before EnerSense
-          </span>
-
+        <div className="flex items-center justify-center mb-8 gap-4 relative z-10">
+          <span className={`text-xs transition-opacity ${!enabled ? "text-white" : "text-gray-500 opacity-50"}`}>Without EnerSense</span>
           <button
             onClick={() => setEnabled(!enabled)}
-            className={`w-14 h-8 flex items-center rounded-full p-1 transition ${
-              enabled ? "bg-green-500" : "bg-gray-400"
-            }`}
+            className={`w-14 h-7 flex items-center rounded-full p-1 transition-colors ${enabled ? "bg-green-500" : "bg-gray-600"}`}
           >
-            <div
-              className={`bg-white w-6 h-6 rounded-full shadow-md transform transition ${
-                enabled ? "translate-x-6" : ""
-              }`}
-            />
+            <div className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform ${enabled ? "translate-x-7" : ""}`} />
           </button>
-
-          <span className={`${enabled ? "text-white" : "text-gray-500"}`}>
-            After EnerSense
-          </span>
+          <span className={`text-xs transition-opacity ${enabled ? "text-white" : "text-gray-500 opacity-50"}`}>With EnerSense</span>
         </div>
 
-        {/* Content */}
-        <div className="relative h-[570px] z-10">
-
-          {/* BEFORE */}
-          {!enabled &&
+        {/* Content Area */}
+        <div className="relative h-[500px] z-10">
+          {!enabled ? (
             beforeData.map((points, index) => (
-              <Card
-                key={index}
-                points={points}
-                className={`${positions[index]} animate-float`}
-              />
-            ))}
-
-          {/* AFTER */}
-          {enabled &&
+              <Card key={index} points={points} className={positions[index]} />
+            ))
+          ) : (
             afterData.map((item, index) => (
-              <Card
-                key={index}
-                points={[item.title, ...item.points]}
-                success
-                className={`${positions[index]} animate-float`}
-              />
-            ))}
+              <Card key={index} title={item.title} points={item.points} success className={positions[index]} />
+            ))
+          )}
         </div>
       </div>
 
-      {/* Animations */}
       <style jsx>{`
-        .animate-float {
-          animation: float 4s ease-in-out infinite;
-        }
-
+        .animate-float { animation: float 4s ease-in-out infinite; }
         @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-6px); }
+          0%, 100% { transform: translateY(0px) rotate(var(--tw-rotate)); }
+          50% { transform: translateY(-8px) rotate(var(--tw-rotate)); }
         }
       `}</style>
     </div>
   );
 }
 
-/* Card */
-function Card({ points, className, success }) {
+function Card({ title, points, className, success }) {
   return (
-    <div
-      className={`absolute text-xs p-4 sm:p-4 rounded-xl shadow-lg w-[70%] max-w-[180px] backdrop-blur-lg border ${
-        success
-          ? "bg-green-500/10 border-green-400 shadow-green-500/20"
-          : "bg-zinc-800/80 border-red-400/20"
+    <div className={`absolute p-4 rounded-xl shadow-xl w-[70%] max-w-[180px] backdrop-blur-lg border animate-float transition-all duration-500 ${
+        success ? "bg-green-500/10 border-green-400 shadow-green-500/20" : "bg-zinc-900/90 border-red-400/20 shadow-black/40"
       } ${className}`}
     >
+      {/* Show title only if it exists (Success state) */}
+      {title && <h3 className="text-green-400 font-bold text-[11px] mb-2 uppercase tracking-tight">{title}</h3>}
+      
       {points.map((p, i) => (
-        <p key={i} className="mb-1 text-white leading-tight">
-          • {p}
+        <p key={i} className="text-white text-[10px] leading-tight mb-1.5 opacity-90">
+          {success ? "✓ " : "• "} {p}
         </p>
       ))}
 
-      <div
-        className={`absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-          success ? "bg-green-500" : "bg-red-500"
+      <div className={`absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-md ${
+          success ? "bg-green-500 text-white" : "bg-red-500 text-white"
         }`}
       >
-        {success ? "✓" : "×"}
+        {success ? "✓" : "✕"}
       </div>
-    </div>
-  );
-}
-
-/* unchanged */
-function Feature({ title, points }) {
-  return (
-    <div className="bg-zinc-800 rounded-lg p-3">
-      <h3 className="text-green-400 text-sm font-medium mb-1">{title}</h3>
-      {points.map((p, i) => (
-        <p key={i} className="text-white text-xs">
-          • {p}
-        </p>
-      ))}
     </div>
   );
 }
