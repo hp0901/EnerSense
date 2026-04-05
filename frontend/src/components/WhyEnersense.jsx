@@ -130,7 +130,7 @@ export default function WhyEnersense() {
         {/* Toggle */}
         <div className="flex items-center justify-center mb-6 gap-4 relative z-10">
           <span className={`${!enabled ? "text-white" : "text-gray-500"}`}>
-            Before
+            Before EnerSense
           </span>
 
           <button
@@ -147,7 +147,7 @@ export default function WhyEnersense() {
           </button>
 
           <span className={`${enabled ? "text-white" : "text-gray-500"}`}>
-            After
+            After EnerSense
           </span>
         </div>
 
