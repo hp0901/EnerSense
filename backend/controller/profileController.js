@@ -3,11 +3,28 @@ import cloudinary from "../config/cloudinary.js";
 
 export const updateProfile = async (req, res) => {
   try {
+    /* ================= AUTH CHECK ================= */
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
     const userId = req.user.id;
 
-    const { firstName, lastName, phone, removeProfileImage } =
-      req.body || {};
+    /* ================= BODY DATA ================= */
+    const {
+      firstName,
+      lastName,
+      phone,
+      removeProfileImage,
+    } = req.body || {};
 
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+
+    /* ================= FIND USER ================= */
     const user = await User.findById(userId);
 
     if (!user) {
@@ -20,22 +37,18 @@ export const updateProfile = async (req, res) => {
     const updateData = {};
 
     /* ================= TEXT FIELDS ================= */
-    if (firstName && firstName.trim() !== "")
-      updateData.firstName = firstName.trim();
-
-    if (lastName && lastName.trim() !== "")
-      updateData.lastName = lastName.trim();
-
-    if (phone && phone.trim() !== "")
-      updateData.phone = phone.trim();
-
+    if (firstName?.trim()) updateData.firstName = firstName.trim();
+    if (lastName?.trim()) updateData.lastName = lastName.trim();
+    if (phone?.trim()) updateData.phone = phone.trim();
 
     /* ================= IMAGE UPLOAD ================= */
     if (req.file) {
-
-      // ✅ delete old image from cloudinary
-      if (user.profileImageId) {
-        await cloudinary.uploader.destroy(user.profileImageId);
+      if (user.profileImageId && process.env.CLOUD_NAME) {
+        try {
+          await cloudinary.uploader.destroy(user.profileImageId);
+        } catch (err) {
+          console.log("Cloudinary delete failed:", err.message);
+        }
       }
 
       updateData.profileImage = req.file.path;
@@ -43,22 +56,38 @@ export const updateProfile = async (req, res) => {
     }
 
     /* ================= IMAGE DELETE ================= */
-    if (removeProfileImage === "true") {
-
-      if (user.profileImageId) {
-        await cloudinary.uploader.destroy(user.profileImageId);
-      }
+    if (removeProfileImage === true || removeProfileImage === "true") {
+      if (user.profileImageId && process.env.CLOUD_NAME) {
+        try {
+          await cloudinary.uploader.destroy(user.profileImageId);
+        } catch (err) {
+          console.log("Cloudinary delete failed:", err.message);
+        }
+      } 
 
       updateData.profileImage = "";
       updateData.profileImageId = "";
     }
 
+    /* ================= EMPTY UPDATE CHECK ================= */
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No data provided to update",
+      });
+    }
+
+    /* ================= UPDATE USER ================= */
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       updateData,
-      { new: true, runValidators: true }
+      {
+        new: true,
+        runValidators: true,
+      }
     ).select("-password");
 
+    /* ================= RESPONSE ================= */
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
@@ -68,6 +97,7 @@ export const updateProfile = async (req, res) => {
   } catch (error) {
     console.error("UPDATE PROFILE ERROR:", error);
 
+    /* ================= DUPLICATE ERROR ================= */
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
@@ -75,6 +105,7 @@ export const updateProfile = async (req, res) => {
       });
     }
 
+    /* ================= GENERAL ERROR ================= */
     return res.status(500).json({
       success: false,
       message: "Failed to update profile",
