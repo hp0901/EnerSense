@@ -10,8 +10,10 @@ import {
 import { 
   getAllPayments,
   getDashboardStatus,
-   getMonthlyRevenue
+  getMonthlyRevenue
 } from "../controller/paymentHistory.controller.js";
+
+import { deleteUser } from "../controller/userDetails.js";
 
 import {getAllUsers ,  getUserById} from "../controller/userDetails.js"; 
 
@@ -47,6 +49,9 @@ router.post("/make-admin", auth, isAdmin, toggleAdminRole);
 
 // ================= REMOVE ADMIN ROLE ROUTE =================
 router.post("/remove-admin", auth, isAdmin, removeAdminRole);
+
+// ================= DELETE USER ROUTE =================
+router.delete("/delete-user", auth, isAdmin, deleteUser);
 
 router.get("/test", (req, res) => {
   res.send("Device route working");

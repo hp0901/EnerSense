@@ -344,3 +344,33 @@ export const verifyOtpApi = async (email, otp) => {
     );
   }
 };
+
+//* ================= DELETE USER (ADMIN) ================= */
+export const deleteUserApi = async (userId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await apiConnector(
+      "DELETE",
+      adminEndpoints.DELETE_USER,
+      { userId }, // body
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    if (!res.data.success) {
+      throw new Error(res.data.message);
+    }
+
+    return res.data;
+
+  } catch (err) {
+    console.log("DELETE USER ERROR", err);
+    throw (
+      err?.response?.data?.message ||
+      err?.message ||
+      "Failed to delete user"
+    );
+  }
+};

@@ -1,10 +1,10 @@
 //User Profile API Service
 
 // Base URL for all API endpoints
-// const BASE_URL = 'http://localhost:4000/api/v1';
+const BASE_URL = 'http://localhost:4000/api/v1';
 
 // For production, use the secure API endpoint
-const BASE_URL = "https://api.enersense.in/api/v1";
+// const BASE_URL = "https://api.enersense.in/api/v1";
 
 export const userProfile = {
   // auth (already there)
@@ -83,11 +83,13 @@ export const adminEndpoints = {
   GET_ALL_USERS: BASE_URL + "/admin/users",
   GET_ALL_PAYMENTS: BASE_URL + "/admin/payments/all",
   DELETE_DEVICE: BASE_URL + "/admin/delete",
+  DELETE_USER: BASE_URL + "/admin/delete-user",
   GET_USER_BY_ID: BASE_URL + "/admin/view/user/id",
   MAKE_ADMIN: BASE_URL + "/admin/make-admin",
   REMOVE_ADMIN: BASE_URL + "/admin/remove-admin",
   SEND_OTP: BASE_URL + "/2fa/send-otp",
-  VERIFY_OTP: BASE_URL + "/2fa/verify-otp"
+  VERIFY_OTP: BASE_URL + "/2fa/verify-otp",
+  DELETE_USER: BASE_URL + "/admin/delete-user",
 };
 
 // 2FA APIs
