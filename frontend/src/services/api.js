@@ -1,5 +1,3 @@
-//User Profile API Service
-
 // Base URL for all API endpoints
 // const BASE_URL = 'http://localhost:4000/api/v1';
 
@@ -20,25 +18,24 @@ export const userProfile = {
   GET_NOTIFICATION_SETTINGS_API: BASE_URL + "/settings/notifications",
   UPDATE_NOTIFICATION_SETTINGS_API: BASE_URL + "/settings/notifications",
 };
- 
+
 // Chatbot API Service
 export const chatbotEndpoints = {
   SEND_MESSAGE_API: BASE_URL + "/chatbot/message",
 };
-// Forget Password APIs
 
+// Forget Password APIs
 export const authEndpoints = {
-  // ...existing
   RESET_PASSWORD_API: BASE_URL + "/auth/reset-password",
   SEND_FORGOT_PASSWORD_OTP: BASE_URL + "/auth/forgot-password/send-otp",
-  VERIFY_FORGOT_PASSWORD_OTP: BASE_URL +"/auth/forgot-password/verify-otp",
+  VERIFY_FORGOT_PASSWORD_OTP: BASE_URL + "/auth/forgot-password/verify-otp",
 };
 
 // Profile Update Api
 export const profileEndpoints = {
-   UPDATE_PROFILE: BASE_URL + "/profile/update",
-   GET_PROFILE: BASE_URL + "/profile/me",
-}
+  UPDATE_PROFILE: BASE_URL + "/profile/update",
+  GET_PROFILE: BASE_URL + "/profile/me",
+};
 
 // Premium APIs
 export const premiumEndpoints = {
@@ -49,7 +46,7 @@ export const premiumEndpoints = {
 
 // Payment APIs
 export const paymentEndpoints = {
-  GET_MY_PAYMENTS:  BASE_URL + "/payments/my-payments",
+  GET_MY_PAYMENTS: BASE_URL + "/payments/my-payments",
 };
 
 // User Card Verification API
@@ -65,13 +62,16 @@ export const invoiceEndpoints = {
 
 // Device Management APIs
 export const deviceEndpoints = {
-  // User APIs
   PAIR_DEVICE: BASE_URL + "/device/pair",
   GET_MY_DEVICES: BASE_URL + "/device/my-devices",
   TOGGLE_DEVICE: BASE_URL + "/device/toggle",
   UNPAIR_DEVICE: BASE_URL + "/device/unpair",
   CREATE_DEVICE: BASE_URL + "/admin/create",
   GET_ALL_DEVICES: BASE_URL + "/admin/all",
+  // Added telemetry endpoints here so deviceApi.js imports them smoothly:
+  GET_TELEMETRY: BASE_URL + "/esp32device/telemetry",
+  TOGGLE_DEVICE: BASE_URL + "/esp32device/toggle",
+  // GET_LATEST_TELEMETRY: BASE_URL + "/esp32device/latest",
 };
 
 // Admin APIs
@@ -89,7 +89,6 @@ export const adminEndpoints = {
   REMOVE_ADMIN: BASE_URL + "/admin/remove-admin",
   SEND_OTP: BASE_URL + "/2fa/send-otp",
   VERIFY_OTP: BASE_URL + "/2fa/verify-otp",
-  DELETE_USER: BASE_URL + "/admin/delete-user",
 };
 
 // 2FA APIs
@@ -103,3 +102,4 @@ export const twoFactorEndpoints = {
 export const notificationEndpoints = {
   SAVE_DEVICE_TOKEN: BASE_URL + "/push/save-token",
 };
+

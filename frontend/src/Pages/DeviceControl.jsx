@@ -1,170 +1,239 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import DeviceCard from "../components/DeviceCard";
-import IconPicker from "../components/IconPicker";
-import toast from "react-hot-toast";
 import {
-  pairDeviceApi,
   getMyDevicesApi,
+  getLatestTelemetryApi,
+  toggleDeviceApi,
   unpairDeviceApi,
+  pairDeviceApi,
 } from "../services/operations/deviceApi";
-import { Link } from "react-router-dom";
 
 const DeviceControl = () => {
   const [devices, setDevices] = useState([]);
-  const [icon, setIcon] = useState("bulb");
-  const [name, setName] = useState("");
-  const [deviceCode, setDeviceCode] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Load Devices on Mount
-  useEffect(() => {
-    fetchDevices();
-  }, []);
+  // Form State for Pairing
+  const [deviceName, setDeviceName] = useState("");
+  const [uniqueCode, setUniqueCode] = useState("");
+  const [deviceType, setDeviceType] = useState("Bulb");
+  const [pairingLoading, setPairingLoading] = useState(false);
+  const [pairError, setPairError] = useState("");
 
+  // Fetch registered devices & merge live telemetry
   const fetchDevices = async () => {
-  try {
-    const res = await getMyDevicesApi();
+    try {
+      const res = await getMyDevicesApi();
+      const rawDevices = res?.devices || res || [];
 
-    console.log("Device is", res);
+      // Fetch live telemetry in parallel for all paired devices
+      const hydratedDevices = await Promise.all(
+        rawDevices.map(async (device) => {
+          try {
+            const telemetryRes = await getLatestTelemetryApi(device.deviceId);
+            return {
+              ...device,
+              telemetry: telemetryRes?.telemetry || device.telemetry || {},
+            };
+          } catch (err) {
+            return device;
+          }
+        })
+      );
 
-    if (res.success) {
-      setDevices(res.devices);
+      setDevices(hydratedDevices);
+    } catch (error) {
+      console.error("Failed to load dashboard devices:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    toast.error(error);
-  }
-};
+  };
 
-  // ✅ Pair Device
-  const addDevice = async () => {
-    if (!deviceCode) {
-      toast.error("Enter device code");
+  // Pair Device Form Handler
+  const handlePairDevice = async (e) => {
+    e.preventDefault();
+    if (!uniqueCode.trim()) {
+      setPairError("Please enter a valid unique device code.");
       return;
     }
 
-    try {
-      await pairDeviceApi({
-        deviceId: deviceCode,
-        name: name,
-        deviceType: icon
-      });
-      toast.success("Device paired successfully 🔥");
+    setPairingLoading(true);
+    setPairError("");
 
-      setDeviceCode("");
-      setName("");
-      fetchDevices(); // reload devices
+    try {
+      const payload = {
+        deviceId: uniqueCode.trim(),
+        name: deviceName.trim() || undefined,
+        deviceType: deviceType,
+      };
+
+      await pairDeviceApi(payload);
+
+      // Reset form
+      setDeviceName("");
+      setUniqueCode("");
+      setDeviceType("Bulb");
+
+      // Refresh devices list
+      await fetchDevices();
     } catch (error) {
-      toast.error(error);
+      console.error("Pairing Error:", error);
+      setPairError(typeof error === "string" ? error : "Failed to pair device.");
+    } finally {
+      setPairingLoading(false);
     }
   };
 
-  // ✅ Unpair Device
-  const deleteDevice = async (id) => {
+  // Toggle relay state for a device
+  const handleToggle = async (deviceId) => {
+    const currentDevice = devices.find(
+      (d) => d.deviceId === deviceId || d._id === deviceId
+    );
+    const currentRelay =
+      currentDevice?.telemetry?.relayState ??
+      currentDevice?.relayState ??
+      false;
+    const targetState = !currentRelay;
+
     try {
-      await unpairDeviceApi(id);
-      toast.success("Device removed");
+      // Optimistic UI update
+      setDevices((prevDevices) =>
+        prevDevices.map((d) =>
+          d.deviceId === deviceId || d._id === deviceId
+            ? {
+                ...d,
+                relayState: targetState,
+                telemetry: { ...d.telemetry, relayState: targetState },
+              }
+            : d
+        )
+      );
+
+      await toggleDeviceApi(deviceId, targetState);
       fetchDevices();
     } catch (error) {
-      toast.error(error);
+      console.error("Toggle error:", error);
+      fetchDevices();
     }
   };
 
+  // Unpair / Delete a device
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to unpair this device?")) return;
+
+    try {
+      await unpairDeviceApi(id);
+      setDevices((prevDevices) =>
+        prevDevices.filter((d) => d._id !== id && d.deviceId !== id)
+      );
+    } catch (error) {
+      console.error("Unpair error:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDevices();
+
+    // Poll live data every 3 seconds
+    const interval = setInterval(fetchDevices, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-6 py-10">
+    <div className="min-h-screen bg-[#0A0D14] text-white p-6 space-y-8">
+      {/* HEADER */}
+      <div>
+        <h1 className="text-3xl font-extrabold flex items-center gap-2">
+          <span className="text-orange-500">⚡</span> Device Control Panel
+        </h1>
+        <p className="text-slate-400 text-sm mt-1">
+          Manage and control all your connected smart devices.
+        </p>
+      </div>
 
-    {/* Header */}
-    <div className="max-w-7xl mx-auto mb-10">
-      <h1 className="text-4xl font-bold text-white tracking-wide">
-        ⚡ Device Control Panel
-      </h1>
-      <p className="text-slate-400 mt-2">
-        Manage and control all your connected smart devices.
-      </p>
-    </div> 
-
-    <div className="max-w-7xl mx-auto">
-
-      {/* Add Device Card */}
-      <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl mb-12">
-
-        <h2 className="text-xl font-semibold text-white mb-6">
-          ➕ Pair New Device
+      {/* PAIR NEW DEVICE PANEL */}
+      <div className="bg-[#121824] border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
+          <span className="text-purple-400 text-xl">+</span> Pair New Device
         </h2>
 
-        <div className="flex flex-col lg:flex-row gap-4">
-
+        <form
+          onSubmit={handlePairDevice}
+          className="flex flex-col md:flex-row items-center gap-4"
+        >
+          {/* Device Name Input */}
           <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            type="text"
             placeholder="Device name (optional)"
-            className="flex-1 bg-slate-800/70 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition"
+            value={deviceName}
+            onChange={(e) => setDeviceName(e.target.value)}
+            className="w-full md:w-1/3 bg-[#1A2232] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
 
+          {/* Unique Code Input */}
           <input
-            value={deviceCode}
-            onChange={(e) => setDeviceCode(e.target.value)}
+            type="text"
             placeholder="Enter Unique Code"
-            className="flex-1 bg-slate-800/70 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition"
+            value={uniqueCode}
+            onChange={(e) => setUniqueCode(e.target.value)}
+            required
+            className="w-full md:w-1/3 bg-[#1A2232] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
 
-          <div className="flex items-center">
-            <IconPicker icon={icon} setIcon={setIcon} />
-          </div>
+          {/* Device Type Selector */}
+          <select
+            value={deviceType}
+            onChange={(e) => setDeviceType(e.target.value)}
+            className="w-full md:w-auto bg-[#1A2232] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer transition"
+          >
+            <option value="Bulb">💡 Bulb</option>
+            <option value="Fan">🌀 Fan</option>
+            <option value="AC">❄️ AC</option>
+            <option value="Meter">⚡ Meter</option>
+          </select>
 
+          {/* Submit Button */}
           <button
-            onClick={addDevice}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold hover:scale-105 transition duration-300 shadow-lg"
+            type="submit"
+            disabled={pairingLoading}
+            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium px-6 py-3 rounded-xl transition shadow-lg shadow-blue-500/20 disabled:opacity-50 cursor-pointer whitespace-nowrap"
           >
-            Add Device
+            {pairingLoading ? "Pairing..." : "Add Device"}
           </button>
+        </form>
 
-        </div>
+        {pairError && (
+          <p className="text-red-400 text-xs mt-3">{pairError}</p>
+        )}
       </div>
 
-      {/* Devices Section */}
-      <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        {/* Left Side: Title */}
-        <h2 className="text-2xl font-semibold text-white">
-          🔌 Your Devices
-        </h2>
-
-        {/* Right Side: Stats and Link */}
-        <div className="flex items-center gap-6">
-          <span className="text-sm text-slate-400">
-            {devices.length} device{devices.length !== 1 && "s"} connected
-          </span>
-          
-          <Link 
-            to="/energy-meter-dashboard" 
-            className="text-sm font-medium text-blue-400 border border-blue-400/30 bg-blue-400/10 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-all duration-300"
-          >
-            Go to Live Energy Meter
-          </Link>
+      {/* DEVICES GRID */}
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[30vh] text-slate-400 font-mono">
+          Loading EnerSence Dashboard...
         </div>
-      </div>
-
-      {devices.length === 0 ? (
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center text-slate-400">
-          No devices paired yet. Add your first smart device 🚀
+      ) : devices.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[30vh] text-slate-400 gap-2 border border-dashed border-slate-800 rounded-2xl p-8">
+          <p className="text-lg font-medium text-slate-300">
+            No paired devices found.
+          </p>
+          <p className="text-xs text-slate-500">
+            Use the panel above to pair your ESP32 node (e.g. ENR-0KDOY8).
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {devices.map((device) => (
-            <div
-              key={device._id}
-              className="hover:scale-[1.02] transition duration-300"
-            >
-              <DeviceCard
-                device={device}
-                setDevices={setDevices}
-                onDelete={deleteDevice}
-              />
-            </div>
+            <DeviceCard
+              key={device._id || device.deviceId}
+              device={device}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
     </div>
-  </div>
-);
+  );
 };
 
 export default DeviceControl;

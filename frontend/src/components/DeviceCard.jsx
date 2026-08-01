@@ -1,3 +1,4 @@
+import React from "react";
 import {
   FaLightbulb,
   FaFan,
@@ -32,90 +33,98 @@ const iconMap = {
   Other: <FaQuestionCircle size={26} />,
 };
 
-const DeviceCard = ({ device, setDevices, onDelete }) => {
+const DeviceCard = ({ device, onToggle, onDelete }) => {
+  // Extract values safely from nested telemetry or flat device properties
+  const telemetry = device?.telemetry || device || {};
 
-  const toggleDevice = () => {
-    setDevices((prevDevices) =>
-      prevDevices.map((d) =>
-        d._id === device._id
-          ? {
-              ...d,
-              powerStatus: !d.powerStatus,
-              voltage: !d.powerStatus ? 228 : 0,
-              usage: !d.powerStatus
-                ? Math.floor(Math.random() * 80 + 20)
-                : 0,
-            }
-          : d
-      )
-    );
-  };
+  const voltage = telemetry.voltage ?? 0;
+  const current = telemetry.current ?? 0;
+  const power = telemetry.power ?? 0;
+  const temperature = telemetry.temperature ?? 0;
+  const humidity = telemetry.humidity ?? 0;
+  
+  // Relay state: check telemetry first, then device root
+  const relayState = telemetry.relayState ?? device?.relayState ?? device?.powerStatus ?? false;
 
-  const inUse = device.powerStatus && device.usage > 0;
+  const inUse = relayState && power > 0;
 
   return (
     <div className="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-lg relative transition hover:scale-[1.02]">
-
-      {/* Delete Button */}
+      {/* Delete / Unpair Button */}
       <button
-        onClick={() => onDelete(device._id)}
-        className="absolute top-3 right-3 text-red-400 hover:text-red-600"
+        onClick={() => onDelete?.(device?._id || device?.deviceId)}
+        className="absolute top-3 right-3 text-red-400 hover:text-red-600 transition p-1"
+        title="Unpair Device"
       >
         <FaTrash />
       </button>
 
       {/* Device Icon */}
       <div
-        className={`w-14 h-14 flex items-center justify-center rounded-full mb-4
-        ${
-          device.powerStatus
-            ? "bg-yellow-500 text-black"
-            : "bg-slate-700 text-gray-300"
+        className={`w-14 h-14 flex items-center justify-center rounded-full mb-4 transition-colors ${
+          relayState ? "bg-yellow-500 text-black shadow-lg shadow-yellow-500/20" : "bg-slate-700 text-gray-300"
         }`}
       >
-        {iconMap[device.deviceType] || <FaQuestionCircle size={26} />}
+        {iconMap[device?.deviceType] || iconMap[device?.type] || <FaQuestionCircle size={26} />}
       </div>
 
-      {/* Device Name */}
-      <h3 className="text-white text-lg font-semibold capitalize">
-        {device.deviceType || "EnerSense Device"}
+      {/* Device Name / Code */}
+      <h3 className="text-white text-lg font-semibold capitalize tracking-wide">
+        {device?.name || device?.deviceType || "EnerSence Device"}
       </h3>
-
-      {/* Power Status */}
-      <p className="text-sm text-gray-400">
-        Power: {device.powerStatus ? "ON" : "OFF"}
+      <p className="text-xs font-mono text-slate-400 mb-3">
+        {device?.deviceId || device?._id || "ENR-0KDOY8"}
       </p>
 
-      {/* Voltage */}
-      <p className="text-sm text-blue-400">
-        Voltage: {device.voltage} V
-      </p>
+      {/* Sensor Metrics Grid */}
+      <div className="grid grid-cols-2 gap-2 text-xs my-3">
+        <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
+          <span className="text-gray-400 block">Status</span>
+          <span className={`font-semibold ${relayState ? "text-emerald-400" : "text-rose-400"}`}>
+            {relayState ? "● ON" : "○ OFF"}
+          </span>
+        </div>
 
-      {/* Usage */}
-      <p className="text-sm text-green-400">
-        Usage: {device.usage} W
-      </p>
+        <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
+          <span className="text-gray-400 block">Load State</span>
+          <span className={`font-semibold ${inUse ? "text-green-400" : "text-gray-400"}`}>
+            {inUse ? "● In Use" : "○ Idle"}
+          </span>
+        </div>
 
-      {/* Usage State */}
-      <p
-        className={`text-sm font-medium ${
-          inUse ? "text-green-500" : "text-gray-500"
-        }`}
-      >
-        {inUse ? "● In Use" : "○ Idle"}
-      </p>
+        <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
+          <span className="text-gray-400 block">Voltage</span>
+          <span className="font-mono font-semibold text-blue-400">{voltage} V</span>
+        </div>
+
+        <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
+          <span className="text-gray-400 block">Current</span>
+          <span className="font-mono font-semibold text-indigo-400">{current} A</span>
+        </div>
+
+        <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
+          <span className="text-gray-400 block">Power</span>
+          <span className="font-mono font-semibold text-amber-400">{power} W</span>
+        </div>
+
+        <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
+          <span className="text-gray-400 block">Temp / Hum</span>
+          <span className="font-mono font-semibold text-orange-400">
+            {temperature}°C / {humidity}%
+          </span>
+        </div>
+      </div>
 
       {/* Toggle Button */}
       <button
-        onClick={toggleDevice}
-        className={`w-full mt-4 py-2 rounded-lg font-medium transition
-        ${
-          device.powerStatus
-            ? "bg-green-500 text-black hover:bg-green-400"
-            : "bg-red-500 text-white hover:bg-red-400"
+        onClick={() => onToggle?.(device?.deviceId || device?._id)}
+        className={`w-full mt-2 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer ${
+          relayState
+            ? "bg-green-500 text-black hover:bg-green-400 shadow-lg shadow-green-500/20"
+            : "bg-red-500 text-white hover:bg-red-400 shadow-lg shadow-red-500/20"
         }`}
       >
-        {device.powerStatus ? "Turn OFF" : "Turn ON"}
+        {relayState ? "Turn OFF" : "Turn ON"}
       </button>
     </div>
   );
