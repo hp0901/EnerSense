@@ -37,7 +37,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "http://192.168.1.105:3000",
+      "http://192.168.33.101:3000",
       "https://enersense.in",
       "https://www.enersense.in"
     ],
@@ -90,6 +90,6 @@ app.use("/api/v1/device",deviceRoutes);
 
 // Start Server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running locally on http://192.168.1.105:${PORT}`);
-  console.log(`📡 Listening for ESP32 requests on http://192.168.1.105:${PORT}/api/v1/esp32device/telemetry`);
+  console.log(`🚀 Server running locally on http://192.168.33.101:${PORT}`);
+  console.log(`📡 Listening for ESP32 requests on http://192.168.33.101:${PORT}/api/v1/esp32device/telemetry`);
 });

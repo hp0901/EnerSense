@@ -71,7 +71,7 @@ export const deviceEndpoints = {
   // Added telemetry endpoints here so deviceApi.js imports them smoothly:
   GET_TELEMETRY: BASE_URL + "/esp32device/telemetry",
   TOGGLE_DEVICE: BASE_URL + "/esp32device/toggle",
-  // GET_LATEST_TELEMETRY: BASE_URL + "/esp32device/latest",
+  GET_LATEST_TELEMETRY: BASE_URL + "/esp32device/latest",
 };
 
 // Admin APIs

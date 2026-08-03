@@ -10,6 +10,7 @@ import {
 
 import Footer from "../Footer/Footer.js";
 import UsageEstimateChart from "../components/analytics/UsageEstimateChart.jsx";
+import HardwareStatusBadge from "../components/HardwareStatusBadge.jsx";
 import {
   getMyDevicesApi,
   getLatestTelemetryApi,
@@ -22,9 +23,10 @@ const Dashboard = () => {
   const [power, setPower] = useState(0); // Watts
   const [voltage, setVoltage] = useState(0); // Volts
   const [current, setCurrent] = useState(0); // Amps
-  const [todayUsage, setTodayUsage] = useState(0); // kWh
+  const [todayUsageKWh, setTodayUsageKWh] = useState(0); // Accumulated kWh
   const [estimatedCost, setEstimatedCost] = useState(0); // ₹
   const [deviceStatus, setDeviceStatus] = useState("Offline");
+  const [isHardwareOnline, setIsHardwareOnline] = useState(false);
   const [activeAlerts, setActiveAlerts] = useState([]);
 
   // ================= AUTH GUARD =================
@@ -41,10 +43,14 @@ const Dashboard = () => {
     const fetchLiveDashboardData = async () => {
       try {
         const res = await getMyDevicesApi();
-        const devices = res?.devices || res || [];
+        
+        // Flexible extraction depending on response shape from backend
+        const rawDevices = res?.devices || res?.data?.devices || res?.data || (Array.isArray(res) ? res : []);
+        const devices = Array.isArray(rawDevices) ? rawDevices : [];
 
         if (devices.length === 0) {
-          setDeviceStatus("No Devices");
+          setDeviceStatus("No Devices Paired");
+          setIsHardwareOnline(false);
           setPower(0);
           setVoltage(0);
           setCurrent(0);
@@ -55,66 +61,85 @@ const Dashboard = () => {
         let totalCurrent = 0;
         let latestVoltage = 0;
         let onlineCount = 0;
+        let anyHardwareOnline = false;
 
         // Fetch telemetry for each paired device in parallel
         await Promise.all(
           devices.map(async (dev) => {
             try {
-              const telRes = await getLatestTelemetryApi(dev.deviceId);
-              const telemetry = telRes?.telemetry || {};
+              const deviceId = dev.deviceId || dev.id || dev._id;
+              if (!deviceId) return;
+
+              const telRes = await getLatestTelemetryApi(deviceId);
+              // Safely pull telemetry payload
+              const telemetry = telRes?.telemetry || telRes?.data || telRes || {};
 
               const v = Number(telemetry.voltage || 0);
               const c = Number(telemetry.current || 0);
-              const p = Number(telemetry.power || 0);
-              const isRelayOn =
-                telemetry.relayState ?? dev.relayState ?? false;
+              const p = Number(telemetry.power || (v * c));
+              const isRelayOn = telemetry.relayState ?? dev.relayState ?? false;
 
+              if (telemetry.isOnline) anyHardwareOnline = true;
               if (isRelayOn || v > 0) onlineCount++;
 
               totalPower += p;
               totalCurrent += c;
               if (v > 0) latestVoltage = v; // Primary line voltage
             } catch (err) {
-              console.error(`Telemetry fetch error for ${dev.deviceId}:`, err);
+              // Gracefully handle individual device 404 or offline state
+              console.warn(`Device ${dev.deviceId || dev._id} offline or telemetry unreadable.`);
             }
           })
         );
 
-        // Update Live Metrics
-        setPower(Math.round(totalPower));
-        setVoltage(latestVoltage);
-        setCurrent(totalCurrent.toFixed(2));
+        const currentPowerWatts = Math.round(totalPower);
+        const currentLineVoltage = Number(latestVoltage.toFixed(1));
+        const currentTotalAmps = Number(totalCurrent.toFixed(2));
+
+        // Update Live Instantaneous Metrics
+        setPower(currentPowerWatts);
+        setVoltage(currentLineVoltage);
+        setCurrent(currentTotalAmps);
+        setIsHardwareOnline(anyHardwareOnline);
         setDeviceStatus(
           onlineCount > 0 ? `${onlineCount} Online` : "Offline"
         );
 
-        // Accumulate Energy Consumption (kWh) over 2s interval
-        const incrementKWh = totalPower / 1800000;
-        setTodayUsage((prev) => +(prev + incrementKWh).toFixed(3));
+        // --- REAL TIME ENERGY ACCUMULATION (kWh) ---
+        // Increments every 2 seconds (Power in Watts / 1,800,000)
+        const incrementKWh = currentPowerWatts / 1800000;
 
-        // Cost Calculation (Average ₹7 per kWh unit)
-        setEstimatedCost((prev) => +(prev + incrementKWh * 7).toFixed(2));
+        setTodayUsageKWh((prev) => {
+          const nextVal = prev + incrementKWh;
+          return Number(nextVal.toFixed(4));
+        });
 
-        // Dynamic Alerts Check
+        // Calculate Cost dynamically (Avg ₹7 per unit/kWh)
+        setEstimatedCost((prev) => {
+          const nextCost = prev + incrementKWh * 7;
+          return Number(nextCost.toFixed(2));
+        });
+
+        // --- DYNAMIC ALERTS CHECK ---
         const alerts = [];
-        if (latestVoltage > 260) {
+        if (currentLineVoltage > 260) {
           alerts.push({
             title: "High Voltage Warning ⚠️",
-            message: `Line voltage spiked to ${latestVoltage}V! High risk to appliances.`,
+            message: `Line voltage spiked to ${currentLineVoltage}V! High risk to connected appliances.`,
             time: "Just now",
           });
-        } else if (latestVoltage > 0 && latestVoltage < 150) {
+        } else if (currentLineVoltage > 0 && currentLineVoltage < 190) {
           alerts.push({
             title: "Low Voltage Alert ⚡",
-            message: `Line voltage dropped to ${latestVoltage}V! Under-voltage condition detected.`,
+            message: `Line voltage dropped to ${currentLineVoltage}V! Safe trip limits reached (<190V).`,
             time: "Just now",
           });
         }
 
-        if (totalPower > 3000) {
+        if (currentPowerWatts > 3000) {
           alerts.push({
             title: "High Power Consumption ⚡",
-            message: `Total load exceeded threshold at ${(totalPower / 1000).toFixed(2)} kW during peak operations.`,
+            message: `Total load exceeded threshold at ${currentPowerWatts} W (${(currentPowerWatts / 1000).toFixed(2)} kW).`,
             time: "Just now",
           });
         }
@@ -131,13 +156,16 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const StatCard = ({ icon, label, value }) => (
-    <div className="bg-[#4E6694] p-4 rounded-lg flex items-center gap-3">
-      <div className="text-yellow-400 text-xl">{icon}</div>
-      <div>
-        <p className="text-sm text-[#E3EDC2]">{label}</p>
-        <p className="text-lg font-semibold text-white">{value}</p>
+  const StatCard = ({ icon, label, value, extra }) => (
+    <div className="bg-[#4E6694] p-4 rounded-lg flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <div className="text-yellow-400 text-xl">{icon}</div>
+        <div>
+          <p className="text-sm text-[#E3EDC2]">{label}</p>
+          <p className="text-lg font-semibold text-white">{value}</p>
+        </div>
       </div>
+      {extra && <div>{extra}</div>}
     </div>
   );
 
@@ -153,7 +181,11 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1e293b] to-[#1e293b] text-white px-6 py-8 overflow-x-hidden">
-      <h1 className="text-3xl font-bold text-green-400 mb-8">Dashboard</h1>
+      {/* HEADER WITH HARDWARE STATUS BADGE */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h1 className="text-3xl font-bold text-green-400">Dashboard</h1>
+        <HardwareStatusBadge isOnline={isHardwareOnline} />
+      </div>
 
       {/* KPI Cards */}
       <section className="bg-white/5 backdrop-blur-lg border border-white/10 p-6 rounded-xl mb-10">
@@ -164,22 +196,23 @@ const Dashboard = () => {
           <StatCard
             icon={<FiZap />}
             label="Current Power"
-            value={`${(power / 1000).toFixed(2)} Watts`}
+            value={`${power} W`}
           />
           <StatCard
             icon={<FiActivity />}
             label="Today Usage"
-            value={`${todayUsage} Wh`}
+            value={`${(todayUsageKWh * 1000).toFixed(1)} Wh (${todayUsageKWh.toFixed(3)} kWh)`}
           />
           <StatCard
             icon={<FiDollarSign />}
             label="Estimated Cost"
-            value={`₹ ${estimatedCost}`}
+            value={`₹ ${estimatedCost.toFixed(2)}`}
           />
           <StatCard
             icon={<FiCpu />}
             label="Device Status"
             value={deviceStatus}
+            extra={<HardwareStatusBadge isOnline={isHardwareOnline} showText={false} />}
           />
         </div>
       </section>
@@ -194,7 +227,7 @@ const Dashboard = () => {
           <Reading
             icon={<FiCpu />}
             label="Frequency"
-            value={voltage > 10 ? "50 Hz" : "0 Hz"}
+            value={voltage > 50 ? "50 Hz" : "0 Hz"}
           />
         </div>
       </section>
@@ -210,33 +243,33 @@ const Dashboard = () => {
           </span>
         </div>
 
-        {/* Graph */}
+        {/* Graph Container with explicit pixel height fix for Recharts */}
         <div className="bg-white/5 mb-6 rounded-xl p-2">
-          <div className="w-full h-70">
+          <div className="w-full h-[300px] min-h-[300px]">
             <UsageEstimateChart />
           </div>
         </div>
 
         {/* Dynamic Analytics Stats */}
-        <div className="pt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="pt-6 grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
           <div className="bg-green-500/20 border border-green-500/20 p-5 rounded-xl text-center">
-            <p className="text-gray-400 text-sm">Peak Usage</p>
+            <p className="text-gray-400 text-sm">Peak Power Load</p>
             <p className="text-xl font-semibold text-green-400">
-              {(todayUsage * 0.6).toFixed(1)} Wh ⚡
+              {power} W ⚡
             </p>
           </div>
 
           <div className="bg-yellow-500/20 border border-yellow-500/20 p-5 rounded-xl text-center">
-            <p className="text-gray-400 text-sm">Average Usage</p>
+            <p className="text-gray-400 text-sm">Total Energy Consumed</p>
             <p className="text-xl font-semibold text-yellow-300">
-              {(todayUsage / 2 || 0).toFixed(1)} Wh 📊
+              {(todayUsageKWh * 1000).toFixed(1)} Wh 📊
             </p>
           </div>
 
           <div className="bg-emerald-500/20 border border-emerald-500/20 p-5 rounded-xl text-center">
             <p className="text-gray-400 text-sm">Energy Efficiency</p>
             <p className="text-xl font-semibold text-emerald-400">
-              {power > 0 ? "Optimal 🌱" : "Idle 💤"}
+              {power > 0 ? "Optimal Load 🌱" : "Idle / Standby 💤"}
             </p>
           </div>
         </div>

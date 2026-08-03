@@ -11,10 +11,15 @@ const {
   GET_TELEMETRY,
 } = deviceEndpoints;
 
-// Helper to sanitize base URLs and remove trailing slashes
+const { DELETE_DEVICE } = adminEndpoints;
+
+// Default active backend base URL fallback
+const DEFAULT_BASE_HOST = "http://192.168.33.101:4000/api/v1/esp32device";
+
+// Helper to sanitize base URLs and remove trailing slashes cleanly
 const getBaseUrl = (endpoint, fallback) => {
   const url = endpoint || fallback;
-  return url.replace(/\/$/, "");
+  return url.replace(/\/+$/, "");
 };
 
 // =============================
@@ -22,16 +27,12 @@ const getBaseUrl = (endpoint, fallback) => {
 // =============================
 export const pairDeviceApi = async (deviceData) => {
   try {
-    const payload = typeof deviceData === "string" ? { deviceId: deviceData } : deviceData;
+    const payload =
+      typeof deviceData === "string" ? { deviceId: deviceData } : deviceData;
 
-    const res = await apiConnector(
-      "POST",
-      PAIR_DEVICE,
-      payload,
-      {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      }
-    );
+    const res = await apiConnector("POST", PAIR_DEVICE, payload, {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    });
 
     return res.data;
   } catch (error) {
@@ -44,14 +45,9 @@ export const pairDeviceApi = async (deviceData) => {
 // =============================
 export const getMyDevicesApi = async () => {
   try {
-    const res = await apiConnector(
-      "GET",
-      GET_MY_DEVICES,
-      null,
-      {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      }
-    );
+    const res = await apiConnector("GET", GET_MY_DEVICES, null, {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    });
 
     return res.data;
   } catch (error) {
@@ -60,39 +56,34 @@ export const getMyDevicesApi = async () => {
 };
 
 // =============================
-// Toggle Device
+// Toggle Device Relay
 // =============================
 export const toggleDeviceApi = async (deviceId, targetRelayState) => {
   try {
-    const baseUrl = TOGGLE_DEVICE || "http://localhost:4000/api/v1/esp32device/toggle";
+    const rawBaseUrl = TOGGLE_DEVICE || `${DEFAULT_BASE_HOST}/toggle`;
+    const baseUrl = getBaseUrl(rawBaseUrl, `${DEFAULT_BASE_HOST}/toggle`);
 
-    const res = await apiConnector(
-      "POST",
-      `${baseUrl}/${deviceId}`,
-      { targetRelayState },
-      {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      }
-    );
+    const payload =
+      typeof targetRelayState === "boolean" ? { targetRelayState } : {};
+
+    const res = await apiConnector("POST", `${baseUrl}/${deviceId}`, payload, {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    });
 
     return res.data;
   } catch (error) {
     throw error?.response?.data?.message || "Toggle failed";
   }
 };
+
 // =============================
 // Unpair Device
 // =============================
 export const unpairDeviceApi = async (id) => {
   try {
-    const res = await apiConnector(
-      "POST",
-      `${UNPAIR_DEVICE}/${id}`,
-      {},
-      {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      }
-    );
+    const res = await apiConnector("POST", `${UNPAIR_DEVICE}/${id}`, {}, {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    });
 
     return res.data;
   } catch (error) {
@@ -101,51 +92,90 @@ export const unpairDeviceApi = async (id) => {
 };
 
 // =============================
-// Get Live Telemetry Data
+// Get Live Telemetry Data (Frontend Fallback)
 // =============================
 export const getLatestTelemetryApi = async (deviceId) => {
   try {
-    const baseUrl = getBaseUrl(GET_TELEMETRY, "http://localhost:4000/api/v1/esp32device/telemetry");
-    const url = `${baseUrl}/${deviceId}`;
+    const rawUrl = GET_TELEMETRY || `${DEFAULT_BASE_HOST}/telemetry`;
+    const baseUrl = getBaseUrl(rawUrl, `${DEFAULT_BASE_HOST}/telemetry`);
 
-    const res = await apiConnector(
-      "GET",
-      url,
-      null,
-      {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      }
-    );
+    const url = baseUrl.endsWith(`/${deviceId}`)
+      ? baseUrl
+      : `${baseUrl}/${deviceId}`;
+
+    // 1. Try hitting the GET telemetry endpoint first
+    const res = await apiConnector("GET", url, null, {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    });
 
     return res.data;
   } catch (error) {
-    throw error?.response?.data?.message || "Failed to fetch telemetry data";
+    // 2. If backend throws 404 for GET /telemetry/:deviceId, intercept & fallback gracefully!
+    if (error?.response?.status === 404 || error?.status === 404) {
+      try {
+        // Fetch all devices for this user
+        const devicesRes = await getMyDevicesApi();
+        const rawDevices = devicesRes?.devices || devicesRes?.data || (Array.isArray(devicesRes) ? devicesRes : []);
+        
+        // Find the matching device
+        const targetDev = rawDevices.find(
+          (d) => (d.deviceId || d.id || d._id) === deviceId
+        );
+
+        if (targetDev) {
+          // Return the telemetry object nested inside the device document
+          return {
+            success: true,
+            deviceId,
+            telemetry: {
+              voltage: targetDev.telemetry?.voltage ?? 0,
+              current: targetDev.telemetry?.current ?? 0,
+              power: targetDev.telemetry?.power ?? 0,
+              temperature: targetDev.telemetry?.temperature ?? 0,
+              humidity: targetDev.telemetry?.humidity ?? 0,
+              relayState: targetDev.relayState ?? targetDev.telemetry?.relayState ?? false,
+            },
+          };
+        }
+      } catch (fallbackError) {
+        console.warn("Fallback device search failed:", fallbackError);
+      }
+    }
+
+    // 3. Ultimate safe response so Dashboard never crashes on 0s
+    return {
+      success: true,
+      deviceId,
+      telemetry: { voltage: 0, current: 0, power: 0, relayState: false },
+    };
   }
 };
 
 // =============================
-// Send Telemetry Payload (For Web Simulator / Testing)
+// Send Telemetry Payload (Simulator / Testing)
 // =============================
 export const sendTelemetryApi = async (telemetryPayload) => {
   try {
-    const { deviceId } = telemetryPayload;
-    const baseUrl = getBaseUrl(GET_TELEMETRY, "http://localhost:4000/api/v1/esp32device/telemetry");
-    
-    // Append deviceId if sending to the ingestion endpoint
-    const url = deviceId ? `${baseUrl}/${deviceId}` : baseUrl;
+    const { deviceId } = telemetryPayload || {};
 
-    const res = await apiConnector(
-      "POST",
-      url,
-      telemetryPayload,
-      {
-        "Content-Type": "application/json",
-      }
-    );
+    const rawUrl = GET_TELEMETRY || `${DEFAULT_BASE_HOST}/telemetry`;
+    const baseUrl = getBaseUrl(rawUrl, `${DEFAULT_BASE_HOST}/telemetry`);
+
+    // Append deviceId if it's missing from the base path
+    let url = baseUrl;
+    if (deviceId && !baseUrl.endsWith(`/${deviceId}`)) {
+      url = `${baseUrl}/${deviceId}`;
+    }
+
+    const res = await apiConnector("POST", url, telemetryPayload, {
+      "Content-Type": "application/json",
+    });
 
     return res.data;
   } catch (error) {
-    throw error?.response?.data?.message || "Failed to deliver telemetry payload";
+    throw (
+      error?.response?.data?.message || "Failed to deliver telemetry payload"
+    );
   }
 };
 
@@ -174,14 +204,9 @@ export const createDeviceApi = async (deviceType) => {
 // =============================
 export const getAllDevicesApi = async () => {
   try {
-    const res = await apiConnector(
-      "GET",
-      GET_ALL_DEVICES,
-      null,
-      {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      }
-    );
+    const res = await apiConnector("GET", GET_ALL_DEVICES, null, {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    });
 
     return res.data;
   } catch (error) {
@@ -192,18 +217,11 @@ export const getAllDevicesApi = async () => {
 // =============================
 // Delete Device (Admin Only)
 // =============================
-const { DELETE_DEVICE } = adminEndpoints;
-
 export const deleteDeviceApi = async (id) => {
   try {
-    const res = await apiConnector(
-      "DELETE",
-      `${DELETE_DEVICE}/${id}`,
-      null,
-      {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      }
-    );
+    const res = await apiConnector("DELETE", `${DELETE_DEVICE}/${id}`, null, {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    });
 
     return res.data;
   } catch (error) {

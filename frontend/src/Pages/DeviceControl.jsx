@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DeviceCard from "../components/DeviceCard";
+import HardwareStatusBadge from "../components/HardwareStatusBadge";
 import {
   getMyDevicesApi,
   getLatestTelemetryApi,
@@ -23,16 +24,29 @@ const DeviceControl = () => {
   const fetchDevices = async () => {
     try {
       const res = await getMyDevicesApi();
-      const rawDevices = res?.devices || res || [];
+      const rawDevices = res?.devices || res?.data || (Array.isArray(res) ? res : []);
 
-      // Fetch live telemetry in parallel for all paired devices
       const hydratedDevices = await Promise.all(
         rawDevices.map(async (device) => {
           try {
-            const telemetryRes = await getLatestTelemetryApi(device.deviceId);
+            const targetId = device.deviceId || device._id;
+            const telemetryRes = await getLatestTelemetryApi(targetId);
+            const latestTelemetry = telemetryRes?.telemetry || {};
+
             return {
               ...device,
-              telemetry: telemetryRes?.telemetry || device.telemetry || {},
+              // Keep target state accurate
+              relayState:
+                typeof device.relayState === "boolean"
+                  ? device.relayState
+                  : (latestTelemetry.relayState ?? false),
+              // Pass live metrics + isOnline + lastSeen through telemetry object
+              telemetry: {
+                ...device.telemetry,
+                ...latestTelemetry,
+                isOnline: latestTelemetry.isOnline ?? false,
+                lastSeen: latestTelemetry.lastSeen || device.lastSeen,
+              },
             };
           } catch (err) {
             return device;
@@ -43,7 +57,7 @@ const DeviceControl = () => {
       setDevices(hydratedDevices);
     } catch (error) {
       console.error("Failed to load dashboard devices:", error);
-    } finally {
+    }  finally {
       setLoading(false);
     }
   };
@@ -88,31 +102,43 @@ const DeviceControl = () => {
     const currentDevice = devices.find(
       (d) => d.deviceId === deviceId || d._id === deviceId
     );
-    const currentRelay =
-      currentDevice?.telemetry?.relayState ??
-      currentDevice?.relayState ??
-      false;
+
+    if (!currentDevice) return;
+
+    // Get current target relay state
+    const currentRelay = currentDevice.relayState;
     const targetState = !currentRelay;
 
+    // 1. Optimistic UI update (Update state locally first)
+    setDevices((prevDevices) =>
+      prevDevices.map((d) =>
+        d.deviceId === deviceId || d._id === deviceId
+          ? {
+              ...d,
+              relayState: targetState,
+              telemetry: { ...d.telemetry, relayState: targetState },
+            }
+          : d
+      )
+    );
+
     try {
-      // Optimistic UI update
+      // 2. Call backend endpoint with explicit target state
+      await toggleDeviceApi(deviceId, targetState);
+    } catch (error) {
+      console.error("Toggle error:", error);
+      // Revert optimistic update if API fails
       setDevices((prevDevices) =>
         prevDevices.map((d) =>
           d.deviceId === deviceId || d._id === deviceId
             ? {
                 ...d,
-                relayState: targetState,
-                telemetry: { ...d.telemetry, relayState: targetState },
+                relayState: currentRelay,
+                telemetry: { ...d.telemetry, relayState: currentRelay },
               }
             : d
         )
       );
-
-      await toggleDeviceApi(deviceId, targetState);
-      fetchDevices();
-    } catch (error) {
-      console.error("Toggle error:", error);
-      fetchDevices();
     }
   };
 
@@ -140,14 +166,26 @@ const DeviceControl = () => {
 
   return (
     <div className="min-h-screen bg-[#0A0D14] text-white p-6 space-y-8">
-      {/* HEADER */}
-      <div>
-        <h1 className="text-3xl font-extrabold flex items-center gap-2">
-          <span className="text-orange-500">⚡</span> Device Control Panel
-        </h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Manage and control all your connected smart devices.
-        </p>
+      {/* HEADER & OVERALL SYSTEM HARDWARE SUMMARY */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold flex items-center gap-2">
+            <span className="text-orange-500">⚡</span> Device Control Panel
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Manage and control all your connected smart devices.
+          </p>
+        </div>
+
+        {/* Global Hardware Health Badge */}
+        {devices.length > 0 && (
+          <div className="flex items-center gap-3 bg-[#121824] border border-slate-800 px-4 py-2 rounded-2xl w-fit">
+            <span className="text-xs text-slate-400">System Link:</span>
+            <HardwareStatusBadge
+              isOnline={devices.some((d) => d.telemetry?.isOnline)}
+            />
+          </div>
+        )}
       </div>
 
       {/* PAIR NEW DEVICE PANEL */}

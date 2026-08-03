@@ -19,16 +19,16 @@ const data = [
 
 const UsageEstimateChart = () => {
   return (
-    <div className="bg-white/5 backdrop-blur-sm p-6 rounded-xl ">
+    <div className="w-full h-full flex flex-col justify-between">
+      {/* Chart Title */}
+      <h3 className="text-center text-yellow-400 font-semibold mb-2">
+        Usage Estimate
+      </h3>
 
-      {/* Chart */}
-      <h3 className="text-center text-yellow-400 font-semibold mb-4">
-      Usage Estimate
-    </h3>
-      <div className="h-56 w-full">
+      {/* Chart Canvas Area */}
+      <div className="h-60 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-
             <CartesianGrid
               stroke="#8b9cb3"
               strokeDasharray="4 6"
@@ -65,29 +65,18 @@ const UsageEstimateChart = () => {
               activeDot={{ r: 7 }}
               animationDuration={1500}
             />
-
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Prediction Info */}
-
-      <div className="mt-6 pt-4 border-t border-[#334155] text-center text-sm text-gray-300">
-
+      {/* Prediction Info Footer */}
+      <div className="mt-4 pt-3 border-t border-white/10 text-center text-sm text-gray-300">
         Till Now:
-        <span className="text-white font-semibold ml-1">
-          164 kWh
-        </span>
-
+        <span className="text-white font-semibold ml-1">164 kWh</span>
         <span className="mx-3 text-gray-500">|</span>
-
         Predicted:
-        <span className="text-white font-semibold ml-1">
-          439 kWh
-        </span>
-
+        <span className="text-white font-semibold ml-1">439 kWh</span>
       </div>
-
     </div>
   );
 };
