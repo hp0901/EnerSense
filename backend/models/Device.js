@@ -26,11 +26,13 @@ const deviceSchema = new mongoose.Schema(
 
     deviceType: {
       type: String,
+      lowercase: true, // 👈 Converts "AC" -> "ac", "Bulb" -> "bulb" before validation
       enum: [
         "bulb",
         "fan",
         "plug",
         "ac",
+        "meter",   // 👈 Added "meter" to match frontend option
         "heater",
         "tv",
         "fridge",

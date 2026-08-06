@@ -6,59 +6,75 @@ import { maintenanceEmail } from "../Email/maintenanceTemplate.js";
 import { sendPushNotification } from "../services/pushNotificationService.js";
 import NotificationSettings from "../models/NotificationSettings.js";
 
+// =============================
+// Pair Device to User
+// =============================
 export const pairDevice = async (req, res) => {
   try {
+    const { deviceId, name, deviceType } = req.body;
+    const userId = req.user.id; // from auth middleware
 
-    const { deviceId, name, deviceType } = req.body.deviceId || req.body;
-    const userId = req.user.id;
-
-    const device = await Device.findOne({ deviceId });
-
-    if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: "Invalid device ID"
-      });
-    }
-
-    if (device.user && device.user.toString() !== userId) {
+    if (!deviceId) {
       return res.status(400).json({
         success: false,
-        message: "Device already paired"
+        message: "Device ID is required",
       });
     }
 
-    device.user = userId;
-    device.name = name || device.name;
-    device.deviceType = deviceType || device.deviceType;
+    // Clean inputs (trim whitespace & make uppercase to match ENR-XXXXXX)
+    const cleanDeviceId = deviceId.trim().toUpperCase();
 
-    await device.save();
+    // 1. Check if device exists in pre-registered pool
+    const existingDevice = await Device.findOne({ deviceId: cleanDeviceId });
+
+    if (!existingDevice) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid device ID. Please check the code or contact support.",
+      });
+    }
+
+    // 2. Prevent hijacking if already paired
+    if (existingDevice.user && existingDevice.user.toString() !== userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Device is already paired to another user",
+      });
+    }
+
+    // 3. Pair device to user (FIXED: using 'user' to match getMyDevices)
+    existingDevice.user = userId; 
+    if (name) existingDevice.name = name;
+    if (deviceType) existingDevice.deviceType = deviceType;
+
+    await existingDevice.save();
 
     return res.status(200).json({
       success: true,
       message: "Device paired successfully",
-      device
+      device: existingDevice,
     });
-
   } catch (error) {
-    console.error("[BACKEND]", error);
-
+    console.error("Pairing error:", error);
     return res.status(500).json({
       success: false,
-      message: "Server error"
+      message: error.message || "Server Error during pairing",
     });
   }
 };
 
+// =============================
+// Get My Devices
+// =============================
 export const getMyDevices = async (req, res) => {
   try {
     const devices = await Device.find({ user: req.user.id });
-    console.log("Devices found:", devices.length);
+    console.log("Devices found for user:", devices.length);
+
     return res.status(200).json({
       success: true,
       devices
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -67,14 +83,18 @@ export const getMyDevices = async (req, res) => {
   }
 };
 
+// =============================
+// Toggle Device Relay State
+// =============================
 export const toggleDevice = async (req, res) => {
   try {
     const { id } = req.params;
 
     const device = await Device.findById(id);
 
-    if (!device)
-      return res.status(404).json({ success: false });
+    if (!device) {
+      return res.status(404).json({ success: false, message: "Device not found" });
+    }
 
     device.powerStatus = !device.powerStatus;
     device.voltage = device.powerStatus ? 228 : 0;
@@ -88,12 +108,14 @@ export const toggleDevice = async (req, res) => {
       success: true,
       device
     });
-
   } catch (error) {
-    return res.status(500).json({ success: false });
+    return res.status(500).json({ success: false, message: "Toggle failed" });
   }
 };
 
+// =============================
+// Unpair Device
+// =============================
 export const unpairDevice = async (req, res) => {
   try {
     const { id } = req.params;
@@ -126,11 +148,14 @@ export const unpairDevice = async (req, res) => {
   }
 };
 
+// =============================
+// Create Device (Admin / Master Pool)
+// =============================
 export const createDevice = async (req, res) => {
   try {
     const { deviceType } = req.body;
 
-    // Generate Unique ID
+    // Generate Unique ID starting with ENR-
     const deviceId = "ENR-" + nanoid(6).toUpperCase();
 
     const newDevice = await Device.create({
@@ -148,7 +173,6 @@ export const createDevice = async (req, res) => {
       message: "Device created successfully",
       device: newDevice,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -157,6 +181,9 @@ export const createDevice = async (req, res) => {
   }
 };
 
+// =============================
+// Get All Devices (Admin)
+// =============================
 export const getAllDevices = async (req, res) => {
   try {
     const devices = await Device.find().populate("user", "email");
@@ -173,9 +200,9 @@ export const getAllDevices = async (req, res) => {
   }
 };
 
-
-
-// Admin-only function to send bulk email to all users
+// =============================
+// Admin Bulk Email
+// =============================
 export const sendBulkEmail = async (req, res) => {
   try {
     const { subject, content } = req.body;
@@ -188,7 +215,6 @@ export const sendBulkEmail = async (req, res) => {
     }
 
     const users = await User.find({}, "email firstName");
-
     let successCount = 0;
 
     for (const user of users) {
@@ -202,10 +228,8 @@ export const sendBulkEmail = async (req, res) => {
 
         successCount++;
         await new Promise(resolve => setTimeout(resolve, 150));
-
       } catch (err) {
-        console.log(err.message);
-        console.log("Failed for:", user.email);
+        console.log("Failed for:", user.email, err.message);
       }
     }
 
@@ -213,7 +237,6 @@ export const sendBulkEmail = async (req, res) => {
       success: true,
       totalSent: successCount,
     });
-
   } catch (error) {
     console.error("Bulk email error:", error);
     return res.status(500).json({
@@ -223,69 +246,57 @@ export const sendBulkEmail = async (req, res) => {
   }
 };
 
-// Example of sending push notification based on device usage
-
+// =============================
+// Update Device Usage & Alerts
+// =============================
 const threshold = 2000;
 
 export const updateDeviceUsage = async (req, res) => {
-
   try {
-
     const { deviceId, usage } = req.body;
 
     const device = await Device.findOne({ deviceId });
 
-    if(!device){
+    if (!device) {
       return res.status(404).json({
-        success:false,
-        message:"Device not found"
+        success: false,
+        message: "Device not found"
       });
     }
 
     device.usage = usage;
     await device.save();
 
-    // ⚡ ALERT LOGIC
-    if(device.usage > threshold){
-
+    if (device.usage > threshold && device.user) {
       const settings = await NotificationSettings.findOne({ user: device.user });
 
-      if(settings?.pushAlerts){
-
+      if (settings?.pushAlerts) {
         await sendPushNotification(
           device.user,
           "EnerSense Alert ⚡",
           "High energy consumption detected"
         );
-
       }
-
     }
 
     res.json({
-      success:true,
+      success: true,
       device
     });
-
-  } catch(error){
-
+  } catch (error) {
     console.error(error);
-
     res.status(500).json({
-      success:false,
-      message:"Device update failed"
+      success: false,
+      message: "Device update failed"
     });
-
   }
-
 };
 
 // =============================
-// Admin-only function to delete a device
+// Delete Device (Admin)
 // =============================
 export const deleteDevice = async (req, res) => {
   try {
-
     const { id } = req.params;
 
     const device = await Device.findById(id);
@@ -297,7 +308,6 @@ export const deleteDevice = async (req, res) => {
       });
     }
 
-    // Optional safety check
     if (device.user) {
       return res.status(400).json({
         success: false,
@@ -311,15 +321,11 @@ export const deleteDevice = async (req, res) => {
       success: true,
       message: "Device deleted successfully"
     });
-
   } catch (error) {
-
     console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Device deletion failed"
     });
-
   }
 };

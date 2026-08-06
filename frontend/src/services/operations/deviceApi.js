@@ -14,7 +14,7 @@ const {
 const { DELETE_DEVICE } = adminEndpoints;
 
 // Default active backend base URL fallback
-const DEFAULT_BASE_HOST = "http://192.168.33.101:4000/api/v1/esp32device";
+const DEFAULT_BASE_HOST = "https://api.enersense.tech/api/v1/esp32device";
 
 // Helper to sanitize base URLs and remove trailing slashes cleanly
 const getBaseUrl = (endpoint, fallback) => {

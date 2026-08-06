@@ -5,7 +5,7 @@
 const BASE_URL = "https://api.enersense.tech/api/v1";
 
 export const userProfile = {
-  // auth (already there)
+  // Auth
   SENDOTP_API: BASE_URL + "/auth/sendotp",
   SIGNUP_API: BASE_URL + "/auth/signup",
   LOGIN_API: BASE_URL + "/auth/login",
@@ -14,7 +14,7 @@ export const userProfile = {
   VERIFY_FORGOT_OTP_API: BASE_URL + "/auth/verify-forgot-otp",
   GOOGLE_LOGIN_API: BASE_URL + "/auth/google-login",
 
-  // 🔔 notification settings
+  // 🔔 Notification settings
   GET_NOTIFICATION_SETTINGS_API: BASE_URL + "/settings/notifications",
   UPDATE_NOTIFICATION_SETTINGS_API: BASE_URL + "/settings/notifications",
 };
@@ -24,14 +24,14 @@ export const chatbotEndpoints = {
   SEND_MESSAGE_API: BASE_URL + "/chatbot/message",
 };
 
-// Forget Password APIs
+// Forgot Password APIs
 export const authEndpoints = {
   RESET_PASSWORD_API: BASE_URL + "/auth/reset-password",
   SEND_FORGOT_PASSWORD_OTP: BASE_URL + "/auth/forgot-password/send-otp",
   VERIFY_FORGOT_PASSWORD_OTP: BASE_URL + "/auth/forgot-password/verify-otp",
 };
 
-// Profile Update Api
+// Profile Update API
 export const profileEndpoints = {
   UPDATE_PROFILE: BASE_URL + "/profile/update",
   GET_PROFILE: BASE_URL + "/profile/me",
@@ -60,17 +60,19 @@ export const invoiceEndpoints = {
   DOWNLOAD_INVOICE: BASE_URL + "/invoice",
 };
 
-// Device Management APIs
+// Device Management APIs (Matches Express app.use("/api/v1/device", deviceRoutes))
 export const deviceEndpoints = {
   PAIR_DEVICE: BASE_URL + "/device/pair",
   GET_MY_DEVICES: BASE_URL + "/device/my-devices",
   TOGGLE_DEVICE: BASE_URL + "/device/toggle",
   UNPAIR_DEVICE: BASE_URL + "/device/unpair",
+  
+  // Admin Device Endpoints
   CREATE_DEVICE: BASE_URL + "/admin/create",
   GET_ALL_DEVICES: BASE_URL + "/admin/all",
-  // Added telemetry endpoints here so deviceApi.js imports them smoothly:
+  
+  // ESP32 Telemetry Endpoints (Matches app.use("/api/v1/esp32device", esp32DeviceRoutes))
   GET_TELEMETRY: BASE_URL + "/esp32device/telemetry",
-  TOGGLE_DEVICE: BASE_URL + "/esp32device/toggle",
   GET_LATEST_TELEMETRY: BASE_URL + "/esp32device/latest",
 };
 
@@ -102,4 +104,3 @@ export const twoFactorEndpoints = {
 export const notificationEndpoints = {
   SAVE_DEVICE_TOKEN: BASE_URL + "/push/save-token",
 };
-
