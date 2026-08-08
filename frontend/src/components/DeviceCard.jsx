@@ -37,17 +37,32 @@ const DeviceCard = ({ device, onToggle, onDelete }) => {
   // Extract values safely from nested telemetry or flat device properties
   const telemetry = device?.telemetry || device || {};
 
-  // Relay state: check telemetry first, then device root
-  const relayState = telemetry.relayState ?? device?.relayState ?? device?.powerStatus ?? false;
+  // Identify channel (default to 1 if not specified)
+  const channel = device?.relayChannel || device?.channel || 1;
 
-  // ZERO-OUT metrics if relay state is OFF
-  const voltage = relayState ? (telemetry.voltage ?? 0) : 0;
-  const current = relayState ? (telemetry.current ?? 0) : 0;
-  const power = relayState ? (telemetry.power ?? 0) : 0;
+  // Channel-aware Relay State check
+  let relayState = false;
+  if (channel === 1) {
+    relayState = telemetry.relay1State ?? telemetry.relayState ?? device?.relayState ?? device?.powerStatus ?? false;
+  } else if (channel === 2) {
+    relayState = telemetry.relay2State ?? telemetry.relayState ?? device?.relayState ?? device?.powerStatus ?? false;
+  } else {
+    relayState = telemetry.relayState ?? telemetry.relay1State ?? telemetry.relay2State ?? device?.relayState ?? device?.powerStatus ?? false;
+  }
+
+  // Get raw telemetry metrics
+  const rawVoltage = Number(telemetry.voltage ?? device?.voltage ?? 0);
+  const rawCurrent = Number(telemetry.current ?? device?.current ?? 0);
+  const rawPower   = Number(telemetry.power ?? device?.power ?? 0);
+
+  // ZERO-OUT metrics ONLY if THIS channel is OFF
+  const voltage = relayState ? rawVoltage : 0;
+  const current = relayState ? rawCurrent : 0;
+  const power   = relayState ? rawPower : 0;
   
   // Ambient room sensor readings remain active
-  const temperature = telemetry.temperature ?? 0;
-  const humidity = telemetry.humidity ?? 0;
+  const temperature = telemetry.temperature ?? device?.temperature ?? 0;
+  const humidity    = telemetry.humidity ?? device?.humidity ?? 0;
 
   const inUse = relayState && power > 0;
 
@@ -101,17 +116,17 @@ const DeviceCard = ({ device, onToggle, onDelete }) => {
 
         <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
           <span className="text-gray-400 block">Voltage</span>
-          <span className="font-mono font-semibold text-blue-400">{voltage} V</span>
+          <span className="font-mono font-semibold text-blue-400">{voltage.toFixed(1)} V</span>
         </div>
 
         <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
           <span className="text-gray-400 block">Current</span>
-          <span className="font-mono font-semibold text-indigo-400">{current} A</span>
+          <span className="font-mono font-semibold text-indigo-400">{current.toFixed(2)} A</span>
         </div>
 
         <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
           <span className="text-gray-400 block">Power</span>
-          <span className="font-mono font-semibold text-amber-400">{power} W</span>
+          <span className="font-mono font-semibold text-amber-400">{Math.round(power)} W</span>
         </div>
 
         <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2">
