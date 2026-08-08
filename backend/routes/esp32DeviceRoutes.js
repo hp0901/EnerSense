@@ -9,104 +9,101 @@ const router = express.Router();
 const sanitizeDeviceId = (id) => String(id || "").trim().toUpperCase();
 
 /**
- * 📥 POST /api/v1/esp32device/telemetry/:deviceId
- * Ingest telemetry posted by the ESP32 hardware
+ * 🌉 HARDWARE BRIDGE MAPPING:
+ * Maps secondary UI virtual cards to the main physical ESP32 board and its relay channel.
  */
-router.post("/telemetry/:deviceId", async (req, res) => {
+const VIRTUAL_DEVICE_MAP = {
+  "ENR-6SQHG0": { primaryHardwareId: "ENR-0KDOY8", channel: 2 },
+};
+
+/**
+ * 📥 POST /api/v1/esp32device/telemetry
+ * 📥 POST /api/v1/esp32device/telemetry/:deviceId
+ * Ingest telemetry posted by the physical ESP32 hardware
+ */
+/**
+ * 📥 POST /api/v1/esp32device/telemetry
+ * 📥 POST /api/v1/esp32device/telemetry/:deviceId
+ */
+const handleTelemetryIngest = async (req, res) => {
   const timestamp = new Date().toISOString();
-  console.log(`\n============== 📥 [TELEMETRY INGEST START - ${timestamp}] ==============`);
-  
+  console.log(`\n============== 📥 [TELEMETRY INGEST - ${timestamp}] ==============`);
+
   try {
     const rawId = req.params.deviceId || req.body.deviceId;
     const deviceId = sanitizeDeviceId(rawId);
-    
-    console.log(`[TELEMETRY] Raw Param/Body ID: "${rawId}" | Sanitized ID: "${deviceId}"`);
-    console.log(`[TELEMETRY] Incoming Payload:`, JSON.stringify(req.body));
 
-    const { voltage, current, power, temperature, humidity, relayState: reportedRelayState } = req.body;
+    const { voltage, current, power, temperature, humidity } = req.body;
 
     if (!deviceId) {
-      console.error("❌ [TELEMETRY ERROR] Missing deviceId in request!");
       return res.status(400).json({ success: false, error: "Missing deviceId" });
     }
 
-    // 1. Fetch current device record using .lean() to prevent Mongoose schema field stripping
-    let device = await Device.findOne({ deviceId }).lean();
+    // 1. Find or create device record
+    let device = await Device.findOne({ deviceId });
 
     if (!device) {
-      console.warn(`⚠️ [TELEMETRY] Device '${deviceId}' NOT FOUND in DB. Creating new record...`);
-      const newDevice = await Device.create({
+      device = await Device.create({
         deviceId,
-        relayState: true,
-        "telemetry.relayState": true,
+        relayState: false,
+        relay1State: false,
+        relay2State: false,
       });
-      device = newDevice.toObject();
-      console.log(`✅ [TELEMETRY] Created new device doc with Mongo _id: ${device._id}`);
     }
 
-    // 💡 SAFE FALLBACK EVALUATION:
-    // Resolves 'undefined' by checking root relayState, nested telemetry.relayState, or defaulting to true
-    let currentTargetState;
-    if (typeof device.relayState === "boolean") {
-      currentTargetState = device.relayState;
-    } else if (typeof device.telemetry?.relayState === "boolean") {
-      currentTargetState = device.telemetry.relayState;
-    } else {
-      currentTargetState = true;
-    }
+    // 🔑 READ MASTER TARGET STATES FROM DATABASE (Ignore what board sent in body)
+    const targetR1 = device.relay1State ?? device.relayState ?? false;
+    const targetR2 = device.relay2State ?? false;
 
-    console.log(`🔍 [TELEMETRY STATE CHECK] Doc _id: ${device._id} | DB relayState: ${device.relayState} -> Evaluated Target: ${currentTargetState}`);
+    // 2. Update telemetry metrics ONLY (Do NOT overwrite relay1State/relay2State!)
+    if (!device.telemetry) device.telemetry = {};
+    device.lastSeen = new Date();
+    device.telemetry.voltage = voltage ?? 0;
+    device.telemetry.current = current ?? 0;
+    device.telemetry.power = power ?? 0;
+    device.telemetry.temperature = temperature ?? 0;
+    device.telemetry.humidity = humidity ?? 0;
+    device.telemetry.updatedAt = new Date();
 
-    // 2. Perform atomic telemetry snapshot update (Leaves device.relayState 100% UNTOUCHED)
-    const updateResult = await Device.updateOne(
-      { deviceId },
+    await device.save();
+
+    // 3. Sync Virtual Device Record (ENR-6SQHG0)
+    await Device.updateOne(
+      { deviceId: "ENR-6SQHG0" },
       {
         $set: {
-          relayState: currentTargetState, // Keep root state populated explicitly
           lastSeen: new Date(),
+          relayState: targetR2,
+          relay1State: targetR2,
+          relay2State: targetR2,
           "telemetry.voltage": voltage ?? 0,
           "telemetry.current": current ?? 0,
           "telemetry.power": power ?? 0,
           "telemetry.temperature": temperature ?? 0,
           "telemetry.humidity": humidity ?? 0,
-          "telemetry.relayState": reportedRelayState ?? currentTargetState,
           "telemetry.updatedAt": new Date(),
-        }
-      }
+        },
+      },
+      { upsert: true }
     );
 
-    console.log(`📊 [TELEMETRY MONGO UPDATE] Matched: ${updateResult.matchedCount} | Modified: ${updateResult.modifiedCount}`);
+    console.log(`📡 [RESPONSES TO ESP32] Sending Target States -> R1: ${targetR1} | R2: ${targetR2}`);
 
-    // 3. Store historical log
-    const telemetryLog = await Telemetry.create({
-      deviceId,
-      voltage: voltage ?? 0,
-      current: current ?? 0,
-      power: power ?? 0,
-      temperature: temperature ?? 0,
-      humidity: humidity ?? 0,
-      relayState: reportedRelayState ?? currentTargetState,
-    });
-
-    console.log(`📝 [TELEMETRY HISTORICAL LOGGED] Telemetry Doc _id: ${telemetryLog._id}`);
-
-    // 4. Verify DB state AFTER update using .lean()
-    const deviceAfter = await Device.findOne({ deviceId }).lean();
-    console.log(`🔎 [TELEMETRY POST-VERIFY] Doc _id: ${deviceAfter._id} | DB relayState AFTER TELEMETRY: ${deviceAfter?.relayState}`);
-
-    console.log(`📡 [TELEMETRY INGEST RESPONSE] Device: ${deviceId} | Returning targetRelayState: ${currentTargetState}`);
-    console.log(`================ 📥 [TELEMETRY INGEST END] ================\n`);
-
+    // 4. Respond to ESP32 with the Database Target States
     return res.status(200).json({
       success: true,
-      targetRelayState: currentTargetState,
+      targetRelayState: targetR1,
+      relay1State: targetR1,
+      relay2State: targetR2,
     });
   } catch (error) {
-    console.error("❌ [TELEMETRY ENDPOINT EXCEPTION]:", error);
-    console.log(`================ 📥 [TELEMETRY INGEST END WITH ERROR] ================\n`);
+    console.error("❌ [TELEMETRY ERROR]:", error);
     return res.status(500).json({ success: false, error: error.message });
   }
-});
+};
+
+router.post("/telemetry", handleTelemetryIngest);
+router.post("/telemetry/:deviceId", handleTelemetryIngest);
 
 /**
  * 📡 GET /api/v1/esp32device/telemetry/:deviceId
@@ -115,7 +112,14 @@ router.post("/telemetry/:deviceId", async (req, res) => {
 router.get("/telemetry/:deviceId", async (req, res) => {
   try {
     const rawId = req.params.deviceId;
-    const deviceId = sanitizeDeviceId(rawId);
+    let deviceId = sanitizeDeviceId(rawId);
+    let channelOverride = null;
+
+    // Bridge check: If queried device is virtual (ENR-6SQHG0), resolve to primary hardware (ENR-0KDOY8)
+    if (VIRTUAL_DEVICE_MAP[deviceId]) {
+      channelOverride = VIRTUAL_DEVICE_MAP[deviceId].channel;
+      deviceId = VIRTUAL_DEVICE_MAP[deviceId].primaryHardwareId;
+    }
 
     if (!deviceId) {
       return res.status(400).json({ success: false, message: "DeviceId parameter is required" });
@@ -126,7 +130,7 @@ router.get("/telemetry/:deviceId", async (req, res) => {
     if (!device) {
       return res.status(200).json({
         success: true,
-        deviceId,
+        deviceId: rawId,
         telemetry: {
           isOnline: false,
           voltage: 0,
@@ -135,16 +139,21 @@ router.get("/telemetry/:deviceId", async (req, res) => {
           temperature: 0,
           humidity: 0,
           relayState: false,
+          relay1State: false,
+          relay2State: false,
           lastSeen: null,
         },
       });
     }
 
-    // 🟢 ONLINE / OFFLINE LOGIC:
-    // Device is considered ONLINE if lastSeen was within the last 15 seconds (15,000ms)
+    // 🟢 ONLINE / OFFLINE LOGIC: 15 Second Threshold
     const OFFLINE_THRESHOLD_MS = 15000;
     const lastSeenTime = device.lastSeen ? new Date(device.lastSeen).getTime() : 0;
     const isOnline = Date.now() - lastSeenTime < OFFLINE_THRESHOLD_MS;
+
+    const evaluatedRelayState = channelOverride === 2 
+      ? (device.relay2State ?? false) 
+      : (device.relay1State ?? device.relayState ?? false);
 
     const liveTelemetry = {
       voltage: device.telemetry?.voltage ?? 0,
@@ -152,15 +161,17 @@ router.get("/telemetry/:deviceId", async (req, res) => {
       power: device.telemetry?.power ?? 0,
       temperature: device.telemetry?.temperature ?? 0,
       humidity: device.telemetry?.humidity ?? 0,
-      relayState: device.relayState ?? device.telemetry?.relayState ?? false,
-      isOnline, // 👈 True if ESP32 updated within 15 seconds
+      relayState: evaluatedRelayState,
+      relay1State: device.relay1State ?? device.telemetry?.relay1State ?? false,
+      relay2State: device.relay2State ?? device.telemetry?.relay2State ?? false,
+      isOnline,
       lastSeen: device.lastSeen || null,
       updatedAt: device.telemetry?.updatedAt || device.updatedAt || new Date(),
     };
 
     return res.status(200).json({
       success: true,
-      deviceId: device.deviceId,
+      deviceId: rawId,
       telemetry: liveTelemetry,
     });
   } catch (error) {
@@ -173,86 +184,85 @@ router.get("/telemetry/:deviceId", async (req, res) => {
  * 🔌 POST /api/v1/esp32device/toggle
  * 🔌 POST /api/v1/esp32device/toggle/:deviceId
  */
+/**
+ * 🔌 POST /api/v1/esp32device/toggle
+ * 🔌 POST /api/v1/esp32device/toggle/:deviceId
+ */
 const handleToggle = async (req, res) => {
-  const timestamp = new Date().toISOString();
-  console.log(`\n============== 🔌 [RELAY TOGGLE START - ${timestamp}] ==============`);
-
   try {
-    const rawId = req.params.deviceId || req.body.deviceId;
-    const deviceId = sanitizeDeviceId(rawId);
-    const { targetRelayState } = req.body;
+    let rawId = req.params.deviceId || req.body.deviceId;
+    let targetId = sanitizeDeviceId(rawId);
 
-    console.log(`[TOGGLE] Raw Param/Body ID: "${rawId}" | Sanitized ID: "${deviceId}"`);
-    console.log(`[TOGGLE] Requested targetRelayState payload:`, targetRelayState, `(Type: ${typeof targetRelayState})`);
+    console.log(`\n============== 🔌 [RELAY TOGGLE START] Target ID: "${targetId}" ==============`);
 
-    if (!deviceId) {
-      console.error("❌ [TOGGLE ERROR] Missing deviceId!");
-      return res.status(400).json({
-        success: false,
-        message: "Missing required parameter: deviceId",
-      });
+    // Determine if this request is targeting Relay Channel 2 (e.g. AC card ENR-6SQHG0)
+    const isChannel2 = req.body.relayChannel === 2 || targetId === "ENR-6SQHG0";
+
+    // Primary hardware board where physical relays are connected
+    const primaryHardwareId = "ENR-0KDOY8";
+
+    // 1. Fetch primary hardware document
+    let primaryDevice = await Device.findOne({ deviceId: primaryHardwareId });
+
+    if (!primaryDevice) {
+      console.error(`❌ Primary hardware device ${primaryHardwareId} not found in DB!`);
+      return res.status(404).json({ success: false, message: "Hardware device not found" });
     }
 
-    let device = await Device.findOne({ deviceId }).lean();
+    if (!primaryDevice.telemetry) primaryDevice.telemetry = {};
 
-    if (!device) {
-      console.error(`❌ [TOGGLE ERROR] Device '${deviceId}' not found in database!`);
-      return res.status(404).json({
-        success: false,
-        message: `Device with ID '${deviceId}' not found.`,
-      });
+    let newR1 = primaryDevice.relay1State ?? false;
+    let newR2 = primaryDevice.relay2State ?? false;
+
+    // 2. Toggle the correct relay state on primary hardware
+    if (isChannel2) {
+      newR2 = !newR2;
+      primaryDevice.relay2State = newR2;
+      primaryDevice.telemetry.relay2State = newR2;
+      console.log(`🎯 [TOGGLE CHANNEL 2] Primary Hardware (${primaryHardwareId}) Relay2 set to: ${newR2}`);
+    } else {
+      newR1 = !newR1;
+      primaryDevice.relay1State = newR1;
+      primaryDevice.relayState = newR1;
+      primaryDevice.telemetry.relay1State = newR1;
+      primaryDevice.telemetry.relayState = newR1;
+      console.log(`🎯 [TOGGLE CHANNEL 1] Primary Hardware (${primaryHardwareId}) Relay1 set to: ${newR1}`);
     }
 
-    // Determine current state with fallback
-    const currentState = 
-      typeof device.relayState === "boolean"
-        ? device.relayState
-        : (typeof device.telemetry?.relayState === "boolean" ? device.telemetry.relayState : false);
+    primaryDevice.lastSeen = new Date();
+    await primaryDevice.save();
 
-    console.log(`🔍 [TOGGLE BEFORE UPDATE] Doc _id: ${device._id} | Current relayState in DB: ${device.relayState}`);
+    // 3. Sync virtual device record (ENR-6SQHG0) if toggled via virtual ID
+    if (targetId === "ENR-6SQHG0") {
+      await Device.updateOne(
+        { deviceId: "ENR-6SQHG0" },
+        {
+          $set: {
+            relayState: newR2,
+            relay1State: newR2,
+            relay2State: newR2,
+            "telemetry.relayState": newR2,
+            "telemetry.relay1State": newR2,
+            "telemetry.relay2State": newR2,
+            lastSeen: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+      console.log(`✅ Synced Virtual Device ENR-6SQHG0 relayState to: ${newR2}`);
+    }
 
-    // Determine target state
-    const newRelayState =
-      typeof targetRelayState === "boolean"
-        ? targetRelayState
-        : !currentState;
-
-    console.log(`🎯 [TOGGLE DECISION] Setting relayState to: ${newRelayState}`);
-
-    // Atomic update to BOTH root document and nested telemetry object
-    const updateResult = await Device.updateOne(
-      { deviceId },
-      {
-        $set: {
-          relayState: newRelayState,
-          lastSeen: new Date(),
-          "telemetry.relayState": newRelayState
-        }
-      }
-    );
-
-    console.log(`📊 [TOGGLE MONGO UPDATE] Matched: ${updateResult.matchedCount} | Modified: ${updateResult.modifiedCount}`);
-
-    // Verify DB update using .lean()
-    const updatedDevice = await Device.findOne({ deviceId }).lean();
-    console.log(`🔎 [TOGGLE POST-VERIFY] Doc _id: ${updatedDevice._id} | New DB relayState AFTER TOGGLE: ${updatedDevice?.relayState}`);
-
-    console.log(`🔌 [RELAY TOGGLE COMPLETED] Device: ${deviceId} -> Updated targetRelayState: ${newRelayState}`);
     console.log(`================ 🔌 [RELAY TOGGLE END] ================\n`);
 
     return res.status(200).json({
       success: true,
-      message: `Relay state updated to ${newRelayState ? "ON" : "OFF"}`,
-      relayState: newRelayState,
-      targetRelayState: newRelayState,
-    });
-  } catch (error) {
-    console.error("❌ [TOGGLE ENDPOINT EXCEPTION]:", error);
-    console.log(`================ 🔌 [RELAY TOGGLE END WITH ERROR] ================\n`);
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Failed to toggle relay state",
-    });
+      targetRelayState: isChannel2 ? newR2 : newR1,
+      relay1State: newR1,
+      relay2State: newR2,
+    });        
+  } catch (err) {  
+    console.error("❌ [TOGGLE EXCEPTION]:", err); 
+    return res.status(500).json({ success: false, error: err.message });
   }
 };
 

@@ -33,17 +33,33 @@ const DeviceControl = () => {
             const telemetryRes = await getLatestTelemetryApi(targetId);
             const latestTelemetry = telemetryRes?.telemetry || {};
 
+            // 1. Determine relay status for this specific channel
+            let isRelayActive = false;
+            if (device.relayChannel === 1 || device.channel === 1) {
+              isRelayActive = latestTelemetry.relay1State ?? device.relayState ?? false;
+            } else if (device.relayChannel === 2 || device.channel === 2) {
+              isRelayActive = latestTelemetry.relay2State ?? device.relayState ?? false;
+            } else {
+              isRelayActive = typeof device.relayState === "boolean"
+                ? device.relayState
+                : (latestTelemetry.relayState ?? false);
+            }
+
+            // 2. Zero-out electrical readings when OFF
+            const rawV = Number(latestTelemetry.voltage || 0);
+            const rawC = Number(latestTelemetry.current || 0);
+            const rawP = Number(latestTelemetry.power || (rawV * rawC));
+
             return {
               ...device,
-              // Keep target state accurate
-              relayState:
-                typeof device.relayState === "boolean"
-                  ? device.relayState
-                  : (latestTelemetry.relayState ?? false),
-              // Pass live metrics + isOnline + lastSeen through telemetry object
+              relayState: isRelayActive,
+              status: isRelayActive ? "ON" : "OFF",
               telemetry: {
                 ...device.telemetry,
                 ...latestTelemetry,
+                voltage: isRelayActive ? rawV : 0,
+                current: isRelayActive ? rawC : 0,
+                power: isRelayActive ? rawP : 0,
                 isOnline: latestTelemetry.isOnline ?? false,
                 lastSeen: latestTelemetry.lastSeen || device.lastSeen,
               },
@@ -57,7 +73,7 @@ const DeviceControl = () => {
       setDevices(hydratedDevices);
     } catch (error) {
       console.error("Failed to load dashboard devices:", error);
-    }  finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -109,14 +125,21 @@ const DeviceControl = () => {
     const currentRelay = currentDevice.relayState;
     const targetState = !currentRelay;
 
-    // 1. Optimistic UI update (Update state locally first)
+    // 1. Optimistic UI update (Update state & zero-out metrics immediately if turned OFF)
     setDevices((prevDevices) =>
       prevDevices.map((d) =>
         d.deviceId === deviceId || d._id === deviceId
           ? {
               ...d,
               relayState: targetState,
-              telemetry: { ...d.telemetry, relayState: targetState },
+              status: targetState ? "ON" : "OFF",
+              telemetry: {
+                ...d.telemetry,
+                relayState: targetState,
+                voltage: targetState ? d.telemetry?.voltage : 0,
+                current: targetState ? d.telemetry?.current : 0,
+                power: targetState ? d.telemetry?.power : 0,
+              },
             }
           : d
       )
@@ -134,6 +157,7 @@ const DeviceControl = () => {
             ? {
                 ...d,
                 relayState: currentRelay,
+                status: currentRelay ? "ON" : "OFF",
                 telemetry: { ...d.telemetry, relayState: currentRelay },
               }
             : d

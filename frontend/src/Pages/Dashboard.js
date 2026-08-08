@@ -74,17 +74,31 @@ const Dashboard = () => {
               // Safely pull telemetry payload
               const telemetry = telRes?.telemetry || telRes?.data || telRes || {};
 
-              const v = Number(telemetry.voltage || 0);
-              const c = Number(telemetry.current || 0);
-              const p = Number(telemetry.power || (v * c));
-              const isRelayOn = telemetry.relayState ?? dev.relayState ?? false;
+              // Check Relay Channel assignment (Relay 1, Relay 2, or general relayState)
+              let isRelayOn = false;
+              if (dev.relayChannel === 1 || dev.channel === 1) {
+                isRelayOn = telemetry.relay1State ?? telemetry.relayState ?? dev.relayState ?? false;
+              } else if (dev.relayChannel === 2 || dev.channel === 2) {
+                isRelayOn = telemetry.relay2State ?? telemetry.relayState ?? dev.relayState ?? false;
+              } else {
+                isRelayOn = telemetry.relayState ?? telemetry.relay1State ?? telemetry.relay2State ?? dev.relayState ?? false;
+              }
 
-              if (telemetry.isOnline) anyHardwareOnline = true;
-              if (isRelayOn || v > 0) onlineCount++;
+              const rawV = Number(telemetry.voltage || 0);
+              const rawC = Number(telemetry.current || 0);
+              const rawP = Number(telemetry.power || (rawV * rawC));
+
+              // Zero-out metrics if relay is OFF
+              const v = isRelayOn ? rawV : 0;
+              const c = isRelayOn ? rawC : 0;
+              const p = isRelayOn ? rawP : 0;
+
+              if (telemetry.isOnline || isRelayOn) anyHardwareOnline = true;
+              if (isRelayOn) onlineCount++;
 
               totalPower += p;
               totalCurrent += c;
-              if (v > 0) latestVoltage = v; // Primary line voltage
+              if (v > 0) latestVoltage = v; // Line voltage when active
             } catch (err) {
               // Gracefully handle individual device 404 or offline state
               console.warn(`Device ${dev.deviceId || dev._id} offline or telemetry unreadable.`);
@@ -102,7 +116,7 @@ const Dashboard = () => {
         setCurrent(currentTotalAmps);
         setIsHardwareOnline(anyHardwareOnline);
         setDeviceStatus(
-          onlineCount > 0 ? `${onlineCount} Online` : "Offline"
+          onlineCount > 0 ? `${onlineCount} Active` : "Offline"
         );
 
         // --- REAL TIME ENERGY ACCUMULATION (kWh) ---
@@ -128,10 +142,10 @@ const Dashboard = () => {
             message: `Line voltage spiked to ${currentLineVoltage}V! High risk to connected appliances.`,
             time: "Just now",
           });
-        } else if (currentLineVoltage > 0 && currentLineVoltage < 190) {
+        } else if (currentLineVoltage > 0 && currentLineVoltage < 150) {
           alerts.push({
             title: "Low Voltage Alert ⚡",
-            message: `Line voltage dropped to ${currentLineVoltage}V! Safe trip limits reached (<190V).`,
+            message: `Line voltage dropped to ${currentLineVoltage}V! Safe trip limits reached (<150V).`,
             time: "Just now",
           });
         }

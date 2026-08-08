@@ -1,3 +1,4 @@
+// models/Device.js
 import mongoose from "mongoose";
 
 const deviceSchema = new mongoose.Schema(
@@ -5,34 +6,37 @@ const deviceSchema = new mongoose.Schema(
     deviceId: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
+      trim: true,
+      uppercase: true,
     },
 
     name: {
       type: String,
-      default: "EnerSense Device"
+      default: "EnerSense Device",
     },
 
+    // 🔑 Linked to user (matches getMyDevices controller)
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null   // ❗ allow unpaired device
+      default: null, // allows unpaired devices in admin master pool
     },
 
     location: {
       type: String,
-      default: "Unknown"
+      default: "Unknown",
     },
 
     deviceType: {
       type: String,
-      lowercase: true, // 👈 Converts "AC" -> "ac", "Bulb" -> "bulb" before validation
+      lowercase: true,
       enum: [
         "bulb",
         "fan",
         "plug",
         "ac",
-        "meter",   // 👈 Added "meter" to match frontend option
+        "meter",
         "heater",
         "tv",
         "fridge",
@@ -41,37 +45,74 @@ const deviceSchema = new mongoose.Schema(
         "speaker",
         "computer",
         "router",
-        "other"
+        "other",
       ],
-      default: "bulb"
+      default: "bulb",
     },
 
+    // ⚡ MULTI-RELAY STATES (Fixes switch flipping issue)
+    relay1State: {
+      type: Boolean,
+      default: false,
+    },
+
+    relay2State: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Backward compatibility single relay toggle
     powerStatus: {
       type: Boolean,
-      default: false
-    },
-
-    voltage: {
-      type: Number,
-      default: 0
-    },
-
-    usage: {
-      type: Number,
-      default: 0
+      default: false,
     },
 
     connectionStatus: {
       type: String,
       enum: ["online", "offline"],
-      default: "offline"
+      default: "offline",
     },
 
     lastSeen: {
-      type: Date
-    }
+      type: Date,
+      default: Date.now,
+    },
+
+    // 📊 LIVE SENSOR TELEMETRY METRICS SNAPSHOT (Matches ESP32 Readouts)
+    telemetry: {
+      voltage: { type: Number, default: 0 },
+      current: { type: Number, default: 0 },
+      power: { type: Number, default: 0 },
+      temperature: { type: Number, default: 0 },
+      humidity: { type: Number, default: 0 },
+      updatedAt: { type: Date, default: Date.now },
+    },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    strict: false // Prevents stripping unexpected incoming telemetry fields
+  }
 );
 
-export default mongoose.model("Device", deviceSchema);
+// 📈 Historical Telemetry Time-Series Collection
+const telemetrySchema = new mongoose.Schema({
+  deviceId: { type: String, required: true, index: true },
+  voltage: { type: Number, default: 0 },
+  current: { type: Number, default: 0 },
+  power: { type: Number, default: 0 },
+  temperature: { type: Number, default: 0 },
+  humidity: { type: Number, default: 0 },
+  relay1State: { type: Boolean, default: false },
+  relay2State: { type: Boolean, default: false },
+  timestamp: { type: Date, default: Date.now },
+});
+
+// Force re-compilation on schema updates
+delete mongoose.models.Device;
+delete mongoose.models.Telemetry;
+
+export const Device = mongoose.model("Device", deviceSchema);
+export const Telemetry = mongoose.model("Telemetry", telemetrySchema);
+
+// 👈 Default export ensures `import Device from "../models/Device.js"` works everywhere!
+export default Device;

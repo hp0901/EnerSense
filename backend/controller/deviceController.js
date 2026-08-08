@@ -86,30 +86,84 @@ export const getMyDevices = async (req, res) => {
 // =============================
 // Toggle Device Relay State
 // =============================
+// backend/controller/deviceController.js
+
+// backend/controllers/deviceController.js
+
 export const toggleDevice = async (req, res) => {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id || req.params.deviceId || req.body.deviceId;
+    const deviceId = rawId ? rawId.trim().toUpperCase() : null;
+    const { relayChannel, targetState } = req.body;
 
-    const device = await Device.findById(id);
+    if (!deviceId) {
+      return res.status(400).json({ success: false, message: "Device ID missing" });
+    }
 
-    if (!device) {
+    // Identify primary hardware ID vs virtual ID
+    const PRIMARY_ID = "ENR-0KDOY8";
+    const VIRTUAL_ID = "ENR-6SQHG0";
+
+    const isChannel2 = relayChannel === 2 || deviceId === VIRTUAL_ID;
+
+    // 1. Always fetch the primary hardware device
+    let primaryDevice = await Device.findOne({ deviceId: PRIMARY_ID });
+
+    if (!primaryDevice) {
+      // Fallback if primary isn't found by exact ID
+      primaryDevice = await Device.findOne({ deviceId });
+    }
+
+    if (!primaryDevice) {
       return res.status(404).json({ success: false, message: "Device not found" });
     }
 
-    device.powerStatus = !device.powerStatus;
-    device.voltage = device.powerStatus ? 228 : 0;
-    device.usage = device.powerStatus
-      ? Math.floor(Math.random() * 80 + 20)
-      : 0;
+    if (!primaryDevice.telemetry) primaryDevice.telemetry = {};
 
-    await device.save();
+    // 2. Toggle state on primary hardware
+    if (isChannel2) {
+      const newState = targetState !== undefined ? targetState : !primaryDevice.relay2State;
+      primaryDevice.relay2State = newState;
+      primaryDevice.telemetry.relay2State = newState;
+
+      // 🔑 CRITICAL FIX: Keep Virtual Device ENR-6SQHG0 perfectly in sync!
+      await Device.updateOne(
+        { deviceId: VIRTUAL_ID },
+        {
+          $set: {
+            relayState: newState,
+            relay1State: newState,
+            relay2State: newState,
+            "telemetry.relayState": newState,
+            "telemetry.relay1State": newState,
+            "telemetry.relay2State": newState,
+            lastSeen: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+    } else {
+      const newState = targetState !== undefined ? targetState : !primaryDevice.relay1State;
+      primaryDevice.relay1State = newState;
+      primaryDevice.relayState = newState;
+      primaryDevice.powerStatus = newState;
+      primaryDevice.telemetry.relay1State = newState;
+      primaryDevice.telemetry.relayState = newState;
+    }
+
+    primaryDevice.lastSeen = new Date();
+    await primaryDevice.save();
 
     return res.status(200).json({
       success: true,
-      device
+      message: "Device toggled successfully",
+      deviceId: primaryDevice.deviceId,
+      relay1State: primaryDevice.relay1State,
+      relay2State: primaryDevice.relay2State,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Toggle failed" });
+    console.error("Error in toggleDevice:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

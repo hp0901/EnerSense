@@ -37,16 +37,23 @@ const DeviceCard = ({ device, onToggle, onDelete }) => {
   // Extract values safely from nested telemetry or flat device properties
   const telemetry = device?.telemetry || device || {};
 
-  const voltage = telemetry.voltage ?? 0;
-  const current = telemetry.current ?? 0;
-  const power = telemetry.power ?? 0;
-  const temperature = telemetry.temperature ?? 0;
-  const humidity = telemetry.humidity ?? 0;
-  
   // Relay state: check telemetry first, then device root
   const relayState = telemetry.relayState ?? device?.relayState ?? device?.powerStatus ?? false;
 
+  // ZERO-OUT metrics if relay state is OFF
+  const voltage = relayState ? (telemetry.voltage ?? 0) : 0;
+  const current = relayState ? (telemetry.current ?? 0) : 0;
+  const power = relayState ? (telemetry.power ?? 0) : 0;
+  
+  // Ambient room sensor readings remain active
+  const temperature = telemetry.temperature ?? 0;
+  const humidity = telemetry.humidity ?? 0;
+
   const inUse = relayState && power > 0;
+
+  // Icon lookup helper (case-insensitive)
+  const rawType = (device?.deviceType || device?.type || "Other").toLowerCase();
+  const IconComponent = iconMap[rawType] || iconMap[device?.deviceType] || <FaQuestionCircle size={26} />;
 
   return (
     <div className="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-lg relative transition hover:scale-[1.02]">
@@ -65,7 +72,7 @@ const DeviceCard = ({ device, onToggle, onDelete }) => {
           relayState ? "bg-yellow-500 text-black shadow-lg shadow-yellow-500/20" : "bg-slate-700 text-gray-300"
         }`}
       >
-        {iconMap[device?.deviceType] || iconMap[device?.type] || <FaQuestionCircle size={26} />}
+        {IconComponent}
       </div>
 
       {/* Device Name / Code */}

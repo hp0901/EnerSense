@@ -4,10 +4,13 @@ const deviceSchema = new mongoose.Schema(
   {
     deviceId: { type: String, required: true, unique: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // For deviceController compatibility
     name: { type: String, default: "Smart Device" },
 
-    // 🔑 ROOT TARGET RELAY STATE
-    relayState: { type: Boolean, default: true },
+    // 🔑 TARGET RELAY STATES (Supports Single + Dual Relays)
+    relayState: { type: Boolean, default: false },  // Fallback / Relay 1
+    relay1State: { type: Boolean, default: false }, // Relay Channel 1
+    relay2State: { type: Boolean, default: false }, // Relay Channel 2
 
     lastSeen: { type: Date, default: Date.now },
 
@@ -18,13 +21,15 @@ const deviceSchema = new mongoose.Schema(
       power: { type: Number, default: 0 },
       temperature: { type: Number, default: 0 },
       humidity: { type: Number, default: 0 },
-      relayState: { type: Boolean, default: false },
+      relayState: { type: Boolean, default: false },  // Fallback
+      relay1State: { type: Boolean, default: false }, // Reported Relay 1
+      relay2State: { type: Boolean, default: false }, // Reported Relay 2
       updatedAt: { type: Date, default: Date.now },
     },
   },
   { 
     timestamps: true,
-    strict: false // 👈 Safety net to prevent stripping un-schema'd fields
+    strict: false // Stops Mongoose from stripping extra incoming payload parameters
   }
 );
 
@@ -36,6 +41,8 @@ const telemetrySchema = new mongoose.Schema({
   temperature: Number,
   humidity: Number,
   relayState: Boolean,
+  relay1State: Boolean,
+  relay2State: Boolean,
   timestamp: { type: Date, default: Date.now },
 });
 
@@ -45,3 +52,6 @@ delete mongoose.models.Telemetry;
 
 export const Device = mongoose.model("Device", deviceSchema);
 export const Telemetry = mongoose.model("Telemetry", telemetrySchema);
+
+// Export default so 'import Device from ...' works across all routes
+export default Device;
