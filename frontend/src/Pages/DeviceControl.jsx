@@ -27,36 +27,41 @@ const DeviceControl = () => {
       const rawDevices = res?.devices || res?.data || (Array.isArray(res) ? res : []);
 
       const hydratedDevices = await Promise.all(
-        rawDevices.map(async (device) => {
+        rawDevices.map(async (device, index) => {
           try {
             const targetId = device.deviceId || device._id;
             const telemetryRes = await getLatestTelemetryApi(targetId);
             const latestTelemetry = telemetryRes?.telemetry || {};
 
-            // 1. Determine relay status for this specific channel
+            // 1. Smart Channel Assignment (Explicit property -> fallback to list index: 1st card = Channel 1, 2nd card = Channel 2)
+            const channelNum = device.relayChannel || device.channel || ((index % 2) + 1);
+
+            // 2. Extract channel-specific relay state
             let isRelayActive = false;
-            if (device.relayChannel === 1 || device.channel === 1) {
-              isRelayActive = latestTelemetry.relay1State ?? device.relayState ?? false;
-            } else if (device.relayChannel === 2 || device.channel === 2) {
-              isRelayActive = latestTelemetry.relay2State ?? device.relayState ?? false;
+            if (channelNum === 1) {
+              isRelayActive = latestTelemetry.relay1State ?? latestTelemetry.relayState ?? device.relayState ?? false;
+            } else if (channelNum === 2) {
+              isRelayActive = latestTelemetry.relay2State ?? latestTelemetry.relayState ?? device.relayState ?? false;
             } else {
-              isRelayActive = typeof device.relayState === "boolean"
-                ? device.relayState
-                : (latestTelemetry.relayState ?? false);
+              isRelayActive = latestTelemetry.relayState ?? device.relayState ?? false;
             }
 
-            // 2. Zero-out electrical readings when OFF
+            // 3. Raw electrical readings from ESP32
             const rawV = Number(latestTelemetry.voltage || 0);
             const rawC = Number(latestTelemetry.current || 0);
             const rawP = Number(latestTelemetry.power || (rawV * rawC));
 
             return {
               ...device,
+              relayChannel: channelNum,
               relayState: isRelayActive,
               status: isRelayActive ? "ON" : "OFF",
               telemetry: {
                 ...device.telemetry,
                 ...latestTelemetry,
+                relay1State: latestTelemetry.relay1State ?? (channelNum === 1 ? isRelayActive : false),
+                relay2State: latestTelemetry.relay2State ?? (channelNum === 2 ? isRelayActive : false),
+                relayState: isRelayActive,
                 voltage: isRelayActive ? rawV : 0,
                 current: isRelayActive ? rawC : 0,
                 power: isRelayActive ? rawP : 0,
@@ -121,28 +126,31 @@ const DeviceControl = () => {
 
     if (!currentDevice) return;
 
-    // Get current target relay state
     const currentRelay = currentDevice.relayState;
     const targetState = !currentRelay;
+    const channelNum = currentDevice.relayChannel || 1;
 
-    // 1. Optimistic UI update (Update state & zero-out metrics immediately if turned OFF)
+    // 1. Optimistic UI update (isolated to this exact card & channel)
     setDevices((prevDevices) =>
-      prevDevices.map((d) =>
-        d.deviceId === deviceId || d._id === deviceId
-          ? {
-              ...d,
-              relayState: targetState,
-              status: targetState ? "ON" : "OFF",
-              telemetry: {
-                ...d.telemetry,
-                relayState: targetState,
-                voltage: targetState ? d.telemetry?.voltage : 0,
-                current: targetState ? d.telemetry?.current : 0,
-                power: targetState ? d.telemetry?.power : 0,
-              },
-            }
-          : d
-      )
+      prevDevices.map((d) => {
+        const isTarget = d.deviceId === deviceId || d._id === deviceId;
+        if (!isTarget) return d;
+
+        return {
+          ...d,
+          relayState: targetState,
+          status: targetState ? "ON" : "OFF",
+          telemetry: {
+            ...d.telemetry,
+            relayState: targetState,
+            relay1State: channelNum === 1 ? targetState : d.telemetry?.relay1State,
+            relay2State: channelNum === 2 ? targetState : d.telemetry?.relay2State,
+            voltage: targetState ? (d.telemetry?.voltage || 230) : 0,
+            current: targetState ? d.telemetry?.current : 0,
+            power: targetState ? d.telemetry?.power : 0,
+          },
+        };
+      })
     );
 
     try {
@@ -150,19 +158,8 @@ const DeviceControl = () => {
       await toggleDeviceApi(deviceId, targetState);
     } catch (error) {
       console.error("Toggle error:", error);
-      // Revert optimistic update if API fails
-      setDevices((prevDevices) =>
-        prevDevices.map((d) =>
-          d.deviceId === deviceId || d._id === deviceId
-            ? {
-                ...d,
-                relayState: currentRelay,
-                status: currentRelay ? "ON" : "OFF",
-                telemetry: { ...d.telemetry, relayState: currentRelay },
-              }
-            : d
-        )
-      );
+      // Re-sync with backend on failure
+      fetchDevices();
     }
   };
 
