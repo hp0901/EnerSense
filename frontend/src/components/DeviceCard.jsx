@@ -65,12 +65,14 @@ const DeviceCard = ({ device, onToggle, onDelete }) => {
   const rawCurrent = Number(telemetry.current ?? device?.current ?? 0);
   const rawPower = Number(telemetry.power ?? device?.power ?? 0);
 
+  // 🔑 Zero-out ALL electrical and sensor metrics when device is OFF
   const voltage = relayState ? rawVoltage : 0;
   const current = relayState ? rawCurrent : 0;
   const power = relayState ? rawPower : 0;
-
-  const temperature = telemetry.temperature ?? device?.temperature ?? 0;
-  const humidity = telemetry.humidity ?? device?.humidity ?? 0;
+  
+  // 🌡️ Temp and Hum now zero-out when relayState is false
+  const temperature = relayState ? (telemetry.temperature ?? device?.temperature ?? 0) : 0;
+  const humidity = relayState ? (telemetry.humidity ?? device?.humidity ?? 0) : 0;
 
   const inUse = relayState && power > 0;
 
@@ -89,10 +91,10 @@ const DeviceCard = ({ device, onToggle, onDelete }) => {
         className="absolute top-4 right-4 text-slate-500 hover:text-rose-400 transition-colors p-1"
         title="Unpair Device"
       >
-        {/* <FaTrash size={14} /> */}
+        <FaTrash size={14} />
       </button>
 
-      {/* Device Category Icon (FIXED: w-12 h-12 prevents top banner stretching) */}
+      {/* Device Category Icon */}
       <div
         className={`w-12 h-12 flex items-center justify-center rounded-xl mb-4 transition-all duration-300 ${
           relayState
