@@ -9,6 +9,12 @@ import {
   pairDeviceApi,
 } from "../services/operations/deviceApi";
 
+// 🌉 Lock Relay Channels strictly per device ID
+const VIRTUAL_CHANNEL_MAP = {
+  "ENR-0KDOY8": 1, // LED Bulb = Relay Channel 1
+  "ENR-OOI0VW": 2, // Charging Point = Relay Channel 2
+};
+
 const DeviceControl = () => {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,29 +33,31 @@ const DeviceControl = () => {
       const rawDevices = res?.devices || res?.data || (Array.isArray(res) ? res : []);
 
       const hydratedDevices = await Promise.all(
-        rawDevices.map(async (device, index) => {
+        rawDevices.map(async (device) => {
           try {
             const targetId = device.deviceId || device._id;
             const telemetryRes = await getLatestTelemetryApi(targetId);
             const latestTelemetry = telemetryRes?.telemetry || {};
 
-            // 1. Smart Channel Assignment (Explicit property -> fallback to list index: 1st card = Channel 1, 2nd card = Channel 2)
-            const channelNum = device.relayChannel || device.channel || ((index % 2) + 1);
+            // 1. Explicit Channel Assignment
+            const channelNum =
+              VIRTUAL_CHANNEL_MAP[targetId] ||
+              device.relayChannel ||
+              device.channel ||
+              1;
 
-            // 2. Extract channel-specific relay state
+            // 2. Extract ONLY this channel's relay state
             let isRelayActive = false;
-            if (channelNum === 1) {
-              isRelayActive = latestTelemetry.relay1State ?? latestTelemetry.relayState ?? device.relayState ?? false;
-            } else if (channelNum === 2) {
-              isRelayActive = latestTelemetry.relay2State ?? latestTelemetry.relayState ?? device.relayState ?? false;
+            if (channelNum === 2) {
+              isRelayActive = Boolean(latestTelemetry.relay2State ?? device.relay2State ?? false);
             } else {
-              isRelayActive = latestTelemetry.relayState ?? device.relayState ?? false;
+              isRelayActive = Boolean(latestTelemetry.relay1State ?? device.relay1State ?? false);
             }
 
-            // 3. Raw electrical readings from ESP32
+            // 3. Electrical readings
             const rawV = Number(latestTelemetry.voltage || 0);
             const rawC = Number(latestTelemetry.current || 0);
-            const rawP = Number(latestTelemetry.power || (rawV * rawC));
+            const rawP = Number(latestTelemetry.power || rawV * rawC);
 
             return {
               ...device,
@@ -59,8 +67,8 @@ const DeviceControl = () => {
               telemetry: {
                 ...device.telemetry,
                 ...latestTelemetry,
-                relay1State: latestTelemetry.relay1State ?? (channelNum === 1 ? isRelayActive : false),
-                relay2State: latestTelemetry.relay2State ?? (channelNum === 2 ? isRelayActive : false),
+                relay1State: Boolean(latestTelemetry.relay1State ?? device.relay1State),
+                relay2State: Boolean(latestTelemetry.relay2State ?? device.relay2State),
                 relayState: isRelayActive,
                 voltage: isRelayActive ? rawV : 0,
                 current: isRelayActive ? rawC : 0,
@@ -103,12 +111,10 @@ const DeviceControl = () => {
 
       await pairDeviceApi(payload);
 
-      // Reset form
       setDeviceName("");
       setUniqueCode("");
       setDeviceType("Bulb");
 
-      // Refresh devices list
       await fetchDevices();
     } catch (error) {
       console.error("Pairing Error:", error);
@@ -118,23 +124,27 @@ const DeviceControl = () => {
     }
   };
 
-  // Toggle relay state for a device
-  const handleToggle = async (deviceId) => {
+  // ISOLATED TOGGLE HANDLER
+  const handleToggle = async (deviceId, explicitChannel, explicitTargetState) => {
     const currentDevice = devices.find(
       (d) => d.deviceId === deviceId || d._id === deviceId
     );
 
     if (!currentDevice) return;
 
-    const currentRelay = currentDevice.relayState;
-    const targetState = !currentRelay;
-    const channelNum = currentDevice.relayChannel || 1;
+    const targetDbId = currentDevice._id;
+    const channelNum =
+      explicitChannel ||
+      VIRTUAL_CHANNEL_MAP[deviceId] ||
+      currentDevice.relayChannel ||
+      1;
 
-    // 1. Optimistic UI update (isolated to this exact card & channel)
+    const targetState =
+      explicitTargetState !== undefined ? explicitTargetState : !currentDevice.relayState;
+
     setDevices((prevDevices) =>
       prevDevices.map((d) => {
-        const isTarget = d.deviceId === deviceId || d._id === deviceId;
-        if (!isTarget) return d;
+        if (d._id !== targetDbId && d.deviceId !== deviceId) return d;
 
         return {
           ...d,
@@ -143,8 +153,8 @@ const DeviceControl = () => {
           telemetry: {
             ...d.telemetry,
             relayState: targetState,
-            relay1State: channelNum === 1 ? targetState : d.telemetry?.relay1State,
-            relay2State: channelNum === 2 ? targetState : d.telemetry?.relay2State,
+            relay1State: channelNum === 1 ? targetState : (d.telemetry?.relay1State ?? false),
+            relay2State: channelNum === 2 ? targetState : (d.telemetry?.relay2State ?? false),
             voltage: targetState ? (d.telemetry?.voltage || 230) : 0,
             current: targetState ? d.telemetry?.current : 0,
             power: targetState ? d.telemetry?.power : 0,
@@ -154,11 +164,9 @@ const DeviceControl = () => {
     );
 
     try {
-      // 2. Call backend endpoint with explicit target state
-      await toggleDeviceApi(deviceId, targetState);
+      await toggleDeviceApi(deviceId, targetState, channelNum);
     } catch (error) {
       console.error("Toggle error:", error);
-      // Re-sync with backend on failure
       fetchDevices();
     }
   };
@@ -180,28 +188,26 @@ const DeviceControl = () => {
   useEffect(() => {
     fetchDevices();
 
-    // Poll live data every 3 seconds
     const interval = setInterval(fetchDevices, 3000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0A0D14] text-white p-6 space-y-8">
+    <div className="min-h-screen bg-[#0B0F17] text-white p-6 space-y-8">
       {/* HEADER & OVERALL SYSTEM HARDWARE SUMMARY */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold flex items-center gap-2">
-            <span className="text-orange-500">⚡</span> Device Control Panel
+          <h1 className="text-3xl font-extrabold flex items-center gap-2 tracking-tight">
+            <span className="text-amber-500">⚡</span> Device Control Panel
           </h1>
           <p className="text-slate-400 text-sm mt-1">
             Manage and control all your connected smart devices.
           </p>
         </div>
 
-        {/* Global Hardware Health Badge */}
         {devices.length > 0 && (
-          <div className="flex items-center gap-3 bg-[#121824] border border-slate-800 px-4 py-2 rounded-2xl w-fit">
-            <span className="text-xs text-slate-400">System Link:</span>
+          <div className="flex items-center gap-3 bg-[#131B2E] border border-slate-800/80 px-4 py-2 rounded-2xl w-fit shadow-md">
+            <span className="text-xs text-slate-400 font-medium">System Link:</span>
             <HardwareStatusBadge
               isOnline={devices.some((d) => d.telemetry?.isOnline)}
             />
@@ -210,47 +216,44 @@ const DeviceControl = () => {
       </div>
 
       {/* PAIR NEW DEVICE PANEL */}
-      <div className="bg-[#121824] border border-slate-800 rounded-2xl p-6 shadow-xl">
+      <div className="bg-[#131B2E] border border-slate-800/80 rounded-2xl p-6 shadow-xl">
         <h2 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
-          <span className="text-purple-400 text-xl">+</span> Pair New Device
+          <span className="text-indigo-400 text-xl">+</span> Pair New Device
         </h2>
 
         <form
           onSubmit={handlePairDevice}
           className="flex flex-col md:flex-row items-center gap-4"
         >
-          {/* Device Name Input */}
           <input
             type="text"
             placeholder="Device name (optional)"
             value={deviceName}
             onChange={(e) => setDeviceName(e.target.value)}
-            className="w-full md:w-1/3 bg-[#1A2232] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+            className="w-full md:w-1/3 bg-[#0B0F17] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
 
-          {/* Unique Code Input */}
           <input
             type="text"
             placeholder="Enter Unique Code"
             value={uniqueCode}
             onChange={(e) => setUniqueCode(e.target.value)}
             required
-            className="w-full md:w-1/3 bg-[#1A2232] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+            className="w-full md:w-1/3 bg-[#0B0F17] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
 
-          {/* Device Type Selector */}
           <select
             value={deviceType}
             onChange={(e) => setDeviceType(e.target.value)}
-            className="w-full md:w-auto bg-[#1A2232] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer transition"
+            className="w-full md:w-auto bg-[#0B0F17] border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer transition"
           >
             <option value="Bulb">💡 Bulb</option>
             <option value="Fan">🌀 Fan</option>
             <option value="AC">❄️ AC</option>
             <option value="Meter">⚡ Meter</option>
+            <option value="ChargingPoint">🔌 Charging Point</option>
           </select>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={pairingLoading}
@@ -274,9 +277,6 @@ const DeviceControl = () => {
         <div className="flex flex-col items-center justify-center min-h-[30vh] text-slate-400 gap-2 border border-dashed border-slate-800 rounded-2xl p-8">
           <p className="text-lg font-medium text-slate-300">
             No paired devices found.
-          </p>
-          <p className="text-xs text-slate-500">
-            Use the panel above to pair your ESP32 node (e.g. ENR-0KDOY8).
           </p>
         </div>
       ) : (

@@ -56,15 +56,18 @@ export const getMyDevicesApi = async () => {
 };
 
 // =============================
-// Toggle Device Relay
+// Toggle Device Relay (Sends target state & relayChannel)
 // =============================
-export const toggleDeviceApi = async (deviceId, targetRelayState) => {
+export const toggleDeviceApi = async (deviceId, targetRelayState, relayChannel) => {
   try {
     const rawBaseUrl = TOGGLE_DEVICE || `${DEFAULT_BASE_HOST}/toggle`;
     const baseUrl = getBaseUrl(rawBaseUrl, `${DEFAULT_BASE_HOST}/toggle`);
 
-    const payload =
-      typeof targetRelayState === "boolean" ? { targetRelayState } : {};
+    const payload = {
+      relayChannel: relayChannel || 1,
+      targetState: typeof targetRelayState === "boolean" ? targetRelayState : undefined,
+      targetRelayState: typeof targetRelayState === "boolean" ? targetRelayState : undefined,
+    };
 
     const res = await apiConnector("POST", `${baseUrl}/${deviceId}`, payload, {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -92,7 +95,7 @@ export const unpairDeviceApi = async (id) => {
 };
 
 // =============================
-// Get Live Telemetry Data (Frontend Fallback)
+// Get Live Telemetry Data
 // =============================
 export const getLatestTelemetryApi = async (deviceId) => {
   try {
@@ -103,27 +106,25 @@ export const getLatestTelemetryApi = async (deviceId) => {
       ? baseUrl
       : `${baseUrl}/${deviceId}`;
 
-    // 1. Try hitting the GET telemetry endpoint first
     const res = await apiConnector("GET", url, null, {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     });
 
     return res.data;
   } catch (error) {
-    // 2. If backend throws 404 for GET /telemetry/:deviceId, intercept & fallback gracefully!
     if (error?.response?.status === 404 || error?.status === 404) {
       try {
-        // Fetch all devices for this user
         const devicesRes = await getMyDevicesApi();
-        const rawDevices = devicesRes?.devices || devicesRes?.data || (Array.isArray(devicesRes) ? devicesRes : []);
-        
-        // Find the matching device
+        const rawDevices =
+          devicesRes?.devices ||
+          devicesRes?.data ||
+          (Array.isArray(devicesRes) ? devicesRes : []);
+
         const targetDev = rawDevices.find(
           (d) => (d.deviceId || d.id || d._id) === deviceId
         );
 
         if (targetDev) {
-          // Return the telemetry object nested inside the device document
           return {
             success: true,
             deviceId,
@@ -133,7 +134,10 @@ export const getLatestTelemetryApi = async (deviceId) => {
               power: targetDev.telemetry?.power ?? 0,
               temperature: targetDev.telemetry?.temperature ?? 0,
               humidity: targetDev.telemetry?.humidity ?? 0,
-              relayState: targetDev.relayState ?? targetDev.telemetry?.relayState ?? false,
+              relayState:
+                targetDev.relayState ??
+                targetDev.telemetry?.relayState ??
+                false,
             },
           };
         }
@@ -142,7 +146,6 @@ export const getLatestTelemetryApi = async (deviceId) => {
       }
     }
 
-    // 3. Ultimate safe response so Dashboard never crashes on 0s
     return {
       success: true,
       deviceId,
@@ -152,7 +155,7 @@ export const getLatestTelemetryApi = async (deviceId) => {
 };
 
 // =============================
-// Send Telemetry Payload (Simulator / Testing)
+// Send Telemetry Payload
 // =============================
 export const sendTelemetryApi = async (telemetryPayload) => {
   try {
@@ -161,7 +164,6 @@ export const sendTelemetryApi = async (telemetryPayload) => {
     const rawUrl = GET_TELEMETRY || `${DEFAULT_BASE_HOST}/telemetry`;
     const baseUrl = getBaseUrl(rawUrl, `${DEFAULT_BASE_HOST}/telemetry`);
 
-    // Append deviceId if it's missing from the base path
     let url = baseUrl;
     if (deviceId && !baseUrl.endsWith(`/${deviceId}`)) {
       url = `${baseUrl}/${deviceId}`;

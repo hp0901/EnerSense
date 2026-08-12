@@ -37,6 +37,7 @@ const deviceSchema = new mongoose.Schema(
         "plug",
         "ac",
         "meter",
+        "chargingpoint", // 👈 Added here
         "heater",
         "tv",
         "fridge",
