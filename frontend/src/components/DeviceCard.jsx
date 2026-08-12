@@ -179,7 +179,7 @@ const DeviceCard = ({ device, onToggle, onDelete }) => {
       >
         {relayState ? "Turn OFF" : "Turn ON"}
       </button>
-    </div>
+    </div> 
   );
 };
 
