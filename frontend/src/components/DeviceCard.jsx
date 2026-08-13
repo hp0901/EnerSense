@@ -91,7 +91,7 @@ const DeviceCard = ({ device, onToggle, onDelete }) => {
         className="absolute top-4 right-4 text-slate-500 hover:text-rose-400 transition-colors p-1"
         title="Unpair Device"
       >
-        <FaTrash size={14} />
+        {/* <FaTrash size={14} /> */}
       </button>
 
       {/* Device Category Icon */}
